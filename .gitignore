@@ -1,0 +1,5 @@
+.vscode
+tea
+src/*.o
+*.a
+*.so
