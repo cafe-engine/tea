@@ -11,34 +11,31 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 
 
 - [ ] Window
- - [ ] wrap SDL get and set functions (title, width, height, fullscreen, resizable, ...)
+	- [ ] wrap SDL get and set functions (title, width, height, fullscreen, resizable, ...)
 - [ ] Input
- - [ ] mouse input
- - [ ] keyboard input
- - [ ] joystick input
+	- [ ] mouse input
+	- [ ] keyboard input
+	- [ ] joystick input
 - [ ] Software Render
- - [ ] primitives
-	- [ ] point
-	- [ ] line
-	- [ ] rectangle
-	- [ ] circle
-	- [ ] triangle
-	- [ ] polygon
- - [ ] textures
- - [ ] render texture
+	- [ ] primitives
+		- [ ] point
+		- [ ] line
+		- [ ] rectangle
+		- [ ] circle
+		- [ ] triangle
+		- [ ] polygon
+	- [ ] textures
+ 	- [ ] render texture
 - [ ] Wrap for SDL_Renderer
- - [ ] primitives
-	- [x] circle
-	- [ ] triangle
-	- [ ] polygon
- - [ ] CPU transforms
+	- [ ] primitives
+		- [x] circle
+		- [ ] triangle
+		- [ ] polygon
+ 	- [ ] CPU transforms
 - [ ] OpenGL batched render
- - [ ] primitives
-	- [ ] circle
-	- [ ] polygon
- - [ ] shaders
- - [ ] framebuffers
- - [ ] coordinate system (GPU transforms)
-
-
-##
+ 	- [ ] primitives
+		- [ ] circle
+		- [ ] polygon
+ 	- [ ] shaders
+ 	- [ ] framebuffers
+ 	- [ ] coordinate system (GPU transforms)
