@@ -29,7 +29,7 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 - [ ] Wrap for SDL_Renderer
 	- [ ] primitives
 		- [x] circle
-		- [ ] triangle
+		- [x] triangle
 		- [ ] polygon
  	- [ ] CPU transforms
 - [ ] OpenGL batched render

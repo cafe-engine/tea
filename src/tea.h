@@ -4,6 +4,10 @@
 #define TE_API extern
 #include <SDL2/SDL.h>
 
+#if defined(TEA_GL_RENDER)
+#include <SDL2/SDL_opengl.h>
+#endif
+
 #define TEA_VERSION "0.1.0"
 #define CAT(a, b) a b
 
@@ -73,25 +77,25 @@ typedef void(*DrawTriangleFn)(Tea*, te_Point, te_Point, te_Point);
 typedef void(*DrawTextureFn)(Tea*, te_Rect, te_Rect);
 typedef void(*DrawTextureExFn)(Tea*, te_Rect, te_Rect, TEA_VALUE, te_Point, te_RenderFlip flip);
 
-typedef enum {
-  DRAW_NONE = 0,
-  DRAW_POINT,
-  DRAW_LINE,
-  DRAW_RECT,
-  DRAW_CIRCLE,
-  DRAW_TRIANGLE,
-  DRAW_TEXTURE
-} TEA_DRAW_COMMAND_;
+// typedef enum {
+//   DRAW_NONE = 0,
+//   DRAW_POINT,
+//   DRAW_LINE,
+//   DRAW_RECT,
+//   DRAW_CIRCLE,
+//   DRAW_TRIANGLE,
+//   DRAW_TEXTURE
+// } TEA_DRAW_COMMAND_;
 
-typedef enum {
-  STACK_NONE = 0,
-  PUSH_CANVAS,
-  PUSH_TRANSFORM,
-  PUSH_SHADER,
-  POP_CANVAS,
-  POP_TRANSFORM,
-  POP_SHADER
-} TEA_STACK_COMMAND_;
+// typedef enum {
+//   STACK_NONE = 0,
+//   PUSH_CANVAS,
+//   PUSH_TRANSFORM,
+//   PUSH_SHADER,
+//   POP_CANVAS,
+//   POP_TRANSFORM,
+//   POP_SHADER
+// } TEA_STACK_COMMAND_;
 
 typedef enum {
   TEA_COMMAND_NONE = 0,
@@ -208,8 +212,8 @@ TE_API te_Command* tea_pop(Tea *ctx);
 TE_API te_Command* tea_top(Tea *ctx);
 TE_API void tea_repeat(Tea *ctx, int index);
 
-TE_API te_Command tea_command_draw(Tea *ctx, TEA_DRAW_COMMAND_ type);
-TE_API te_Command tea_command_stack(Tea *ctx, TEA_STACK_COMMAND_ type);
+// TE_API te_Command tea_command_draw(Tea *ctx, TEA_DRAW_COMMAND_ type);
+// TE_API te_Command tea_command_stack(Tea *ctx, TEA_STACK_COMMAND_ type);
 
 TE_API int tea_should_close(Tea *ctx);
 

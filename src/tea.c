@@ -7,7 +7,7 @@ int tea_config_init(te_Config *conf, const char *title, int width, int height) {
   if (!conf) conf = &_conf;
   title = title ? title : CAT("tea ", TEA_VERSION);
 
-  if (title) strcpy(conf->title, title);
+  if (title) strcpy((char*)conf->title, title);
   conf->width = width;
   conf->height = height;
   conf->flags = SDL_INIT_VIDEO;
@@ -125,6 +125,14 @@ void tea_end_render(Tea *ctx) {
       case TEA_DRAW_CIRCLE: tea_render_circle(ctx, cmd); break;
       case TEA_DRAW_RECT: ctx->draw.rect[cmd->draw.fill](ctx, cmd->draw.rect); break;
       case TEA_DRAW_TRIANGLE: ctx->draw.triangle[cmd->draw.fill](ctx, cmd->draw.triang.p0, cmd->draw.triang.p1, cmd->draw.triang.p2); break;
+      case TEA_DRAW_TEXTURE: break;
+      
+      case TEA_PUSH_CANVAS: break;
+      case TEA_PUSH_TRANSFORM: break;
+      case TEA_PUSH_SHADER: break;
+      case TEA_POP_CANVAS: break;
+      case TEA_POP_TRANSFORM: break;
+      case TEA_POP_SHADER: break;
     }
     // }
   }
@@ -381,12 +389,12 @@ static int get_intersection(te_Point p0, te_Point p1, te_Point p2, te_Point p3, 
   if (!out) return -1;
   te_Point d0 = tea_point(p0.x-p1.x, p0.y-p1.y);
   te_Point d1 = tea_point(p2.x-p3.x, p2.y-p3.y);
-  int cross = cross_prod(d0, d1);
+  int cross = cross_prod(d1, d0);
 
   if (cross == 0) return 0;
 
-  float t = cross_prod(tea_point(p0.x-p2.x, p0.y-p2.y), tea_point(p2.x-p3.x, p2.y-p3.y)) / (float)cross;
-  float u = cross_prod(tea_point(p0.x-p1.x, p0.y-p1.y), tea_point(p0.x-p2.x, p0.y-p2.y)) / (float)cross;
+  float t = (float)cross_prod(tea_point(p0.x-p2.x, p0.y-p2.y), tea_point(p2.x-p3.x, p2.y-p3.y)) / (float)cross;
+  float u = (float)cross_prod(tea_point(p0.x-p1.x, p0.y-p1.y), tea_point(p0.x-p2.x, p0.y-p2.y)) / (float)cross;
   te_Point o;
 
   if (t <= 0 && t <= 1) o = tea_point(p0.x+t*(p1.x-p0.x), p0.y+t*(p1.y-p0.y));
@@ -399,7 +407,91 @@ static int get_intersection(te_Point p0, te_Point p1, te_Point p2, te_Point p3, 
   return 1;
 }
 
+static void fill_bottom_flat_triangle(Tea *tea, te_Point p0, te_Point p1, te_Point p2) {
+  // float invslope0 = (p1.x - p0.x) / (p1.y - p0.y);
+  // float invslope1 = (p2.x - p0.x) / (p2.y - p0.y);
+  int dy = (p2.y - p0.y);
+  float invslope0 = (p1.x - p0.x) / dy;
+  float invslope1 = (p2.x - p0.x) / dy;
+
+  float curx1 = p0.x;
+  float curx2 = p0.x;
+
+  int scanline_y;
+  for (scanline_y = p0.y; scanline_y <= p1.y; scanline_y++) {
+    tea_render_line(tea, tea_point(curx1, scanline_y), tea_point(curx2, scanline_y));
+    curx1 += invslope0;
+    curx2 += invslope1;
+  }
+}
+
+static void fill_top_flat_triangle(Tea *tea, te_Point p0, te_Point p1, te_Point p2) {
+  int dy = (p2.y - p0.y);
+  float invslope0 = (p2.x - p0.x) / dy;
+  float invslope1 = (p2.x - p1.x) / dy;
+
+  float curx1 = p2.x;
+  float curx2 = p2.x;
+
+  int scanline_y;
+  for (scanline_y = p2.y; scanline_y > p1.y; scanline_y--) {
+    tea_render_line(tea, tea_point(curx1, scanline_y), tea_point(curx2, scanline_y));
+    curx1 -= invslope0;
+    curx2 -= invslope1;
+  }
+}
+
+static te_Point minor_point_y(te_Point p0, te_Point p1) {
+  if (p0.y <= p1.y) return p0;
+  return p1;
+}
+
+static void points_ord_y(te_Point *points, int len) {
+  for (int i = 0; i < len; i++) {
+    for (int j = 0; j < len-1; j++) {
+      if (points[j].y < points[j+1].y) continue;
+      te_Point aux = points[j];
+      points[j] = points[j+1];
+      points[j+1] = aux;
+    }
+  }
+}
+
 void tea_render_triangle_fill(TRIANG_ARGS) {
+  te_Point pp0, pp1, pp2;
+  te_Point points[3];
+  points[0] = p0;
+  points[1] = p1;
+  points[2] = p2;
+
+  points_ord_y(points, 3);
+
+  if (points[1].y == points[2].y) fill_bottom_flat_triangle(t, points[0], points[1], points[2]);
+  else if (points[0].y == points[1].y) fill_bottom_flat_triangle(t, points[0], points[1], points[2]);
+  else {
+    te_Point p = tea_point(
+      (points[0].x + ((points[1].y - points[0].y) / (points[2].y - points[0].y)) * (points[2].x - points[0].x)),
+      points[1].y
+      );
+
+    fill_bottom_flat_triangle(t, points[0], points[1], p);
+    fill_top_flat_triangle(t, points[1], p, points[2]);
+  }
+
+  // tea_render_triangle_line(t, p0, p1, p2);
+
+  // if (p0.y <= p1.y) {
+  //   if (p0.y <= p2.y) {
+  //     pp0 = p0;
+  //     pp1 = 
+  //   }
+  //   else {
+  //     pp0 = p1;
+  //   }
+  // }
+}
+
+void tea_render_triangle_fill0(TRIANG_ARGS) {
   // tea_render_triangle_line(t, p0, p1, p2);
   Tea *tea = t;
   int minX = tea_min(p0.x, tea_min(p1.x, p2.x));
@@ -408,7 +500,7 @@ void tea_render_triangle_fill(TRIANG_ARGS) {
   int minY = tea_min(p0.y, tea_min(p1.y, p2.y));
   int maxY = tea_max(p0.y, tea_max(p1.y, p2.y));
 
-  int x, y;
+  int y;
   for (y = minY; y <= maxY; y++) {
     // for (x = minX; x <= maxX; x++) {
 
@@ -420,29 +512,33 @@ void tea_render_triangle_fill(TRIANG_ARGS) {
       te_Point inter_points[2];
 
       // SDL_RenderDrawLine(tea->render, sp0.x, sp0.y, pp1.x, pp1.y);
+      // te_Color c = tea->_color;
+      // tea_render_draw_color(tea, tea_color(255, 0, 0));
+      // tea_render_line(tea, sp1, sp0);
+      // tea_render_draw_color(tea, c);
 
 
       // int cross = cross_prod(tea_point(p0.x-p1.x, pp0.y-pp1.y), tea_point(p0.y-p1.y, pp0.x-pp1.x));
       // int cross = get_intersection(pp0, pp1, p0, p1, &inter_points[intersect]);
-      if (get_intersection(p1, p0, sp0, sp1, &inter_points[intersect])) intersect++;
-      // printf("%d\n", intersect);
-      if (get_intersection(p2, p1, sp0, sp1, &inter_points[intersect])) intersect++;
-      // printf("%d\n", intersect);
       if (get_intersection(p0, p2, sp0, sp1, &inter_points[intersect])) intersect++;
       // printf("%d\n", intersect);
+      if (get_intersection(p0, p1, sp0, sp1, &inter_points[intersect])) intersect++;
+      // printf("%d\n", intersect);
+      if (get_intersection(p2, p1, sp0, sp1, &inter_points[intersect])) intersect++;
+      printf("%d\n", intersect);
 
       // printf("%d\n", intersect);
 
 
       for (int i = 0; i < intersect; i++) {
-        printf("p%d: %f %f\n", i, inter_points[i].x, inter_points[i].y);
+        // printf("p%d: %f %f\n", i, inter_points[i].x, inter_points[i].y);
       }
       // if (intersect > 0) 
         // SDL_RenderDrawLine(tea->render, inter_points[0].x, inter_points[0].y, inter_points[1].x, inter_points[1].y);
       switch (intersect) {
         case 0: break;
         case 1: SDL_RenderDrawPoint(tea->render, inter_points[0].x, inter_points[0].y); break;
-        case 2: SDL_RenderDrawLine(tea->render, inter_points[0].x+250, inter_points[0].y, inter_points[1].x+250, inter_points[1].y); break;
+        case 2: SDL_RenderDrawLine(tea->render, inter_points[0].x, inter_points[0].y, inter_points[1].x, inter_points[1].y); break;
       }
 
       // float s = (float)cross_prod(q, vs1) / c;
@@ -452,7 +548,7 @@ void tea_render_triangle_fill(TRIANG_ARGS) {
 
       // if ((p0.x - p1.x) * (y - p0.y) - (p0.y - p1.y) * (x - p0.x) > 0 &&
       //     (p1.x - p2.x) * (y - p1.y) - (p1.y - p2.y) * (x - p1.x) > 0 &&
-      //     (p2.x - p0.x) * (y - p2.y) - (p2.y - p0.y) * (x - p2.x) > 0){
+      //     (p2.x - p0.x) * (y - p2.y) - dy * (x - p2.x) > 0){
       //       printf("porra eh, entra aqui n?\n");
       //       SDL_RenderDrawPoint(t->render, x, y);
       // }
