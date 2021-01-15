@@ -15,8 +15,14 @@ int main(int argc, char ** argv) {
 
   Tea *ctx = tea_context();
 
+  te_Texture *tex = tea_texture_load(ctx, "goblin.png");
+
+  float t = 0;
+  int frame = 0;
+
   while (!tea_should_close(ctx)) {
     tea_begin_render(ctx);
+
 
     x += spd * 0.002;
     if (x >= MATH_PI*2) x = 0;
@@ -50,9 +56,12 @@ int main(int argc, char ** argv) {
       v.y += 96;
       tea_draw_mode(ctx, TEA_FILL);
       tea_draw_circle(ctx, v, (ss+2)*8);
+
 			// tico_graphics_draw_circle((i+ss) * 16 - 32, 256 + ss*16, (ss+2)*8, tico_color(20+ss*107, 20+ss*32, 40+ss*64));
 		}
+    // tea_render_draw_color(ctx, tea_color(255, 0, 255));
 
+    // tea_draw_texture(ctx, tex, NULL, tea_point(32, 32));
     s *= 16; 
     tea_draw_mode(ctx, TEA_LINE);
     tea_draw_color(ctx, WHITE);
@@ -61,6 +70,19 @@ int main(int argc, char ** argv) {
     tea_draw_mode(ctx, TEA_LINE);
     tea_draw_rect(ctx, 0, 0, 32, 32);
     tea_draw_circle(ctx, (te_Point){320, 190}, 32);
+
+    
+    // Draw texture
+
+    t += 0.08f;
+    if (t >= 1) {
+      t = 0;
+      if (frame++ >= 4) frame = 0;
+    }
+
+    te_Rect r = tea_rect(16*frame, 0, 16, 16);
+    // tea_render_texture(ctx, tex, &r, NULL);
+    tea_draw_texture(ctx, tex, &r, tea_point(s+272, 64));
 
     tea_end_render(ctx);
     // printf("teste\n");

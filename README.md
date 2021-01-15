@@ -9,7 +9,8 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 
 ## TODOS:
 
-
+- [x] Load images (stb_image.h)
+- [ ] Load fonts (stb_font.h)
 - [ ] Window
 	- [ ] wrap SDL get and set functions (title, width, height, fullscreen, resizable, ...)
 - [ ] Input
@@ -26,12 +27,14 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 		- [ ] polygon
 	- [ ] textures
  	- [ ] render texture
+ 	- [ ] render text
 - [ ] Wrap for SDL_Renderer
 	- [ ] primitives
 		- [x] circle
 		- [x] triangle
 		- [ ] polygon
  	- [ ] CPU transforms
+ 	- [ ] render text
 - [ ] OpenGL batched render
  	- [ ] primitives
 		- [ ] circle
@@ -39,3 +42,4 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
  	- [ ] shaders
  	- [ ] framebuffers
  	- [ ] coordinate system (GPU transforms)
+ 	- [ ] render text

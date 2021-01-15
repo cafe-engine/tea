@@ -1,5 +1,8 @@
 #include "tea.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../external/stb_image.h"
+
 static Tea _ctx;
 static te_Config _conf;
 
@@ -39,6 +42,8 @@ Tea* tea_init(te_Config *c) {
 
   ctx->draw.triangle[TEA_LINE] = tea_render_triangle_line;
   ctx->draw.triangle[TEA_FILL] = tea_render_triangle_fill;
+
+  ctx->draw.texture = tea_render_texture;
 
   return ctx;
 }
@@ -125,7 +130,7 @@ void tea_end_render(Tea *ctx) {
       case TEA_DRAW_CIRCLE: tea_render_circle(ctx, cmd); break;
       case TEA_DRAW_RECT: ctx->draw.rect[cmd->draw.fill](ctx, cmd->draw.rect); break;
       case TEA_DRAW_TRIANGLE: ctx->draw.triangle[cmd->draw.fill](ctx, cmd->draw.triang.p0, cmd->draw.triang.p1, cmd->draw.triang.p2); break;
-      case TEA_DRAW_TEXTURE: break;
+      case TEA_DRAW_TEXTURE: ctx->draw.texture(ctx, cmd->draw.texture.tex, &cmd->draw.texture.dest, &cmd->draw.texture.src);
       
       case TEA_PUSH_CANVAS: break;
       case TEA_PUSH_TRANSFORM: break;
@@ -233,6 +238,27 @@ void tea_draw_triangle(Tea *ctx, te_Point p0, te_Point p1, te_Point p2) {
   // memcpy(cmd.draw.triang.p0, p0, sizeof(te_Point));
   // memcpy(cmd.draw.triang.p1, p1, sizeof(te_Point));
   // memcpy(cmd.draw.triang.p2, p2, sizeof(te_Point));
+
+  tea_push(ctx, cmd);
+}
+
+void tea_draw_texture(Tea *ctx, te_Texture *tex, te_Rect *r, te_Point p) {
+  te_Command cmd = tea_command(ctx, TEA_DRAW_TEXTURE);
+  cmd.draw.texture.tex = tex;
+
+  int x, y;
+  x = y = 0;
+  int w, h;
+  if (r) {
+    x = r->x;
+    y = r->y;
+    w = r->w;
+    h = r->h;
+  } else SDL_QueryTexture(tex, NULL, NULL, &w, &h);
+
+  cmd.draw.texture.dest = tea_rect(p.x, p.y, w*4, h*4);
+  cmd.draw.texture.src = tea_rect(x, y, w, h);
+  cmd.draw.color = ctx->_color;
 
   tea_push(ctx, cmd);
 }
@@ -561,8 +587,69 @@ void tea_render_triangle_line(TRIANG_ARGS) {
   tea_render_line(t, p1, p2);
   tea_render_line(t, p2, p0);
 }
-void tea_render_texture(Tea *t);
+void tea_render_texture(Tea *tea, te_Texture *t, te_Rect *dest, te_Rect *src) {
+  int w, h;
+  SDL_QueryTexture(t, NULL, NULL, &w, &h);
+  SDL_Rect d;
+  d.x = dest ? dest->x : 0;
+  d.y = dest ? dest->y : 0;
+  d.w = dest ? dest->w : w;
+  d.h = dest ? dest->h : h;
+
+  SDL_Rect s;
+  s.x = src ? src->x : 0;
+  s.y = src ? src->y : 0;
+  s.w = src ? src->w : w;
+  s.h = src ? src->h : h;
+  // printf("q\n");
+  // SDL_Rect r = (SDL_Rect){dest->x, dest->y, dest->w, dest->h};
+
+
+  SDL_RenderCopy(tea->render, t, &s, &d);
+}
 void tea_render_texture_ex(Tea *t);
+
+
+
+te_Texture* tea_texture(Tea *t, int w, int h, unsigned int format) {
+  return SDL_CreateTexture(t->render, format, SDL_TEXTUREACCESS_STATIC, w, h);
+}
+
+te_Texture* tea_texture_load(Tea *t, const char *str) {
+  int req_format = STBI_rgb_alpha;
+  int w, h, format;
+  unsigned char *data = stbi_load(str, &w, &h, &format, req_format);
+  TE_ASSERT(data != NULL, "failed to load image");
+
+  int depth, pitch;
+  Uint32 pixel_format;
+
+
+  if (req_format == STBI_rgb) {
+    depth = 24;
+    pitch = 3*w;
+    pixel_format = SDL_PIXELFORMAT_RGB24;
+  } else {
+    depth = 32;
+    pitch = 4*w;
+    pixel_format = SDL_PIXELFORMAT_RGBA32;
+  }
+
+  SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormatFrom(data, w, h, depth, pitch, pixel_format);
+
+  TE_ASSERT(surf != NULL, "Failed to create surface");
+
+  te_Texture *tex = SDL_CreateTextureFromSurface(t->render, surf);
+
+  TE_ASSERT(tex != NULL, "Failed to create texture");
+  SDL_FreeSurface(surf);
+
+  return tex;
+}
+
+te_Texture* tea_texture_memory(Tea *t, unsigned char *pixels, int w, int h, unsigned int format) {
+
+}
 
 /* Debug */
 

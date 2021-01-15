@@ -40,7 +40,7 @@ typedef struct te_Command te_Command;
 typedef struct te_DrawCommand te_DrawCommand;
 typedef struct te_StackCommand te_StackCommand;
 
-typedef struct te_Texture te_Texture;
+typedef SDL_Texture te_Texture;
 typedef struct te_Canvas te_Canvas;
 typedef struct te_Transform te_Transform;
 typedef struct te_Shader te_Shader;
@@ -74,7 +74,7 @@ typedef void(*DrawLineFn)(Tea*, te_Point, te_Point);
 typedef void(*DrawRectFn)(Tea*, te_Rect);
 typedef void(*DrawCircleFn)(Tea*, te_Point, TEA_VALUE);
 typedef void(*DrawTriangleFn)(Tea*, te_Point, te_Point, te_Point);
-typedef void(*DrawTextureFn)(Tea*, te_Rect, te_Rect);
+typedef void(*DrawTextureFn)(Tea*, te_Texture*, te_Rect*, te_Rect*);
 typedef void(*DrawTextureExFn)(Tea*, te_Rect, te_Rect, TEA_VALUE, te_Point, te_RenderFlip flip);
 
 // typedef enum {
@@ -156,6 +156,12 @@ struct te_Command {
     te_StackCommand stack;
   };
 };
+
+
+// struct te_Texture {
+//   SDL_Texture *tex;
+//   int width, height;
+// };
 
 struct te_Config {
   unsigned char title[100];
@@ -261,8 +267,13 @@ TE_API void tea_render_circle_fill(CIRC_ARGS);
 TE_API void tea_render_circle_line(CIRC_ARGS);
 TE_API void tea_render_triangle_fill(TRIANG_ARGS);
 TE_API void tea_render_triangle_line(TRIANG_ARGS);
-TE_API void tea_render_texture(Tea *render);
+TE_API void tea_render_texture(Tea *tea, te_Texture *t, te_Rect *dest, te_Rect *src);
 TE_API void tea_render_texture_ex(Tea *render);
+
+// Texture
+
+TE_API te_Texture* tea_texture(Tea *t, int w, int h, unsigned int format);
+TE_API te_Texture* tea_texture_load(Tea *t, const char *str);
 
 /* Debug */
 
