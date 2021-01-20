@@ -10,7 +10,7 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 ## TODOS:
 
 - [x] Load images (stb_image.h)
-- [ ] Load fonts (stb_font.h)
+- [x] Load fonts (stb_truetype.h)
 - [ ] Window
 	- [ ] wrap SDL get and set functions (title, width, height, fullscreen, resizable, ...)
 - [ ] Input

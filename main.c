@@ -15,8 +15,8 @@ int main(int argc, char ** argv) {
 
   Tea *ctx = tea_context();
 
-  te_Texture *tex = tea_texture_load(ctx, "goblin.png");
-
+  te_Texture tex = tea_texture_load(ctx, "goblin.png");
+  te_Font *font = tea_font_load(ctx, "extrude.ttf", 32);
   float t = 0;
   int frame = 0;
 
@@ -74,7 +74,7 @@ int main(int argc, char ** argv) {
     
     // Draw texture
 
-    t += 0.08f;
+    t += 0.008f;
     if (t >= 1) {
       t = 0;
       if (frame++ >= 4) frame = 0;
@@ -82,7 +82,17 @@ int main(int argc, char ** argv) {
 
     te_Rect r = tea_rect(16*frame, 0, 16, 16);
     // tea_render_texture(ctx, tex, &r, NULL);
+    // tea_render_texture(ctx, tex, &tea_rect(420, 0, 16*4, 16*4), &r);
+    // tea_render_texture_ex(ctx, tex, &tea_rect(420, 64, 16*4, 16*4), &r, t * -360.f, tea_point(8*4, 8*4), TEA_FLIP_V);
     tea_draw_texture(ctx, tex, &r, tea_point(s+272, 64));
+    float angle = s+15;
+    // s /= 16;
+    te_Point scale = tea_point(4, 4);
+    te_Point origin = tea_point(s-8, (sin(s/4)*2)+8);
+    tea_draw_texture_ex(ctx, tex, &r, tea_point(320, 190), angle, scale, origin);
+    // tea_draw_texture(ctx, tex, &r, tea_point(s+420, 64));
+    tea_draw_text(ctx, font, "hihihihih", tea_point(s, 16));
+
 
     tea_end_render(ctx);
     // printf("teste\n");
