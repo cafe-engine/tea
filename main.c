@@ -13,15 +13,16 @@ int main(int argc, char ** argv) {
   float x = 0;
 	float spd = 5;
 
-  Tea *ctx = tea_context();
-
-  te_Texture tex = tea_texture_load(ctx, "goblin.png");
-  te_Font *font = tea_font_load(ctx, "extrude.ttf", 32);
+  te_Texture tex = tea_texture_load("goblin.png");
+  te_Font *font = tea_font_load("extrude.ttf", 32);
+  te_Canvas canvas = tea_canvas(256, 64);
   float t = 0;
   int frame = 0;
 
-  while (!tea_should_close(ctx)) {
-    tea_begin_render(ctx);
+  float xx = 0;
+
+  while (!tea_should_close()) {
+    tea_begin_render();
 
 
     x += spd * 0.002;
@@ -41,35 +42,35 @@ int main(int argc, char ** argv) {
       te_Point v = {x, y};
       te_Point vv = {xx, yy};
       te_Color cc = tea_color(20+ss*107, 50+ss*32, 40+ss*64);
-      tea_draw_mode(ctx, TEA_FILL);
-      tea_draw_color(ctx, cc);
-			// tea_draw_circle(ctx, v, (ss+2)*8);
+      tea_draw_mode(TEA_FILL);
+      tea_draw_color(cc);
+			// tea_draw_circle(v, (ss+2)*8);
       int triang_sz = (ss+2)*12;
       // v.x += triang_sz;
       // v.y += triang_sz;
-      tea_draw_triangle(ctx, tea_point(v.x-triang_sz, v.y), tea_point(v.x, v.y-triang_sz), tea_point(v.x+triang_sz, v.y));
+      tea_draw_triangle(tea_point(v.x-triang_sz, v.y), tea_point(v.x, v.y-triang_sz), tea_point(v.x+triang_sz, v.y));
 
       v.y += 64;
       vv.y += 64;
-      tea_draw_line(ctx, v, vv);
+      tea_draw_line(v, vv);
 
       v.y += 96;
-      tea_draw_mode(ctx, TEA_FILL);
-      tea_draw_circle(ctx, v, (ss+2)*8);
+      tea_draw_mode(TEA_FILL);
+      tea_draw_circle(v, (ss+2)*8);
 
 			// tico_graphics_draw_circle((i+ss) * 16 - 32, 256 + ss*16, (ss+2)*8, tico_color(20+ss*107, 20+ss*32, 40+ss*64));
 		}
-    // tea_render_draw_color(ctx, tea_color(255, 0, 255));
+    // tea_render_draw_color(tea_color(255, 0, 255));
 
-    // tea_draw_texture(ctx, tex, NULL, tea_point(32, 32));
+    // tea_draw_texture(tex, NULL, tea_point(32, 32));
     s *= 16; 
-    tea_draw_mode(ctx, TEA_LINE);
-    tea_draw_color(ctx, WHITE);
-    tea_draw_triangle(ctx, tea_point(s, 80), tea_point(s + 256, 16), tea_point(s+256, 144));
+    tea_draw_mode(TEA_LINE);
+    tea_draw_color(WHITE);
+    tea_draw_triangle(tea_point(s, 80), tea_point(s + 256, 16), tea_point(s+256, 144));
 
-    tea_draw_mode(ctx, TEA_LINE);
-    tea_draw_rect(ctx, 0, 0, 32, 32);
-    tea_draw_circle(ctx, (te_Point){320, 190}, 32);
+    tea_draw_mode(TEA_LINE);
+    tea_draw_rect(0, 0, 32, 32);
+    tea_draw_circle((te_Point){320, 190}, 32);
 
     
     // Draw texture
@@ -81,26 +82,33 @@ int main(int argc, char ** argv) {
     }
 
     te_Rect r = tea_rect(16*frame, 0, 16, 16);
-    // tea_render_texture(ctx, tex, &r, NULL);
-    // tea_render_texture(ctx, tex, &tea_rect(420, 0, 16*4, 16*4), &r);
-    // tea_render_texture_ex(ctx, tex, &tea_rect(420, 64, 16*4, 16*4), &r, t * -360.f, tea_point(8*4, 8*4), TEA_FLIP_V);
-    tea_draw_texture(ctx, tex, &r, tea_point(s+272, 64));
+    // tea_render_texture(tex, &r, NULL);
+    // tea_render_texture(tex, &tea_rect(420, 0, 16*4, 16*4), &r);
+    // tea_render_texture_ex(tex, &tea_rect(420, 64, 16*4, 16*4), &r, t * -360.f, tea_point(8*4, 8*4), TEA_FLIP_V);
+    tea_push_canvas(canvas);
+    tea_draw_texture(tex, &r, tea_point(s+272, 64));
     float angle = s+15;
     // s /= 16;
-    te_Point scale = tea_point(4, 4);
+    te_Point scale = tea_point(s, s);
     te_Point origin = tea_point(s-8, (sin(s/4)*2)+8);
-    tea_draw_texture_ex(ctx, tex, &r, tea_point(320, 190), angle, scale, origin);
-    // tea_draw_texture(ctx, tex, &r, tea_point(s+420, 64));
-    tea_draw_text(ctx, font, "hihihihih", tea_point(s, 16));
+    tea_draw_texture_ex(tex, &r, tea_point(320, 190), angle, scale, origin);
+    // tea_draw_texture(tex, &r, tea_point(s+420, 64));
+    tea_draw_text(font, "hihihihih", tea_point(s, 16));
+    tea_pop_canvas();
+
+    if (tea_key_is_down(TEA_KEY_RIGHT)) xx++;
+    if (tea_key_is_down(TEA_KEY_LEFT)) xx--;
+
+    tea_draw_canvas(canvas, NULL, tea_point(xx, 150));
 
 
-    tea_end_render(ctx);
+    tea_end_render();
     // printf("teste\n");
   }
 
   // SDL_Delay(1000);
 
-  tea_terminate(NULL);
+  tea_terminate();
 
   return 0;
 }
