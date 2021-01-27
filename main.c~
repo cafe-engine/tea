@@ -98,8 +98,7 @@ int main(int argc, char ** argv) {
 
     if (tea_key_is_down(TEA_KEY_RIGHT)) xx++;
     if (tea_key_is_down(TEA_KEY_LEFT)) xx--;
-    if (tea_key_is_down(TEA_KEY_ESCAPE)) break;
-    
+
     tea_draw_canvas(canvas, NULL, tea_point(xx, 150));
 
 

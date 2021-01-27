@@ -121,13 +121,6 @@ struct Tea {
     te_Transform *transform[STACK_MAX];
     te_Shader *shader[STACK_MAX];
   } stack;
-  
-  struct {
-    double prev_time;
-    double time;
-    float delta;
-    int frame;
-  } timer;
 
   unsigned int cp; // command pointer
   te_Command commands[COMMAND_MAX];
@@ -436,6 +429,29 @@ void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
   tea_push(cmd);
 }
 
+
+void tea_draw_canvas(te_Canvas id, te_Rect *r, te_Point p) {
+  Tea *ctx = tea();
+  te_Command cmd = tea_command(TEA_DRAW_TEXTURE);
+  cmd.draw.texture.tex = tex;
+
+  int x, y;
+  x = y = 0;
+  int w, h;
+  if (r) {
+    x = r->x;
+    y = r->y;
+    w = r->w;
+    h = r->h;
+  } else SDL_QueryTexture(ctx->textures[tex], NULL, NULL, &w, &h);
+
+  cmd.draw.texture.dest = tea_rect(p.x, p.y, w, h);
+  cmd.draw.texture.src = tea_rect(x, y, w, h);
+  cmd.draw.color = ctx->_color;
+
+  tea_push(cmd);
+}
+
 void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale) {
   Tea *ctx = tea();
   te_Command cmd = tea_command(TEA_DRAW_TEXTURE);
@@ -496,7 +512,7 @@ void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle
 }
 
 void tea_draw_canvas(te_Canvas canvas, te_Rect *rect, te_Point pos) {
-  tea_draw_texture(canvas, rect, pos);
+
 }
 
 void tea_draw_text(te_Font *font, const char *text, te_Point pos) {
@@ -826,7 +842,7 @@ void tea_render_texture_ex(te_Texture id, te_Rect *dest, te_Rect *src, TEA_VALUE
 }
 
 void tea_render_canvas(te_Canvas id, te_Rect *dest, te_Rect *src) {
-  /*int w, h;
+  int w, h;
   Texture *tex = tea()->canvas[id];
   SDL_QueryTexture(tex, NULL, NULL,  &w, &h);
 
@@ -841,8 +857,7 @@ void tea_render_canvas(te_Canvas id, te_Rect *dest, te_Rect *src) {
   if (src) s = (SDL_Rect){src->x, src->y, src->w, src->h};
   else s = (SDL_Rect){0, 0, size.x, size.y};
   
-  SDL_RenderCopy(tea()->render, tex, &s, &r);*/
-  tea_render_texture(id, dest, src);
+  SDL_RenderCopy(tea()->render, tex, &s, &r);
 }
 
 void tea_render_text(te_Font *font, const char *text, te_Point pos) {
@@ -896,6 +911,7 @@ static int _create_texture(int w, int h, unsigned int format, int access) {
 
 
 te_Texture tea_texture(int w, int h, unsigned int format) {
+  Tea *t = tea();
   return _create_texture(w, h, format, SDL_TEXTUREACCESS_STATIC);
 }
 
@@ -934,6 +950,7 @@ te_Texture tea_texture_load(const char *str) {
 }
 
 te_Texture* tea_texture_memory(unsigned char *pixels, int w, int h, unsigned int format) {
+  Tea *t = tea();
   return NULL;
 }
 
@@ -1217,7 +1234,7 @@ void tea_render_triangle_fill0(TRIANG_ARGS) {
 static int _push_canvas(te_Canvas canvas) {
   int i = 0;
   while (i < MAX_CANVAS) {
-    if (tea()->canvas[i] == 0) {
+    if (tea()->canvas[i] == NULL) {
       tea()->canvas[i] = canvas;
       return i;
     }
@@ -1230,9 +1247,9 @@ static int _push_canvas(te_Canvas canvas) {
 }
 
 static int _create_canvas(int w, int h, unsigned int format) {
-  te_Canvas c = _create_texture(w, h, format, SDL_TEXTUREACCESS_TARGET);
-  _push_canvas(c);
-  return c;
+  Tea *tea = tea();
+  te_Canvas c = _create_texture(w, h, SDL_TEXTUREACCESS_TARGET, format);
+  return _push_canvas(c);
 }
 
 te_Canvas tea_canvas(int width, int height) {
@@ -1246,7 +1263,7 @@ te_Canvas tea_canvas(int width, int height) {
 
 void tea_canvas_set(te_Canvas *canvas) {
   if (canvas) {
-    SDL_SetRenderTarget(tea()->render, tea()->textures[*canvas]);
+    SDL_SetRenderTarget(tea()->render, tea()->canvas[*canvas]);
     tea_render_clear(BLACK);
   } else SDL_SetRenderTarget(tea()->render, NULL);
 

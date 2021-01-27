@@ -618,9 +618,6 @@ TE_API void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p);
 TE_API void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale);
 TE_API void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin);
 
-TE_API void tea_draw_canvas(te_Canvas canvas, te_Rect *r, te_Point p);
-TE_API void tea_draw_canvas_ex(te_Canvas canvas, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin);
-
 TE_API void tea_draw_text(te_Font *font, const char *text, te_Point pos);
 
 TE_API void tea_push_canvas(te_Canvas canvas);
