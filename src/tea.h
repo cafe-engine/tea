@@ -37,6 +37,8 @@
 #define TEA_VERSION "0.1.0"
 #define CAT(a, b) a b
 
+#define TEA_FPS 10
+
 #define TEA_VALUE float
 #define COMMAND_MAX 2048
 #define STACK_MAX 255
@@ -519,12 +521,9 @@ typedef enum {
   TEA_DRAW_TEXTURE,
   TEA_DRAW_TEXTURE_EX,
 
-  TEA_PUSH_CANVAS,
-  TEA_PUSH_TRANSFORM,
-  TEA_PUSH_SHADER,
-  TEA_POP_CANVAS,
-  TEA_POP_TRANSFORM,
-  TEA_POP_SHADER,
+  TEA_SET_CANVAS,
+  TEA_SET_TRANSFORM,
+  TEA_SET_SHADER,
 
   TEA_COMMAND_COUNT
 } TEA_COMMAND_;
@@ -564,6 +563,10 @@ struct te_Command {
   TEA_COMMAND_ type;
   union {
     te_DrawCommand draw;
+    struct {
+      te_Color color;
+      te_Canvas id;
+    } canvas;
     te_StackCommand stack;
   };
 };
@@ -601,9 +604,13 @@ TE_API void tea_repeat(int index);
 
 TE_API int tea_should_close();
 
+TE_API float tea_get_delta(void);
+TE_API int tea_get_framerate(void);
+
 TE_API void tea_begin_render();
 TE_API void tea_end_render();
 
+TE_API void tea_clear_color(te_Color color);
 TE_API void tea_draw_color(te_Color color);
 TE_API void tea_draw_mode(TEA_DRAW_MODE mode);
 
@@ -623,7 +630,7 @@ TE_API void tea_draw_canvas_ex(te_Canvas canvas, te_Rect *r, te_Point p, TEA_VAL
 
 TE_API void tea_draw_text(te_Font *font, const char *text, te_Point pos);
 
-TE_API void tea_push_canvas(te_Canvas canvas);
+TE_API void tea_set_canvas(te_Canvas canvas);
 TE_API te_Canvas tea_pop_canvas();
 
 // Window
@@ -690,7 +697,7 @@ TE_API int tea_font_get_text_height(te_Font *font, const char *text, int len);
 TE_API te_Canvas tea_canvas(int width, int height);
 TE_API void tea_attach_canvas(te_Canvas canvas);
 TE_API void tea_detach_canvas(void);
-TE_API void tea_canvas_set(te_Canvas *canvas);
+TE_API void tea_canvas_set(te_Canvas canvas);
 // TE_API void tea_canvas_draw(te_Canvas *canvas)
 
 

@@ -94,6 +94,7 @@ struct Tea {
   te_Window *window;
   te_Event event;
 
+  te_Color _clear_color;
   te_Color _color;
   TEA_DRAW_MODE _mode;
 
@@ -120,13 +121,16 @@ struct Tea {
     Canvas *canvas[STACK_MAX];
     te_Transform *transform[STACK_MAX];
     te_Shader *shader[STACK_MAX];
-  } stack;
-  
+  } stack;   
+
   struct {
-    double prev_time;
-    double time;
+    Uint32 prev_time;
+    Uint32 current_time;
     float delta;
-    int frame;
+    
+    Uint32 prev_fps_time;
+    Uint32 frame;
+    Uint32 fps;
   } timer;
 
   unsigned int cp; // command pointer
@@ -159,10 +163,12 @@ Tea* tea_init(te_Config *c) {
   Tea *ctx = tea_context();
   memset(ctx, 0, sizeof(*ctx));
 
+
+  ctx->_clear_color = BLACK;
   ctx->key_array = SDL_GetKeyboardState(NULL);
 
-  memset(ctx->textures, MAX_TEXTURES, sizeof(Texture*));
-  memset(ctx->canvas, MAX_CANVAS, sizeof(te_Canvas));
+  memset(ctx->textures, 0, MAX_TEXTURES * sizeof(Texture*));
+  memset(ctx->canvas, 0, MAX_CANVAS * sizeof(te_Canvas));
 
   ctx->window = tea_window_create((const char*)c->title, c->width, c->height, c->window_flags);
   ctx->render = tea_render_create(ctx->window, TEA_SOFTWARE_RENDER);
@@ -243,34 +249,67 @@ int tea_should_close() {
   return tea()->event.type == SDL_QUIT;
 }
 
+static void _push_canvas_stack(Canvas *canvas) {
+  tea()->stack.canvas[tea()->stack.cp++] = canvas;
+}
+
+static Canvas* _pop_canvas_stack(void) {
+  return tea()->stack.canvas[--tea()->stack.cp];
+}
+
 void tea_begin_render() {
   Tea *ctx = tea();
   ctx->cp = 0;
   SDL_PollEvent(&ctx->event);
   tea_render_clear((te_Color){0, 0, 0, 255});
+
+  ctx->timer.current_time = SDL_GetTicks();
+  ctx->timer.delta = ctx->timer.current_time - ctx->timer.prev_time;
+  ctx->timer.prev_time = ctx->timer.current_time;
+  
+  float delta = ctx->timer.current_time - ctx->timer.prev_fps_time;  
+  ctx->timer.frame++;
+  
+  if (delta >= TEA_FPS) {  
+    ctx->timer.fps = ctx->timer.frame;
+    ctx->timer.frame = 0;
+    ctx->timer.prev_fps_time = ctx->timer.current_time;
+  }
+  
+  // _push_canvas_stack(NULL);
+}
+
+float tea_get_delta() {
+  return tea()->timer.delta / 1000.f;
+}
+
+int tea_get_framerate() {
+  return tea()->timer.fps;
 }
 
 void tea_attach_canvas(te_Canvas canvas) {
-  tea_push_canvas(canvas);
-
+  if (canvas <= 0) return;
+  _push_canvas_stack(tea()->textures[tea()->canvas[canvas]]);
+  tea_set_canvas(canvas);
 }
 
 void tea_detach_canvas(void) {
 
 }
 
-void tea_push_canvas(te_Canvas canvas) {
-  te_Command cmd = tea_command(TEA_PUSH_CANVAS);
-  cmd.stack.canvas = canvas;
+void tea_set_canvas(te_Canvas canvas) {
+  te_Command cmd = tea_command(TEA_SET_CANVAS);
+  cmd.canvas.color = tea()->_clear_color;
+  cmd.canvas.id = canvas;
 
   tea_push(cmd);
 }
 
 te_Canvas tea_pop_canvas() {
   // tea()->cp--;
-  te_Command cmd = tea_command(TEA_POP_CANVAS);
+  // te_Command cmd = tea_command(TEA_POP_CANVAS);
   // cmd.s
-  tea_push(cmd);
+  // tea_push(cmd);
   return 0;
 }
 
@@ -281,7 +320,7 @@ static void tea_render_circle(te_Command *cmd) {
 void tea_end_render() {
   Tea *ctx = tea();
   // printf("%d\n", ctx->cp);
-  for (int i = 0; i < ctx->cp; i++) {
+  /*for (int i = 0; i < ctx->cp; i++) {
     te_Command *cmd = &ctx->commands[i];
     // if (cmd->type == TEA_COMMAND_DRAW) {
     tea_render_draw_color(cmd->draw.color);
@@ -296,28 +335,28 @@ void tea_end_render() {
       case TEA_DRAW_TEXTURE: ctx->draw.texture(cmd->draw.texture.tex, &cmd->draw.texture.dest, &cmd->draw.texture.src); break;
       case TEA_DRAW_TEXTURE_EX: ctx->draw.texture_ex(cmd->draw.texture.tex, &cmd->draw.texture.dest, &cmd->draw.texture.src, cmd->draw.texture.angle, cmd->draw.texture.origin, cmd->draw.texture.flip); break;
       
-      case TEA_PUSH_CANVAS: tea_canvas_set(&cmd->stack.canvas); break;
-      case TEA_PUSH_TRANSFORM: break;
-      case TEA_PUSH_SHADER: break;
-      case TEA_POP_CANVAS: tea_canvas_set(NULL); break;
-      case TEA_POP_TRANSFORM: break;
-      case TEA_POP_SHADER: break;
+      case TEA_SET_CANVAS: {  tea_canvas_set(cmd->canvas.id); tea_render_clear(cmd->canvas.color); } break;
+      case TEA_SET_TRANSFORM: break;
+      case TEA_SET_SHADER: break;
       case TEA_COMMAND_COUNT: break;
     }
     // }
-  }
+  }*/
+  // (void)_pop_canvas_stack();
 
   // SDL_RenderPresent(ctx->render->handle);
   tea_render_swap(ctx);
 }
 
+void tea_clear_color(te_Color color) {
+  tea()->_clear_color = color;
+}
 void tea_draw_color(te_Color color) {
-  Tea *ctx = tea();
-  ctx->_color = color;
+  tea()->_color = color;
+  tea_render_draw_color(color);
 }
 void tea_draw_mode(TEA_DRAW_MODE mode) {
-  Tea *ctx = tea();
-  ctx->_mode = mode;
+  tea()->_mode = mode;
 }
 
 void tea_draw_point(te_Point p) {
@@ -325,13 +364,14 @@ void tea_draw_point(te_Point p) {
   // tea_render_draw_color(ctx->render, color);
   // tea_render_point(ctx->render, p);
   // te_Command cmd = tea_command_draw(ctx, DRAW_POINT);
-  te_Command cmd = tea_command(TEA_DRAW_POINT);
-  // memcpy(cmd.draw.point, p, sizeof(te_Point));
+  
+  /*te_Command cmd = tea_command(TEA_DRAW_POINT);
   cmd.draw.point = p;
   cmd.draw.color = ctx->_color;
   cmd.draw.fill = 0;
 
-  tea_push(cmd);
+  tea_push(cmd);*/
+  tea_render_point(p);
 }
 
 void tea_draw_line(te_Point p0, te_Point p1) {
@@ -340,15 +380,14 @@ void tea_draw_line(te_Point p0, te_Point p1) {
   // // SDL_RenderDrawLine(ctx->render->handle, p0[0], p0[1], p1[0], p1[1]);
   // tea_render_line(ctx->render, p0, p1);
   // te_Command cmd = tea_command_draw(ctx, DRAW_LINE);
-  te_Command cmd = tea_command(TEA_DRAW_LINE);
-  // memcpy(cmd.draw.line.p0, p0, sizeof(te_Point));
-  // memcpy(cmd.draw.line.p1, p1, sizeof(te_Point));
+  /*te_Command cmd = tea_command(TEA_DRAW_LINE);
   cmd.draw.line.p0 = p0;
   cmd.draw.line.p1 = p1;
   cmd.draw.fill = 0;
   cmd.draw.color = ctx->_color;
 
-  tea_push(cmd);
+  tea_push(cmd);*/
+  tea_render_line(p0, p1);
 }
 
 void tea_draw_rect(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {
@@ -370,16 +409,17 @@ void tea_draw_rect(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {
   //   case TEA_LINE: tea_render_rect_line(ctx->render, r); break;
   // }
   // te_Command cmd = tea_command_draw(DRAW_RECT);
-  te_Command cmd = tea_command(TEA_DRAW_RECT);
+  /*te_Command cmd = tea_command(TEA_DRAW_RECT);
   cmd.draw.fill = ctx->_mode;
   cmd.draw.color = ctx->_color;
   cmd.draw.rect = tea_rect(x, y, w, h);
 
-  tea_push(cmd);
+  tea_push(cmd);*/
+  tea()->draw.rect[tea()->_mode](tea_rect(x, y, w, h));
 }
 
 void tea_draw_circle(te_Point p, TEA_VALUE radius) {
-Tea *ctx = tea();
+  Tea *ctx = tea();
 //   tea_render_draw_color(ctx->render, color);
 
 //   switch (mode)
@@ -388,36 +428,34 @@ Tea *ctx = tea();
 //     case TEA_LINE: tea_render_circle_line(ctx->render, p, radius); break;
   // }
   // te_Command cmd = tea_command_draw(DRAW_CIRCLE);
-  te_Command cmd = tea_command(TEA_DRAW_CIRCLE);
+  /*te_Command cmd = tea_command(TEA_DRAW_CIRCLE);
   cmd.draw.fill = ctx->_mode;
   cmd.draw.color = ctx->_color;
-  // memcpy(cmd.draw.circle.p, p, sizeof(te_Point));
   cmd.draw.circle.p = p;
   cmd.draw.circle.radius = radius;
 
-  tea_push(cmd);
+  tea_push(cmd);*/
+  tea()->draw.circle[tea()->_mode](p, radius);
 }
 
 void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2) {
   Tea *ctx = tea();
   // te_Command cmd = tea_command_draw(DRAW_TRIANGLE);
-  te_Command cmd = tea_command(TEA_DRAW_TRIANGLE);
+  /*te_Command cmd = tea_command(TEA_DRAW_TRIANGLE);
   cmd.draw.fill = ctx->_mode;
   cmd.draw.color = ctx->_color;
   cmd.draw.triang.p0 = p0;
   cmd.draw.triang.p1 = p1;
   cmd.draw.triang.p2 = p2;
-  // memcpy(cmd.draw.triang.p0, p0, sizeof(te_Point));
-  // memcpy(cmd.draw.triang.p1, p1, sizeof(te_Point));
-  // memcpy(cmd.draw.triang.p2, p2, sizeof(te_Point));
 
-  tea_push(cmd);
+  tea_push(cmd);*/
+  tea()->draw.triangle[tea()->_mode](p0, p1, p2);
 }
 
 void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
   Tea *ctx = tea();
-  te_Command cmd = tea_command(TEA_DRAW_TEXTURE);
-  cmd.draw.texture.tex = tex;
+  //te_Command cmd = tea_command(TEA_DRAW_TEXTURE);
+  //cmd.draw.texture.tex = tex;
 
   int x, y;
   x = y = 0;
@@ -429,11 +467,13 @@ void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
     h = r->h;
   } else SDL_QueryTexture(ctx->textures[tex], NULL, NULL, &w, &h);
 
-  cmd.draw.texture.dest = tea_rect(p.x, p.y, w, h);
-  cmd.draw.texture.src = tea_rect(x, y, w, h);
-  cmd.draw.color = ctx->_color;
+  //cmd.draw.texture.dest = tea_rect(p.x, p.y, w, h);
+  //cmd.draw.texture.src = tea_rect(x, y, w, h);
+  //cmd.draw.color = ctx->_color;
 
-  tea_push(cmd);
+  //tea_push(cmd);
+  
+  tea_render_texture(tex, &tea_rect(p.x, p.y, w, h), &tea_rect(x, y, w, h));
 }
 
 void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale) {
@@ -471,8 +511,8 @@ void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle
     flip |= TEA_FLIP_V;
   }
 
-  te_Command cmd = tea_command(TEA_DRAW_TEXTURE_EX);
-  cmd.draw.texture.tex = tex;
+  //te_Command cmd = tea_command(TEA_DRAW_TEXTURE_EX);
+  //cmd.draw.texture.tex = tex;
 
   int x, y;
   te_Point size;
@@ -484,15 +524,18 @@ void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle
     size.y = r->h;
   } else tea_texture_size(tex, &size);
 
-  cmd.draw.texture.dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
-  cmd.draw.texture.src = tea_rect(x, y, size.x, size.y);
-  cmd.draw.color = ctx->_color;
-  cmd.draw.texture.angle = angle;
-  cmd.draw.texture.flip = flip;
-  cmd.draw.texture.origin = tea_point(origin.x*scale.x, origin.y*scale.y);
+  //cmd.draw.texture.dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
+  //cmd.draw.texture.src = tea_rect(x, y, size.x, size.y);
+  //cmd.draw.color = ctx->_color;
+  //cmd.draw.texture.angle = angle;
+  //cmd.draw.texture.flip = flip;
+  //cmd.draw.texture.origin = tea_point(origin.x*scale.x, origin.y*scale.y);
 
 
-  tea_push(cmd);
+  //tea_push(cmd);
+  te_Rect dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
+  te_Rect src = tea_rect(x, y, size.x, size.y);
+  tea_render_texture_ex(tex, &dest, &src, angle, tea_point(origin.x*scale.x, origin.y*scale.y), flip);
 }
 
 void tea_draw_canvas(te_Canvas canvas, te_Rect *rect, te_Point pos) {
@@ -875,7 +918,7 @@ void tea_render_text(te_Font *font, const char *text, te_Point pos) {
 }
 
 static int _set_texture(Texture *tex) {
-  int i = 0;
+  int i = 1;
   while (i < MAX_TEXTURES) {
     if (tea()->textures[i] == NULL) {
       tea()->textures[i] = tex;
@@ -1244,12 +1287,12 @@ te_Canvas tea_canvas(int width, int height) {
   return canvas;
 }
 
-void tea_canvas_set(te_Canvas *canvas) {
-  if (canvas) {
-    SDL_SetRenderTarget(tea()->render, tea()->textures[*canvas]);
+void tea_canvas_set(te_Canvas canvas) {
+ /*if (canvas > 0) {
+    SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);
     tea_render_clear(BLACK);
-  } else SDL_SetRenderTarget(tea()->render, NULL);
-
+  } else SDL_SetRenderTarget(tea()->render, NULL);*/
+  SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);  
 }
 
 /*******************
