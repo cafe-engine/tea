@@ -21,6 +21,7 @@ int main(int argc, char ** argv) {
 
   float xx = 0;
 
+  printf("%d\n", canvas);
   while (!tea_should_close()) {
     tea_begin_render();
     float delta = tea_get_delta();
@@ -89,14 +90,15 @@ int main(int argc, char ** argv) {
     sprintf(text, "fps: %d", tea_get_framerate());
     tea_draw_text(font, text, tea_point(s, 16));
 
-    tea_clear_color(WHITE);
-    // tea_set_canvas(canvas);
+    // tea_clear_color(WHITE);
+    tea_set_canvas(canvas);
     
     // tea_draw_color(WHITE);
+    tea_draw_color(tea_color(255, 0, 0));
     tea_draw_rect(32, 32, 32, 64);
     
     // tea_clear_color(BLACK);
-    // tea_set_canvas(0);
+    tea_set_canvas(0);
     
     
     /*te_Rect r = tea_rect(16*frame, 0, 16, 16);
@@ -109,7 +111,7 @@ int main(int argc, char ** argv) {
     tea_draw_text(font, "hihihihih", tea_point(s, 16));
     tea_pop_canvas();*/
 
-    // tea_draw_texture(canvas, NULL, tea_point(128, 128));
+    tea_draw_texture(canvas, NULL, tea_point(128, 128));
 
     if (tea_key_is_down(TEA_KEY_RIGHT)) xx += 150 * tea_get_delta();
     if (tea_key_is_down(TEA_KEY_LEFT)) xx -= 150 * tea_get_delta();

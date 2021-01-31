@@ -37,7 +37,7 @@
 #define TEA_VERSION "0.1.0"
 #define CAT(a, b) a b
 
-#define TEA_FPS 10
+#define TEA_FPS 30
 
 #define TEA_VALUE float
 #define COMMAND_MAX 2048
@@ -705,21 +705,21 @@ TE_API void tea_canvas_set(te_Canvas canvas);
  *      Input      *
  *******************/
 
-TE_API int tea_key_is_down(int key);
-TE_API int tea_key_is_up(int key);
-TE_API int tea_key_was_pressed(int key);
-TE_API int tea_key_was_released(int key);
+TE_API int tea_keyboard_is_down(int key);
+TE_API int tea_keyboard_is_up(int key);
+TE_API int tea_keyboard_was_pressed(int key);
+TE_API int tea_keyboard_was_released(int key);
 
 TE_API int tea_mouse_is_down(int button);
 TE_API int tea_mouse_is_up(int button);
 TE_API int tea_mouse_was_pressed(int button);
 TE_API int tea_mouse_was_released(int button);
 
-TE_API int tea_joy_axis(int jid);
-TE_API int tea_joy_button_is_down(int jid, int button);
-TE_API int tea_joy_button_is_up(int jid, int button);
-TE_API int tea_joy_button_was_pressed(int jid, int button);
-TE_API int tea_joy_button_was_released(int jid, int button);
+TE_API int tea_joystick_axis(int jid, int axis);
+TE_API int tea_joystick_is_down(int jid, int button);
+TE_API int tea_joystick_is_up(int jid, int button);
+TE_API int tea_joystick_was_pressed(int jid, int button);
+TE_API int tea_joystick_was_released(int jid, int button);
 
 /* Debug */
 
