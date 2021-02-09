@@ -1,5 +1,7 @@
 #include "src/tea.h"
 
+#define GRAVITY 100
+
 #include <math.h>
 #define MATH_PI 3.14159
 
@@ -15,17 +17,19 @@ int main(int argc, char ** argv) {
 
   te_Texture tex = tea_texture_load("goblin.png");
   te_Font *font = tea_font_load("extrude.ttf", 32);
-  te_Canvas canvas = tea_canvas(256, 64);
+  te_Canvas canvas = tea_canvas(160, 95);
   float t = 0;
   int frame = 0;
 
   float xx = 0;
+  float yy = 0;
+  float accel = 0;
 
-  printf("%d\n", canvas);
   while (!tea_should_close()) {
     tea_begin_render();
     float delta = tea_get_delta();
 
+    // printf("%f\n", delta);
     x += spd * delta;
     if (x >= MATH_PI*2) x = 0;
     float s = sinf(x)+1;
@@ -82,40 +86,38 @@ int main(int argc, char ** argv) {
       if (frame++ >= 4) frame = 0;
     }
     
-    te_Rect r = tea_rect(16*frame, 0, 16, 16);
-    tea_draw_texture(tex, &r, tea_point(xx+s+272, 64));
     
-    char text[32];
-    int frame = tea_get_framerate();
-    sprintf(text, "fps: %d", tea_get_framerate());
-    tea_draw_text(font, text, tea_point(s, 16));
-
-    // tea_clear_color(WHITE);
     tea_set_canvas(canvas);
+    tea_render_clear(BLACK);
+    tea_draw_color(WHITE);
     
-    // tea_draw_color(WHITE);
-    tea_draw_color(tea_color(255, 0, 0));
-    tea_draw_rect(32, 32, 32, 64);
     
-    // tea_clear_color(BLACK);
+    float accel_dt = accel*delta;
+    if ((yy + 16)+(accel_dt) >= 95) {
+      accel = 0;
+      if (tea_keyboard_is_down(TEA_KEY_UP)) accel -= 80;
+    } else accel += GRAVITY*delta;
+    yy += accel * delta; 
+    
+    
+    tea_draw_text(font, "cu", tea_point(0, 0));
+    te_Rect r = tea_rect(16*frame, 0, 16, 16);
+    tea_draw_rect(xx, yy, 16, 16);
+    tea_draw_texture(tex, &r, tea_point(xx, yy));
     tea_set_canvas(0);
-    
-    
-    /*te_Rect r = tea_rect(16*frame, 0, 16, 16);
-    tea_push_canvas(canvas);
-    tea_draw_texture(tex, &r, tea_point(s+272, 64));
+
     float angle = s+15;
     te_Point scale = tea_point(s, s);
     te_Point origin = tea_point(s-8, (sin(s/4)*2)+8);
-    tea_draw_texture_ex(tex, &r, tea_point(320, 190), angle, scale, origin);
-    tea_draw_text(font, "hihihihih", tea_point(s, 16));
-    tea_pop_canvas();*/
-
-    tea_draw_texture(canvas, NULL, tea_point(128, 128));
-
-    if (tea_key_is_down(TEA_KEY_RIGHT)) xx += 150 * tea_get_delta();
-    if (tea_key_is_down(TEA_KEY_LEFT)) xx -= 150 * tea_get_delta();
-    if (tea_key_is_down(TEA_KEY_ESCAPE)) break;
+  
+    // tea_draw_texture(canvas, NULL, tea_point(0, 0));
+    tea_draw_texture_ex(canvas, NULL, tea_point(0, 0), 0, tea_point(4, 4), tea_point(0, 0));
+    
+    tea_draw_texture_ex(tex, &r, tea_point(320, 190), 0, scale, origin);
+        
+    if (tea_keyboard_is_down(TEA_KEY_RIGHT)) xx += 80 * tea_get_delta();
+    if (tea_keyboard_is_down(TEA_KEY_LEFT)) xx -= 80 * tea_get_delta();
+    if (tea_keyboard_is_down(TEA_KEY_ESCAPE)) break;
     
     // tea_draw_canvas(canvas, NULL, tea_point(xx, 150));
     tea_end_render();

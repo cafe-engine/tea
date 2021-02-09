@@ -3,9 +3,6 @@
 a tiny c lib that wraps SDL2 (and possibly GLFW in the future) for handle input, render and window.
 
 The idea is to create a modular render, that can be compiled with different renders. 
-Tea use a command based context, and push `Draw` and `Stack` commands to the command stack.
-
-A Stack command push/pop a Canvas/Shader/Transform to/from their respective stacks.
 
 ## TODOS:
 
@@ -15,7 +12,7 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 	- [ ] wrap SDL get and set functions (title, width, height, fullscreen, resizable, ...)
 - [ ] Input
 	- [ ] mouse input
-	- [ ] keyboard input
+	- [x] keyboard input
 	- [ ] joystick input
 - [ ] Software Render
 	- [ ] primitives
@@ -34,7 +31,7 @@ A Stack command push/pop a Canvas/Shader/Transform to/from their respective stac
 		- [x] triangle
 		- [ ] polygon
  	- [ ] CPU transforms
- 	- [ ] render text
+ 	- [x] render text
 - [ ] OpenGL batched render
  	- [ ] primitives
 		- [ ] circle

@@ -104,6 +104,11 @@ struct Tea {
   const Uint8* key_array;
 
   struct {
+    const Uint8* key_array;
+    const Uint8 old_key[TEA_KEY_COUNT];
+  } input;
+
+  struct {
     RenderPointFn point;
     RenderLineFn line;
     RenderRectFn rect[DRAW_MODE_COUNT];
@@ -162,7 +167,9 @@ Tea* tea_init(te_Config *c) {
 
 
   ctx->_clear_color = BLACK;
-  ctx->key_array = SDL_GetKeyboardState(NULL);
+  // ctx->key_array = SDL_GetKeyboardState(NULL);
+  ctx->input.key_array = SDL_GetKeyboardState(NULL);
+  memcpy(ctx->input.old_key, ctx->input.key_array, TEA_KEY_COUNT);
 
   memset(ctx->textures, 0, MAX_TEXTURES * sizeof(Texture*));
   memset(ctx->canvas, 0, MAX_CANVAS * sizeof(te_Canvas));
@@ -213,7 +220,8 @@ static Canvas* _pop_canvas_stack(void) {
 
 void tea_begin_render() {
   Tea *ctx = tea();
-  SDL_PollEvent(&ctx->event);
+  // SDL_PollEvent(&ctx->event);
+  tea_update_input();
   tea_render_clear((te_Color){0, 0, 0, 255});
 
   ctx->timer.current_time = SDL_GetTicks();
@@ -1097,19 +1105,33 @@ void tea_canvas_set(te_Canvas canvas) {
  *      Input      *
  *******************/
 
+int tea_update_input() {
+  memcpy(tea()->input.old_key, tea()->input.key_array, TEA_KEY_COUNT);
+  SDL_PollEvent(&tea()->event);  
+}
+
 int tea_keyboard_is_down(int key) {
-  return tea()->key_array[key];
+  return tea()->input.key_array[key];
 }
 
 int tea_keyboard_is_up(int key) {
   return !tea_keyboard_is_down(key);
 }
 
-int tea_keyboard_was_pressed(int key);
-int tea_keyboard_was_released(int key);
+int tea_keyboard_was_pressed(int key) {
+  return !tea()->input.old_key[key] && tea_keyboard_is_down(key);
+}
+int tea_keyboard_was_released(int key) {
+  return tea()->input.old_key[key] && tea_keyboard_is_up(key);
+}
 
-int tea_mouse_is_down(int button);
-int tea_mouse_is_up(int button);
+int tea_mouse_is_down(int button) {
+  return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(button);
+}
+int tea_mouse_is_up(int button) {
+  return !tea_mouse_is_down(button);
+}
+
 int tea_mouse_was_pressed(int button);
 int tea_mouse_was_released(int button);
 

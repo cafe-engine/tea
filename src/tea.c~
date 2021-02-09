@@ -104,6 +104,11 @@ struct Tea {
   const Uint8* key_array;
 
   struct {
+    const Uint8* key_array;
+    const Uint8 old_key[TEA_KEY_COUNT];
+  } input;
+
+  struct {
     RenderPointFn point;
     RenderLineFn line;
     RenderRectFn rect[DRAW_MODE_COUNT];
@@ -132,9 +137,6 @@ struct Tea {
     Uint32 frame;
     Uint32 fps;
   } timer;
-
-  unsigned int cp; // command pointer
-  te_Command commands[COMMAND_MAX];
 };
 
 static Tea _ctx;
@@ -165,7 +167,9 @@ Tea* tea_init(te_Config *c) {
 
 
   ctx->_clear_color = BLACK;
-  ctx->key_array = SDL_GetKeyboardState(NULL);
+  // ctx->key_array = SDL_GetKeyboardState(NULL);
+  ctx->input.key_array = SDL_GetKeyboardState(NULL);
+  memcpy(ctx->input.old_key, ctx->input.key_array, TEA_KEY_COUNT);
 
   memset(ctx->textures, 0, MAX_TEXTURES * sizeof(Texture*));
   memset(ctx->canvas, 0, MAX_CANVAS * sizeof(te_Canvas));
@@ -196,54 +200,11 @@ Tea* tea_context() {
 }
 
 void tea_terminate() {
-  // ctx = ctx ? ctx : &_ctx;
-  Tea *ctx = tea();
-
-
-  tea_window_destroy(ctx->window);
-  tea_render_destroy(ctx->render);
+  tea_window_destroy(tea()->window);
+  tea_render_destroy(tea()->render);
 
   SDL_Quit();
 }
-
-void tea_push(te_Command cmd) {
-  Tea *ctx = tea();
-  ctx->commands[ctx->cp++] = cmd;
-}
-te_Command* tea_pop(Tea *ctx) {
-  return &ctx->commands[--ctx->cp];
-}
-te_Command* tea_top(Tea *ctx) {
-  return &ctx->commands[ctx->cp-1];
-}
-void tea_repeat(int index) {
-  Tea *ctx = tea();
-  tea_push(ctx->commands[ctx->cp - index]);
-}
-
-te_Command tea_command(TEA_COMMAND_ type) {
-  te_Command cmd = {0};
-  cmd.type = type;
-
-  return cmd;
-}
-
-// te_Command tea_command_draw(Tea *ctx, TEA_DRAW_COMMAND_ type) {
-//   te_Command cmd = {0};
-//   cmd.type = TEA_COMMAND_DRAW;
-
-//   cmd.draw.type = type;
-
-//   return cmd;
-// }
-// te_Command tea_command_stack(Tea *ctx, TEA_STACK_COMMAND_ type) {
-//   te_Command cmd = {0};
-//   cmd.type = TEA_COMMAND_STACK;
-
-//   cmd.stack.type = type;
-
-//   return cmd;
-// }
 
 int tea_should_close() {
   return tea()->event.type == SDL_QUIT;
@@ -259,7 +220,6 @@ static Canvas* _pop_canvas_stack(void) {
 
 void tea_begin_render() {
   Tea *ctx = tea();
-  ctx->cp = 0;
   SDL_PollEvent(&ctx->event);
   tea_render_clear((te_Color){0, 0, 0, 255});
 
@@ -267,16 +227,10 @@ void tea_begin_render() {
   ctx->timer.delta = ctx->timer.current_time - ctx->timer.prev_time;
   ctx->timer.prev_time = ctx->timer.current_time;
   
-  float delta = ctx->timer.current_time - ctx->timer.prev_fps_time;  
+  // float delta = (ctx->timer.current_time - ctx->timer.prev_fps_time);
   ctx->timer.frame++;
   
-  if (delta >= TEA_FPS) {  
-    ctx->timer.fps = ctx->timer.frame;
-    ctx->timer.frame = 0;
-    ctx->timer.prev_fps_time = ctx->timer.current_time;
-  }
-  
-  // _push_canvas_stack(NULL);
+  SDL_Delay(TEA_FPS);
 }
 
 float tea_get_delta() {
@@ -298,18 +252,10 @@ void tea_detach_canvas(void) {
 }
 
 void tea_set_canvas(te_Canvas canvas) {
-  te_Command cmd = tea_command(TEA_SET_CANVAS);
-  cmd.canvas.color = tea()->_clear_color;
-  cmd.canvas.id = canvas;
-
-  tea_push(cmd);
+  tea_canvas_set(canvas);
 }
 
 te_Canvas tea_pop_canvas() {
-  // tea()->cp--;
-  // te_Command cmd = tea_command(TEA_POP_CANVAS);
-  // cmd.s
-  // tea_push(cmd);
   return 0;
 }
 
@@ -318,34 +264,7 @@ static void tea_render_circle(te_Command *cmd) {
 }
 
 void tea_end_render() {
-  Tea *ctx = tea();
-  // printf("%d\n", ctx->cp);
-  /*for (int i = 0; i < ctx->cp; i++) {
-    te_Command *cmd = &ctx->commands[i];
-    // if (cmd->type == TEA_COMMAND_DRAW) {
-    tea_render_draw_color(cmd->draw.color);
-    // if (cmd->type == TEA_DRAW_TRIANGLE) printf("ok\n");
-    switch(cmd->type) {
-      case TEA_COMMAND_NONE: break;
-      case TEA_DRAW_POINT: tea_render_point(cmd->draw.point); break;
-      case TEA_DRAW_LINE: tea_render_line(cmd->draw.line.p0, cmd->draw.line.p1); break;
-      case TEA_DRAW_CIRCLE: tea_render_circle(cmd); break;
-      case TEA_DRAW_RECT: ctx->draw.rect[cmd->draw.fill](cmd->draw.rect); break;
-      case TEA_DRAW_TRIANGLE: ctx->draw.triangle[cmd->draw.fill](cmd->draw.triang.p0, cmd->draw.triang.p1, cmd->draw.triang.p2); break;
-      case TEA_DRAW_TEXTURE: ctx->draw.texture(cmd->draw.texture.tex, &cmd->draw.texture.dest, &cmd->draw.texture.src); break;
-      case TEA_DRAW_TEXTURE_EX: ctx->draw.texture_ex(cmd->draw.texture.tex, &cmd->draw.texture.dest, &cmd->draw.texture.src, cmd->draw.texture.angle, cmd->draw.texture.origin, cmd->draw.texture.flip); break;
-      
-      case TEA_SET_CANVAS: {  tea_canvas_set(cmd->canvas.id); tea_render_clear(cmd->canvas.color); } break;
-      case TEA_SET_TRANSFORM: break;
-      case TEA_SET_SHADER: break;
-      case TEA_COMMAND_COUNT: break;
-    }
-    // }
-  }*/
-  // (void)_pop_canvas_stack();
-
-  // SDL_RenderPresent(ctx->render->handle);
-  tea_render_swap(ctx);
+  tea_render_swap(tea());
 }
 
 void tea_clear_color(te_Color color) {
@@ -360,103 +279,26 @@ void tea_draw_mode(TEA_DRAW_MODE mode) {
 }
 
 void tea_draw_point(te_Point p) {
-  Tea *ctx = tea();
-  // tea_render_draw_color(ctx->render, color);
-  // tea_render_point(ctx->render, p);
-  // te_Command cmd = tea_command_draw(ctx, DRAW_POINT);
-  
-  /*te_Command cmd = tea_command(TEA_DRAW_POINT);
-  cmd.draw.point = p;
-  cmd.draw.color = ctx->_color;
-  cmd.draw.fill = 0;
-
-  tea_push(cmd);*/
   tea_render_point(p);
 }
 
 void tea_draw_line(te_Point p0, te_Point p1) {
-  Tea *ctx = tea();
-  // tea_render_draw_color(ctx->render, color);
-  // // SDL_RenderDrawLine(ctx->render->handle, p0[0], p0[1], p1[0], p1[1]);
-  // tea_render_line(ctx->render, p0, p1);
-  // te_Command cmd = tea_command_draw(ctx, DRAW_LINE);
-  /*te_Command cmd = tea_command(TEA_DRAW_LINE);
-  cmd.draw.line.p0 = p0;
-  cmd.draw.line.p1 = p1;
-  cmd.draw.fill = 0;
-  cmd.draw.color = ctx->_color;
-
-  tea_push(cmd);*/
   tea_render_line(p0, p1);
 }
 
 void tea_draw_rect(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {
-  Tea *ctx = tea();
-  // tea_render_draw_color(ctx->render, color);
-  // te_Rect r;
-  // r.x = x;
-  // r.y = y;
-  // r.w = w;
-  // r.h = h;
-  // // SDL_Rect r;
-  // // r.x = x;
-  // // r.y = y;
-  // // r.w = w;
-  // // r.h = h;
-  // // SDL_RenderDrawRect(ctx->render->handle, &r);
-  // switch(mode) {
-  //   case TEA_FILL: tea_render_rect_fill(ctx->render, r); break;
-  //   case TEA_LINE: tea_render_rect_line(ctx->render, r); break;
-  // }
-  // te_Command cmd = tea_command_draw(DRAW_RECT);
-  /*te_Command cmd = tea_command(TEA_DRAW_RECT);
-  cmd.draw.fill = ctx->_mode;
-  cmd.draw.color = ctx->_color;
-  cmd.draw.rect = tea_rect(x, y, w, h);
-
-  tea_push(cmd);*/
   tea()->draw.rect[tea()->_mode](tea_rect(x, y, w, h));
 }
 
 void tea_draw_circle(te_Point p, TEA_VALUE radius) {
-  Tea *ctx = tea();
-//   tea_render_draw_color(ctx->render, color);
-
-//   switch (mode)
-//   {
-//     case TEA_FILL: tea_render_circle_fill(ctx->render, p, radius); break;
-//     case TEA_LINE: tea_render_circle_line(ctx->render, p, radius); break;
-  // }
-  // te_Command cmd = tea_command_draw(DRAW_CIRCLE);
-  /*te_Command cmd = tea_command(TEA_DRAW_CIRCLE);
-  cmd.draw.fill = ctx->_mode;
-  cmd.draw.color = ctx->_color;
-  cmd.draw.circle.p = p;
-  cmd.draw.circle.radius = radius;
-
-  tea_push(cmd);*/
   tea()->draw.circle[tea()->_mode](p, radius);
 }
 
 void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2) {
-  Tea *ctx = tea();
-  // te_Command cmd = tea_command_draw(DRAW_TRIANGLE);
-  /*te_Command cmd = tea_command(TEA_DRAW_TRIANGLE);
-  cmd.draw.fill = ctx->_mode;
-  cmd.draw.color = ctx->_color;
-  cmd.draw.triang.p0 = p0;
-  cmd.draw.triang.p1 = p1;
-  cmd.draw.triang.p2 = p2;
-
-  tea_push(cmd);*/
   tea()->draw.triangle[tea()->_mode](p0, p1, p2);
 }
 
 void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
-  Tea *ctx = tea();
-  //te_Command cmd = tea_command(TEA_DRAW_TEXTURE);
-  //cmd.draw.texture.tex = tex;
-
   int x, y;
   x = y = 0;
   int w, h;
@@ -465,22 +307,12 @@ void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
     y = r->y;
     w = r->w;
     h = r->h;
-  } else SDL_QueryTexture(ctx->textures[tex], NULL, NULL, &w, &h);
+  } else SDL_QueryTexture(tea()->textures[tex], NULL, NULL, &w, &h);
 
-  //cmd.draw.texture.dest = tea_rect(p.x, p.y, w, h);
-  //cmd.draw.texture.src = tea_rect(x, y, w, h);
-  //cmd.draw.color = ctx->_color;
-
-  //tea_push(cmd);
-  
   tea_render_texture(tex, &tea_rect(p.x, p.y, w, h), &tea_rect(x, y, w, h));
 }
 
 void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale) {
-  Tea *ctx = tea();
-  te_Command cmd = tea_command(TEA_DRAW_TEXTURE);
-  cmd.draw.texture.tex = tex;
-
   int x, y;
   x = y = 0;
   int w, h;
@@ -489,17 +321,16 @@ void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point sca
     y = r->y;
     w = r->w;
     h = r->h;
-  } else SDL_QueryTexture(ctx->textures[tex], NULL, NULL, &w, &h);
+  } else SDL_QueryTexture(tea()->textures[tex], NULL, NULL, &w, &h);
 
-  cmd.draw.texture.dest = tea_rect(p.x, p.y, w*scale.x, h*scale.y);
-  cmd.draw.texture.src = tea_rect(x, y, w, h);
-  cmd.draw.color = ctx->_color;
+  te_Rect dest = tea_rect(p.x, p.y, w*scale.x, h*scale.y);
+  te_Rect src = tea_rect(x, y, w, h);
+  // cmd.draw.color = ctx->_color;
 
-  tea_push(cmd);
+  tea_render_texture(tex, &dest, &src);
 }
 
 void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin) {
-  Tea *ctx = tea();
   te_RenderFlip flip = 0;
   if (scale.x < 0) {
     scale.x *= -1;
@@ -511,9 +342,6 @@ void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle
     flip |= TEA_FLIP_V;
   }
 
-  //te_Command cmd = tea_command(TEA_DRAW_TEXTURE_EX);
-  //cmd.draw.texture.tex = tex;
-
   int x, y;
   te_Point size;
   x = y = 0;
@@ -524,15 +352,6 @@ void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle
     size.y = r->h;
   } else tea_texture_size(tex, &size);
 
-  //cmd.draw.texture.dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
-  //cmd.draw.texture.src = tea_rect(x, y, size.x, size.y);
-  //cmd.draw.color = ctx->_color;
-  //cmd.draw.texture.angle = angle;
-  //cmd.draw.texture.flip = flip;
-  //cmd.draw.texture.origin = tea_point(origin.x*scale.x, origin.y*scale.y);
-
-
-  //tea_push(cmd);
   te_Rect dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
   te_Rect src = tea_rect(x, y, size.x, size.y);
   tea_render_texture_ex(tex, &dest, &src, angle, tea_point(origin.x*scale.x, origin.y*scale.y), flip);
@@ -547,37 +366,23 @@ void tea_draw_text(te_Font *font, const char *text, te_Point pos) {
   Tea *tea = tea();
 
   char *p = (char*)text;
-  // int w, h;
-  // SDL_QueryTexture(font->tex, NULL, NULL, &w, &h);
 
-
-  // r.x = pos.x;
-  // r.y = pos.y;
-  // r.w = w;
-  // r.h = h;
   SDL_SetTextureColorMod(tea->textures[font->tex], tea->_color.r, tea->_color.g, tea->_color.b);
   SDL_SetTextureAlphaMod(tea->textures[font->tex], tea->_color.a);
-  // tea_render_texture(tea, font->tex, &r, NULL);
+
   while(*p) {
     te_Rect r;
     tea_font_char_rect(font, *p, &r);
-    // te_Rect dest = tea_rect(pos.x, pos.y, r.w, r.h);
+
     int index = (int)*p;
     tea_draw_texture(font->tex, &r, pos);
     pos.x += font->c[index].ax;
-    // tea_render_texture(tea, font->tex, &dest, &r);
+
     p++;
   }
 }
 
-te_Window* tea_window_create(const char *title, int width, int height, int flags) {
-  // te_Window *w = (te_Window*)malloc(sizeof(*w));
-  // TE_ASSERT(w != NULL, "failed to create window");
-
-  // w->handle = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
-
-  // w->width = width;
-  // w->height = height;
+te_Window* tea_window_create(const char *title, int width, int height, int flags) {  
   te_Window *w = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
 
   return w;
@@ -617,7 +422,6 @@ void tea_render_destroy(te_Render *render) {
   if (!render) return;
 
   SDL_DestroyRenderer(render);
-  // free(render);
 }
 
 void tea_render_draw_color(te_Color color) {
@@ -640,7 +444,6 @@ void tea_render_swap(Tea *t) {
 
 void tea_render_point(te_Point p) {
   Tea *t = tea();
-  // tea_render_draw_color(render, color);
   TE_ASSERT(t != NULL, "Tea cannot be NULL");
   SDL_RenderDrawPoint(t->render, p.x, p.y);
 }
@@ -669,47 +472,47 @@ void tea_render_rect_line(RECT_ARGS) {
 
 void tea_render_circle_fill(CIRC_ARGS) {
   int x = 0;
-	int y = radius;
+  int y = radius;
 
-	int P = 1 - radius;
+  int P = 1 - radius;
 
-	if (radius > 0) SDL_RenderDrawLine(tea()->render, p.x + radius, p.y, p.x - radius, p.y);
+  if (radius > 0) SDL_RenderDrawLine(tea()->render, p.x + radius, p.y, p.x - radius, p.y);
 
-	while (x <= y) {
-		if (P < 0) P += 2*x + 3;
-		else {
-			P += (2*(x-y))+5;
-			y--;
-		}
-		x++;
+  while (x <= y) {
+    if (P < 0) P += 2*x + 3;
+    else {
+      P += (2*(x-y))+5;
+      y--;
+    }
+    x++;
 
-		if (x > y) break;
+    if (x > y) break;
 
-		SDL_RenderDrawLine(tea()->render, p.x - x, p.y + y, p.x + x, p.y + y);
-		SDL_RenderDrawLine(tea()->render, p.x + x, p.y - y, p.x - x, p.y - y);
+    SDL_RenderDrawLine(tea()->render, p.x - x, p.y + y, p.x + x, p.y + y);
+    SDL_RenderDrawLine(tea()->render, p.x + x, p.y - y, p.x - x, p.y - y);
 
-		if (x != y) {
-			SDL_RenderDrawLine(tea()->render, p.x - y, p.y + x, p.x + y, p.y + x);
-			SDL_RenderDrawLine(tea()->render, p.x + y, p.y - x, p.x - y, p.y - x);
-		}
-	}
+    if (x != y) {
+      SDL_RenderDrawLine(tea()->render, p.x - y, p.y + x, p.x + y, p.y + x);
+      SDL_RenderDrawLine(tea()->render, p.x + y, p.y - x, p.x - y, p.y - x);
+    }
+  }
 }
 
 void tea_render_circle_line(CIRC_ARGS) {
   int x = -radius;
-	int y = 0;
-	int r = radius;
-	int err = 2 - 2*r;
+  int y = 0;
+  int r = radius;
+  int err = 2 - 2*r;
 
-	do {
-		SDL_RenderDrawPoint(tea()->render, p.x - x, p.y + y);
-		SDL_RenderDrawPoint(tea()->render, p.x - y, p.y - x);
-		SDL_RenderDrawPoint(tea()->render, p.x + x, p.y - y);
-		SDL_RenderDrawPoint(tea()->render, p.x + y, p.y + x);
-		r = err;
-		if (r <= y) err += ++y*2+1;
-		if (r > x || err > y) err += ++x*2+1;
-	} while (x < 0);
+  do {
+    SDL_RenderDrawPoint(tea()->render, p.x - x, p.y + y);
+    SDL_RenderDrawPoint(tea()->render, p.x - y, p.y - x);
+    SDL_RenderDrawPoint(tea()->render, p.x + x, p.y - y);
+    SDL_RenderDrawPoint(tea()->render, p.x + y, p.y + x);
+    r = err;
+    if (r <= y) err += ++y*2+1;
+    if (r > x || err > y) err += ++x*2+1;
+  } while (x < 0);
 }
 
 static int cross_prod(te_Point v0, te_Point v1) {
@@ -1292,31 +1095,37 @@ void tea_canvas_set(te_Canvas canvas) {
     SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);
     tea_render_clear(BLACK);
   } else SDL_SetRenderTarget(tea()->render, NULL);*/
-  SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);  
+  Texture *tex = tea()->textures[canvas];
+  // printf("%p\n", tex);
+  SDL_SetRenderTarget(tea()->render, tex);  
 }
 
 /*******************
  *      Input      *
  *******************/
 
-int tea_key_is_down(int key) {
-  return tea()->key_array[key];
+int tea_update_input() {
+  
 }
 
-int tea_key_is_up(int key) {
-  return !tea_key_is_down(key);
+int tea_keyboard_is_down(int key) {
+  return tea()->input.key_array[key];
 }
 
-int tea_key_was_pressed(int key);
-int tea_key_was_released(int key);
+int tea_keyboard_is_up(int key) {
+  return !tea_keyboard_is_down(key);
+}
+
+int tea_keyboard_was_pressed(int key);
+int tea_keyboard_was_released(int key);
 
 int tea_mouse_is_down(int button);
 int tea_mouse_is_up(int button);
 int tea_mouse_was_pressed(int button);
 int tea_mouse_was_released(int button);
 
-int tea_joy_axis(int jid);
-int tea_joy_button_is_down(int jid, int button);
-int tea_joy_button_is_up(int jid, int button);
-int tea_joy_button_was_pressed(int jid, int button);
-int tea_joy_button_was_released(int jid, int button);
+int tea_joystick_axis(int jid, int axis);
+int tea_joystick_is_down(int jid, int button);
+int tea_joystick_is_up(int jid, int button);
+int tea_joystick_was_pressed(int jid, int button);
+int tea_joystick_was_released(int jid, int button);

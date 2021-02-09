@@ -1,5 +1,7 @@
 #include "src/tea.h"
 
+#define GRAVITY 100
+
 #include <math.h>
 #define MATH_PI 3.14159
 
@@ -20,6 +22,8 @@ int main(int argc, char ** argv) {
   int frame = 0;
 
   float xx = 0;
+  float yy = 0;
+  float accel = 0;
 
   while (!tea_should_close()) {
     tea_begin_render();
@@ -87,22 +91,35 @@ int main(int argc, char ** argv) {
     tea_render_clear(BLACK);
     tea_draw_color(WHITE);
     
+    
+    float accel_dt = accel*delta;
+    if ((yy + 16)+(accel_dt) >= 95) {
+      accel = 0;
+      if (tea_keyboard_is_down(TEA_KEY_UP)) accel -= 80;
+    } else accel += GRAVITY*delta;
+    yy += accel * delta; 
+    
+    
     tea_draw_text(font, "cu", tea_point(0, 0));
     te_Rect r = tea_rect(16*frame, 0, 16, 16);
-    tea_draw_rect(xx, 32, 16, 16);
-    tea_draw_texture(tex, &r, tea_point(xx, 32));
+    tea_draw_rect(xx, yy, 16, 16);
+    tea_draw_texture(tex, &r, tea_point(xx, yy));
     tea_set_canvas(0);
 
     float angle = s+15;
     te_Point scale = tea_point(s, s);
     te_Point origin = tea_point(s-8, (sin(s/4)*2)+8);
   
+    // tea_draw_texture(canvas, NULL, tea_point(0, 0));
     tea_draw_texture_ex(canvas, NULL, tea_point(0, 0), 0, tea_point(4, 4), tea_point(0, 0));
-    tea_draw_texture_ex(tex, &r, tea_point(320, 190), angle, scale, origin);
+    
+    tea_draw_texture_ex(tex, &r, tea_point(320, 190), 0, scale, origin);
         
-    if (tea_keyboard_is_down(TEA_KEY_RIGHT)) xx += 150 * tea_get_delta();
-    if (tea_keyboard_is_down(TEA_KEY_LEFT)) xx -= 150 * tea_get_delta();
+    if (tea_keyboard_is_down(TEA_KEY_RIGHT)) xx += 80 * tea_get_delta();
+    if (tea_keyboard_is_down(TEA_KEY_LEFT)) xx -= 80 * tea_get_delta();
     if (tea_keyboard_is_down(TEA_KEY_ESCAPE)) break;
+   
+    if (tea_mouse_is_down(TEA_BUTTON_RIGHT)) break;
     
     // tea_draw_canvas(canvas, NULL, tea_point(xx, 150));
     tea_end_render();
