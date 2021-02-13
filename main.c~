@@ -113,11 +113,23 @@ int main(int argc, char ** argv) {
     // tea_draw_texture(canvas, NULL, tea_point(0, 0));
     tea_draw_texture_ex(canvas, NULL, tea_point(0, 0), 0, tea_point(4, 4), tea_point(0, 0));
     
-    tea_draw_texture_ex(tex, &r, tea_point(320, 190), 0, scale, origin);
-        
+    tea_set_scale(tea_point(8, 8));
+    tea_set_position(tea_point(s, 0));
+    tea_draw_texture(tex, &r, tea_point(320, 190));
+    //tea_draw_texture_ex(tex, &r, tea_point(320, 190), 0, scale, origin);
+    tea_set_scale(tea_point(8, 8));
+    tea_draw_texture(tex, 0, tea_point(0, 0));
+    
+    tea_draw_circle(tea_point(0, 0), 8);
+    tea_set_transform(NULL);
+      
     if (tea_keyboard_is_down(TEA_KEY_RIGHT)) xx += 80 * tea_get_delta();
     if (tea_keyboard_is_down(TEA_KEY_LEFT)) xx -= 80 * tea_get_delta();
     if (tea_keyboard_is_down(TEA_KEY_ESCAPE)) break;
+   
+    if (tea_mouse_is_down(TEA_BUTTON_RIGHT)) break;
+    if (tea_keyboard_was_pressed(TEA_KEY_A)) printf("colé \n");
+    if (tea_keyboard_was_released(TEA_KEY_A)) printf("parceria\n");
     
     // tea_draw_canvas(canvas, NULL, tea_point(xx, 150));
     tea_end_render();

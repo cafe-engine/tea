@@ -46,6 +46,7 @@
 #define MAX_FONT_CHAR 256
 #define MAX_TEXTURES 64
 #define MAX_CANVAS 64
+#define MAX_TRANSFORMS 64
 
 #define STR(expr) #expr
 #define TE_ASSERT(expr, msg) if (!(expr)) tea_error(msg);
@@ -68,14 +69,10 @@ typedef SDL_Window te_Window;
 typedef SDL_Renderer te_Render;
 typedef SDL_Event te_Event;
 
-typedef struct te_Command te_Command;
-typedef struct te_DrawCommand te_DrawCommand;
-typedef struct te_StackCommand te_StackCommand;
-
 typedef unsigned int te_Texture;
 typedef struct te_Font te_Font;
 typedef unsigned int te_Canvas;
-typedef struct te_Transform te_Transform;
+// typedef struct te_Transform te_Transform;
 typedef struct te_Shader te_Shader;
 
 // typedef TEA_VALUE te_Vec2[2];
@@ -86,14 +83,14 @@ typedef struct { TEA_VALUE x, y; } te_Point;
 typedef struct { TEA_VALUE x, y, w, h; } te_Rect;
 typedef struct { unsigned char r, g, b, a; } te_Color;
 typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;
-
+typedef struct { te_Point position; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Transform;
 
 typedef enum {
-  TEA_BUTTON_LEFT = 1,
+  TEA_BUTTON_LEFT = 0,
   TEA_BUTTON_MIDDLE,
   TEA_BUTTON_RIGHT,
   
-  TEA_BUTTON_COUNT = 3
+  TEA_BUTTON_COUNT
 } TEA_MOUSE_BUTTON;
 
 // SDL Scancodes clone
@@ -384,7 +381,7 @@ typedef enum {
     TEA_KEY_LCTRL = 224,
     TEA_KEY_LSHIFT = 225,
     TEA_KEY_LALT = 226, /**< alt, option */
-    TEA_KEY_LGUI = 227, /**< windows, command (apple), meta */
+    TEA_KEY_LGUI = 227, /**< windows, command(apple), meta */
     TEA_KEY_RCTRL = 228,
     TEA_KEY_RSHIFT = 229,
     TEA_KEY_RALT = 230, /**< alt gr, option */
@@ -497,89 +494,6 @@ typedef void(*RenderTriangleFn)(te_Point, te_Point, te_Point);
 typedef void(*RenderTextureFn)(te_Texture, te_Rect*, te_Rect*);
 typedef void(*RenderTextureExFn)(te_Texture, te_Rect*, te_Rect*, TEA_VALUE, te_Point, te_RenderFlip flip);
 
-// typedef enum {
-//   DRAW_NONE = 0,
-//   DRAW_POINT,
-//   DRAW_LINE,
-//   DRAW_RECT,
-//   DRAW_CIRCLE,
-//   DRAW_TRIANGLE,
-//   DRAW_TEXTURE
-// } TEA_DRAW_COMMAND_;
-
-// typedef enum {
-//   STACK_NONE = 0,
-//   PUSH_CANVAS,
-//   PUSH_TRANSFORM,
-//   PUSH_SHADER,
-//   POP_CANVAS,
-//   POP_TRANSFORM,
-//   POP_SHADER
-// } TEA_STACK_COMMAND_;
-
-typedef enum {
-  TEA_COMMAND_NONE = 0,
-  // TEA_COMMAND_DRAW,
-  // TEA_COMMAND_STACK
-  TEA_DRAW_POINT,
-  TEA_DRAW_LINE,
-  TEA_DRAW_RECT,
-  TEA_DRAW_CIRCLE,
-  TEA_DRAW_TRIANGLE,
-  TEA_DRAW_TEXTURE,
-  TEA_DRAW_TEXTURE_EX,
-
-  TEA_SET_CANVAS,
-  TEA_SET_TRANSFORM,
-  TEA_SET_SHADER,
-
-  TEA_COMMAND_COUNT
-} TEA_COMMAND_;
-
-struct te_DrawCommand {
-  // TEA_DRAW_COMMAND_ type;
-  int fill;
-  union {
-    te_Point point;
-    struct { te_Point p0, p1; } line;
-    te_Rect rect;
-    struct { te_Point p; TEA_VALUE radius; } circle;
-    struct { te_Point p0, p1, p2; } triang;
-    struct {
-      te_Texture tex;
-      te_Rect dest;
-      te_Rect src;
-      TEA_VALUE angle;
-      te_Point origin;
-      te_RenderFlip flip;
-    } texture;
-  };
-
-  te_Color color;
-};
-
-struct te_StackCommand {
-  // TEA_STACK_COMMAND_ type;
-  union {
-    te_Canvas canvas;
-    te_Transform *transform;
-    te_Shader *shader;
-  };
-};
-
-struct te_Command {
-  TEA_COMMAND_ type;
-  union {
-    te_DrawCommand draw;
-    struct {
-      te_Color color;
-      te_Canvas id;
-    } canvas;
-    te_StackCommand stack;
-  };
-};
-
-
 // struct te_Texture {
 //   SDL_Texture *tex;
 //   int width, height;
@@ -602,14 +516,6 @@ TE_API Tea* tea_context();
 TE_API Tea* tea_init(struct te_Config *c);
 TE_API void tea_terminate(void);
 
-TE_API void tea_push(te_Command cmd);
-TE_API te_Command* tea_pop();
-TE_API te_Command* tea_top();
-TE_API void tea_repeat(int index);
-
-// TE_API te_Command tea_command_draw(Tea *tea, TEA_DRAW_COMMAND_ type);
-// TE_API te_Command tea_command_stack(Tea *tea, TEA_STACK_COMMAND_ type);
-
 TE_API int tea_should_close();
 
 TE_API float tea_get_delta(void);
@@ -621,6 +527,14 @@ TE_API void tea_end_render();
 TE_API void tea_clear_color(te_Color color);
 TE_API void tea_draw_color(te_Color color);
 TE_API void tea_draw_mode(TEA_DRAW_MODE mode);
+
+TE_API te_Transform tea_get_transform();
+TE_API void tea_set_transform(te_Transform *t);
+
+TE_API void tea_set_scale(te_Point scale);
+TE_API void tea_set_position(te_Point position);
+TE_API void tea_set_angle(TEA_VALUE angle);
+TE_API void tea_set_origin(te_Point origin);
 
 TE_API void tea_draw_point(te_Point p);
 TE_API void tea_draw_line(te_Point p0, te_Point p1);

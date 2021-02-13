@@ -88,6 +88,14 @@ typedef struct { unsigned char r, g, b, a; } te_Color;
 typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;
 
 
+typedef enum {
+  TEA_BUTTON_LEFT = 1,
+  TEA_BUTTON_MIDDLE,
+  TEA_BUTTON_RIGHT,
+  
+  TEA_BUTTON_COUNT = 3
+} TEA_MOUSE_BUTTON;
+
 // SDL Scancodes clone
 typedef enum {
     TEA_KEY_UNKNOWN = 0,
@@ -704,6 +712,8 @@ TE_API void tea_canvas_set(te_Canvas canvas);
 /*******************
  *      Input      *
  *******************/
+
+TE_API int tea_update_input();
 
 TE_API int tea_keyboard_is_down(int key);
 TE_API int tea_keyboard_is_up(int key);

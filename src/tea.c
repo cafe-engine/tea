@@ -101,11 +101,13 @@ struct Tea {
   Texture *textures[MAX_TEXTURES];
   te_Canvas canvas[MAX_CANVAS];
 
-  const Uint8* key_array;
+  te_Transform current_transform;
+  te_Transform transform[MAX_TRANSFORMS];
 
   struct {
     const Uint8* key_array;
-    const Uint8 old_key[TEA_KEY_COUNT];
+    Uint8 old_key[TEA_KEY_COUNT];
+    Uint8 old_button;    
   } input;
 
   struct {
@@ -165,6 +167,7 @@ Tea* tea_init(te_Config *c) {
   Tea *ctx = tea_context();
   memset(ctx, 0, sizeof(*ctx));
 
+  ctx->current_transform.scale = tea_point(1, 1);
 
   ctx->_clear_color = BLACK;
   // ctx->key_array = SDL_GetKeyboardState(NULL);
@@ -260,10 +263,6 @@ te_Canvas tea_pop_canvas() {
   return 0;
 }
 
-static void tea_render_circle(te_Command *cmd) {
-  tea()->draw.circle[cmd->draw.fill](cmd->draw.circle.p, cmd->draw.circle.radius);
-}
-
 void tea_end_render() {
   tea_render_swap(tea());
 }
@@ -279,6 +278,31 @@ void tea_draw_mode(TEA_DRAW_MODE mode) {
   tea()->_mode = mode;
 }
 
+te_Transform tea_get_transform() {
+  return tea()->current_transform;
+}
+
+void tea_set_transform(te_Transform *t) {
+  if (!t) tea()->current_transform = (te_Transform){0, 0, 0, 1, 1};
+  else tea()->current_transform = *t;
+}
+
+void tea_set_scale(te_Point scale) {
+  tea()->current_transform.scale = scale;
+}
+
+void tea_set_position(te_Point position) {
+  tea()->current_transform.position = position;
+}
+
+void tea_set_angle(TEA_VALUE angle) {
+  tea()->current_transform.angle = angle;
+}
+
+void tea_set_origin(te_Point origin) {
+  tea()->current_transform.origin = origin;
+}
+
 void tea_draw_point(te_Point p) {
   tea_render_point(p);
 }
@@ -288,15 +312,34 @@ void tea_draw_line(te_Point p0, te_Point p1) {
 }
 
 void tea_draw_rect(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {
-  tea()->draw.rect[tea()->_mode](tea_rect(x, y, w, h));
+  te_Transform *t = &tea()->current_transform;
+  tea()->draw.rect[tea()->_mode](tea_rect(x+t->position.x, y+t->position.y, w*t->scale.x, h*t->scale.y));
 }
 
 void tea_draw_circle(te_Point p, TEA_VALUE radius) {
-  tea()->draw.circle[tea()->_mode](p, radius);
+  te_Transform *t = &tea()->current_transform;  
+  tea()->draw.circle[tea()->_mode](tea_point(p.x+t->position.x, p.y+t->position.y), radius*t->scale.x);
+}
+
+static te_Point calc_vec_scale(te_Point p0, te_Point p1, te_Point scale) {
+  te_Point vec = tea_point(p1.x-p0.x, p1.y-p0.y);
+  vec.x *= scale.x;
+  vec.y *= scale.y;
+  
+  return tea_point(p0.x + vec.x, p0.y + vec.y);
 }
 
 void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2) {
-  tea()->draw.triangle[tea()->_mode](p0, p1, p2);
+  te_Transform *t = &tea()->current_transform;
+  te_Point tpoints[3];
+  
+  tpoints[0] = calc_vec_scale(p0, p1, t->scale);
+  tpoints[1] = calc_vec_scale(p1, p2, t->scale);
+  tpoints[2] = calc_vec_scale(p2, p0, t->scale);
+  
+  for (int i = 0; i < 3; i++) tpoints[i] = tea_point(tpoints[i].x+t->position.x, tpoints[i].y+t->position.y);
+  
+  tea()->draw.triangle[tea()->_mode](tpoints[0], tpoints[1], tpoints[2]);
 }
 
 void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
@@ -309,8 +352,9 @@ void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
     w = r->w;
     h = r->h;
   } else SDL_QueryTexture(tea()->textures[tex], NULL, NULL, &w, &h);
+  te_Transform *t = &tea()->current_transform;
 
-  tea_render_texture(tex, &tea_rect(p.x, p.y, w, h), &tea_rect(x, y, w, h));
+  tea_render_texture(tex, &tea_rect(p.x+t->position.x, p.y+t->position.y, w*t->scale.x, h*t->scale.y), &tea_rect(x, y, w, h));
 }
 
 void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale) {
@@ -1126,7 +1170,7 @@ int tea_keyboard_was_released(int key) {
 }
 
 int tea_mouse_is_down(int button) {
-  return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(button);
+  return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(button+1);
 }
 int tea_mouse_is_up(int button) {
   return !tea_mouse_is_down(button);
