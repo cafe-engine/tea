@@ -56,10 +56,32 @@ struct Texture {
 #else
 typedef SDL_Texture Texture;
 typedef SDL_Texture Canvas;
+
+struct te_Texture {
+  SDL_Texture* tex;
+  unsigned int width, height;
+  unsigned short filter[2];
+  unsigned short wrap[2];
+};
+
+struct te_RenderTarget {
+  union {
+    te_Texture tex;
+    struct {
+      SDL_Texture* stex;
+      unsigned int width, height;
+      unsigned short filter[2];
+      unsigned short wrap[2];
+    };
+  };
+#if defined(TEA_GL_RENDER)
+  unsigned int fbo;
+#endif
+};
 #endif
 
 struct te_Font {
-  te_Texture tex;
+  te_Texture* tex;
   struct {
     int ax; // advance.x
     int ay; // advance.y
@@ -98,8 +120,8 @@ struct Tea {
   te_Color _color;
   TEA_DRAW_MODE _mode;
 
-  Texture *textures[MAX_TEXTURES];
-  te_Canvas canvas[MAX_CANVAS];
+  te_Texture textures[MAX_TEXTURES];
+  te_RenderTarget targets[MAX_RTARGETS];
 
   te_Transform current_transform;
   te_Transform transform[MAX_TRANSFORMS];
@@ -109,16 +131,6 @@ struct Tea {
     Uint8 old_key[TEA_KEY_COUNT];
     Uint8 old_button;    
   } input;
-
-  struct {
-    RenderPointFn point;
-    RenderLineFn line;
-    RenderRectFn rect[DRAW_MODE_COUNT];
-    RenderCircleFn circle[DRAW_MODE_COUNT];
-    RenderTriangleFn triangle[DRAW_MODE_COUNT];
-    RenderTextureFn texture;
-    RenderTextureExFn texture_ex;
-  } draw;
 
   struct {
     unsigned char cp; // canvas pointer
@@ -174,26 +186,11 @@ Tea* tea_init(te_Config *c) {
   ctx->input.key_array = SDL_GetKeyboardState(NULL);
   memcpy(ctx->input.old_key, ctx->input.key_array, TEA_KEY_COUNT);
 
-  memset(ctx->textures, 0, MAX_TEXTURES * sizeof(Texture*));
-  memset(ctx->canvas, 0, MAX_CANVAS * sizeof(te_Canvas));
+  memset(ctx->textures, 0, MAX_TEXTURES * sizeof(te_Texture));
+  memset(ctx->targets, 0, MAX_RTARGETS * sizeof(te_RenderTarget));
 
   ctx->window = tea_window_create((const char*)c->title, c->width, c->height, c->window_flags);
   ctx->render = tea_render_create(ctx->window, TEA_SOFTWARE_RENDER);
-
-  ctx->draw.point = tea_render_point;
-  ctx->draw.line = tea_render_line;
-
-  ctx->draw.rect[TEA_LINE] = tea_render_rect_line;
-  ctx->draw.rect[TEA_FILL] = tea_render_rect_fill;
-
-  ctx->draw.circle[TEA_LINE] = tea_render_circle_line;
-  ctx->draw.circle[TEA_FILL] = tea_render_circle_fill;
-
-  ctx->draw.triangle[TEA_LINE] = tea_render_triangle_line;
-  ctx->draw.triangle[TEA_FILL] = tea_render_triangle_fill;
-
-  ctx->draw.texture = tea_render_texture;
-  ctx->draw.texture_ex = tea_render_texture_ex;
 
   return ctx;
 }
@@ -211,14 +208,6 @@ void tea_terminate() {
 
 int tea_should_close() {
   return tea()->event.type == SDL_QUIT;
-}
-
-static void _push_canvas_stack(Canvas *canvas) {
-  tea()->stack.canvas[tea()->stack.cp++] = canvas;
-}
-
-static Canvas* _pop_canvas_stack(void) {
-  return tea()->stack.canvas[--tea()->stack.cp];
 }
 
 void tea_begin_render() {
@@ -245,15 +234,15 @@ int tea_get_framerate() {
   return tea()->timer.fps;
 }
 
-void tea_attach_canvas(te_Canvas canvas) {
-  if (canvas <= 0) return;
-  _push_canvas_stack(tea()->textures[tea()->canvas[canvas]]);
-  tea_set_canvas(canvas);
-}
+// void tea_attach_canvas(te_Canvas canvas) {
+//   if (canvas <= 0) return;
+//   _push_canvas_stack(tea()->textures[tea()->targets[canvas]]);
+//   tea_set_canvas(canvas);
+// }
 
-void tea_detach_canvas(void) {
+// void tea_detach_canvas(void) {
 
-}
+// }
 
 void tea_set_canvas(te_Canvas canvas) {
   tea_canvas_set(canvas);
@@ -291,8 +280,8 @@ void tea_set_scale(te_Point scale) {
   tea()->current_transform.scale = scale;
 }
 
-void tea_set_position(te_Point position) {
-  tea()->current_transform.position = position;
+void tea_set_translate(te_Point translate) {
+  tea()->current_transform.translate = translate;
 }
 
 void tea_set_angle(TEA_VALUE angle) {
@@ -304,22 +293,179 @@ void tea_set_origin(te_Point origin) {
 }
 
 void tea_draw_point(te_Point p) {
-  tea_render_point(p);
+  SDL_RenderDrawPoint(tea()->render, p.x, p.y);
 }
 
 void tea_draw_line(te_Point p0, te_Point p1) {
-  tea_render_line(p0, p1);
+  SDL_RenderDrawLine(tea()->render, p0.x, p0.y, p1.x, p1.y);
 }
 
-void tea_draw_rect(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {
-  te_Transform *t = &tea()->current_transform;
-  tea()->draw.rect[tea()->_mode](tea_rect(x+t->position.x, y+t->position.y, w*t->scale.x, h*t->scale.y));
+// Draw Rects
+
+void _draw_fill_rect(te_Rect rect) {
+  SDL_Rect r;
+  r.x = rect.x;
+  r.y = rect.y;
+  r.w = rect.w;
+  r.h = rect.h;
+  SDL_RenderFillRect(tea()->render, &r);
 }
+void _draw_line_rect(te_Rect rect) {
+  SDL_Rect r;
+  r.x = rect.x;
+  r.y = rect.y;
+  r.w = rect.w;
+  r.h = rect.h;
+  SDL_RenderDrawRect(tea()->render, &r);
+}
+
+static RenderRectFn rect_fn[2] = {_draw_line_rect, _draw_fill_rect};
+
+void tea_draw_rect(te_Rect r) {
+  te_Transform *t = &tea()->current_transform;
+  // tea()->draw.rect[tea()->_mode](tea_rect(r.x+t->translate.x, r.y+t->translate.y, r.w*t->scale.x, r.h*t->scale.y));
+  rect_fn[tea()->_mode](tea_rect(r.x+t->translate.x, r.y+t->translate.y, r.w*t->scale.x, r.h*t->scale.y));
+}
+
+void tea_draw_rect_(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {
+  tea_draw_rect(tea_rect(x, y, w, h));
+}
+
+void tea_draw_rect_point(te_Point p, te_Point s) {
+  tea_draw_rect(tea_rect(p.x, p.y, s.x, s.y));
+}
+
+// Draw Circles
+
+void _draw_fill_circle(te_Point p, TEA_VALUE radius) {
+  int x = 0;
+  int y = radius;
+
+  int P = 1 - radius;
+
+  if (radius > 0) SDL_RenderDrawLine(tea()->render, p.x + radius, p.y, p.x - radius, p.y);
+
+  while (x <= y) {
+    if (P < 0) P += 2*x + 3;
+    else {
+      P += (2*(x-y))+5;
+      y--;
+    }
+    x++;
+
+    if (x > y) break;
+
+    SDL_RenderDrawLine(tea()->render, p.x - x, p.y + y, p.x + x, p.y + y);
+    SDL_RenderDrawLine(tea()->render, p.x + x, p.y - y, p.x - x, p.y - y);
+
+    if (x != y) {
+      SDL_RenderDrawLine(tea()->render, p.x - y, p.y + x, p.x + y, p.y + x);
+      SDL_RenderDrawLine(tea()->render, p.x + y, p.y - x, p.x - y, p.y - x);
+    }
+  }
+}
+
+void _draw_line_circle(te_Point p, TEA_VALUE radius) {
+  int x = -radius;
+  int y = 0;
+  int r = radius;
+  int err = 2 - 2*r;
+
+  do {
+    SDL_RenderDrawPoint(tea()->render, p.x - x, p.y + y);
+    SDL_RenderDrawPoint(tea()->render, p.x - y, p.y - x);
+    SDL_RenderDrawPoint(tea()->render, p.x + x, p.y - y);
+    SDL_RenderDrawPoint(tea()->render, p.x + y, p.y + x);
+    r = err;
+    if (r <= y) err += ++y*2+1;
+    if (r > x || err > y) err += ++x*2+1;
+  } while (x < 0);
+}
+
+static RenderCircleFn circle_fn[2] = {_draw_line_circle, _draw_fill_circle};
 
 void tea_draw_circle(te_Point p, TEA_VALUE radius) {
   te_Transform *t = &tea()->current_transform;  
-  tea()->draw.circle[tea()->_mode](tea_point(p.x+t->position.x, p.y+t->position.y), radius*t->scale.x);
+  // tea()->draw.circle[tea()->_mode](tea_point(p.x+t->translate.x, p.y+t->translate.y), radius*t->scale.x);
+  circle_fn[tea()->_mode](tea_point(p.x+t->translate.x, p.y+t->translate.y), radius*t->scale.x);
 }
+
+// Draw Triangles
+
+static void fill_bottom_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
+  // float invslope0 = (p1.x - p0.x) / (p1.y - p0.y);
+  // float invslope1 = (p2.x - p0.x) / (p2.y - p0.y);
+  int dy = (p2.y - p0.y);
+  float invslope0 = (p1.x - p0.x) / dy;
+  float invslope1 = (p2.x - p0.x) / dy;
+
+  float curx1 = p0.x;
+  float curx2 = p0.x;
+
+  int scanline_y;
+  for (scanline_y = p0.y; scanline_y <= p1.y; scanline_y++) {
+    tea_render_line(tea_point(curx1, scanline_y), tea_point(curx2, scanline_y));
+    curx1 += invslope0;
+    curx2 += invslope1;
+  }
+}
+
+static void fill_top_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
+  int dy = (p2.y - p0.y);
+  float invslope0 = (p2.x - p0.x) / dy;
+  float invslope1 = (p2.x - p1.x) / dy;
+
+  float curx1 = p2.x;
+  float curx2 = p2.x;
+
+  int scanline_y;
+  for (scanline_y = p2.y; scanline_y > p1.y; scanline_y--) {
+    tea_render_line(tea_point(curx1, scanline_y), tea_point(curx2, scanline_y));
+    curx1 -= invslope0;
+    curx2 -= invslope1;
+  }
+}
+
+static void points_ord_y(te_Point *points, int len) {
+  for (int i = 0; i < len; i++) {
+    for (int j = 0; j < len-1; j++) {
+      if (points[j].y < points[j+1].y) continue;
+      te_Point aux = points[j];
+      points[j] = points[j+1];
+      points[j+1] = aux;
+    }
+  }
+}
+
+void _draw_fill_triangle(te_Point p0, te_Point p1, te_Point p2) {
+  te_Point points[3];
+  points[0] = p0;
+  points[1] = p1;
+  points[2] = p2;
+
+  points_ord_y(points, 3);
+
+  if (points[1].y == points[2].y) fill_bottom_flat_triangle(points[0], points[1], points[2]);
+  else if (points[0].y == points[1].y) fill_bottom_flat_triangle(points[0], points[1], points[2]);
+  else {
+    te_Point p = tea_point(
+      (points[0].x + ((points[1].y - points[0].y) / (points[2].y - points[0].y)) * (points[2].x - points[0].x)),
+      points[1].y
+      );
+
+    fill_bottom_flat_triangle(points[0], points[1], p);
+    fill_top_flat_triangle(points[1], p, points[2]);
+  }
+}
+
+void _draw_line_triangle(te_Point p0, te_Point p1, te_Point p2) {
+  // printf("qqqq\n");
+  tea_draw_line(p0, p1);
+  tea_draw_line(p1, p2);
+  tea_draw_line(p2, p0);
+}
+
+static RenderTriangleFn triangle_fn[2] = {_draw_line_triangle, _draw_fill_triangle};
 
 static te_Point calc_vec_scale(te_Point p0, te_Point p1, te_Point scale) {
   te_Point vec = tea_point(p1.x-p0.x, p1.y-p0.y);
@@ -337,45 +483,78 @@ void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2) {
   tpoints[1] = calc_vec_scale(p1, p2, t->scale);
   tpoints[2] = calc_vec_scale(p2, p0, t->scale);
   
-  for (int i = 0; i < 3; i++) tpoints[i] = tea_point(tpoints[i].x+t->position.x, tpoints[i].y+t->position.y);
+  for (int i = 0; i < 3; i++) tpoints[i] = tea_point(tpoints[i].x+t->translate.x, tpoints[i].y+t->translate.y);
   
-  tea()->draw.triangle[tea()->_mode](tpoints[0], tpoints[1], tpoints[2]);
+  // tea()->draw.triangle[tea()->_mode](tpoints[0], tpoints[1], tpoints[2]);
+  triangle_fn[tea()->_mode](tpoints[0], tpoints[1], tpoints[2]);
 }
 
-void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p) {
+// Draw textures
+
+void tea_draw_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
+  te_Point sz;
+  tea_texture_size(tex, &sz);
+  SDL_Rect d;
+  te_Transform *t = &tea()->current_transform;
+  d.x = dest ? (dest->x - t->origin.x + t->translate.x) : 0;
+  d.y = dest ? (dest->y - t->origin.y + t->translate.y) : 0;
+  d.w = dest ? dest->w*t->scale.x : sz.x;
+  d.h = dest ? dest->h*t->scale.y : sz.y;
+
+  SDL_Rect s;
+  s.x = src ? src->x : 0;
+  s.y = src ? src->y : 0;
+  s.w = src ? src->w : sz.x;
+  s.h = src ? src->h : sz.y;
+
+  SDL_RenderCopy(tea()->render, tex->tex, &s, &d);
+}
+
+void tea_draw_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point origin, te_RenderFlip flip) {
+  te_Point size;
+  tea_texture_size(tex, &size);
+  SDL_Rect d;
+  te_Transform *t = &tea()->current_transform;
+  d.x = (dest ? (dest->x - t->origin.x + t->translate.x) : 0) - origin.x;
+  d.y = (dest ? (dest->y - t->origin.x + t->translate.y) : 0) - origin.y;
+  d.w = dest ? (dest->w*t->scale.x) : size.x - origin.x;
+  d.h = dest ? (dest->h*t->scale.y) : size.y - origin.y;
+
+  SDL_Rect s;
+  s.x = src ? src->x : 0;
+  s.y = src ? src->y : 0;
+  s.w = src ? src->w : size.x;
+  s.h = src ? src->h : size.y;
+
+  SDL_Point sdl_origin = {origin.x, origin.y};
+
+  SDL_RenderCopyEx(tea()->render, tex->tex, &s, &d, angle, &sdl_origin, (SDL_RendererFlip)flip);
+}
+
+// Draw images
+
+void tea_draw_image(te_Image img, te_Rect *r, te_Point p) {
   int x, y;
   x = y = 0;
   int w, h;
+  te_Texture *tex = &tea()->textures[img];
   if (r) {
     x = r->x;
     y = r->y;
     w = r->w;
     h = r->h;
-  } else SDL_QueryTexture(tea()->textures[tex], NULL, NULL, &w, &h);
+  } else SDL_QueryTexture(tex->tex, NULL, NULL, &w, &h);
   te_Transform *t = &tea()->current_transform;
 
-  tea_render_texture(tex, &tea_rect(p.x+t->position.x, p.y+t->position.y, w*t->scale.x, h*t->scale.y), &tea_rect(x, y, w, h));
+  TEA_VALUE px, py;
+  px = p.x - t->origin.x + t->translate.x;
+  py = p.y - t->origin.y + t->translate.y;
+
+  tea_draw_texture(tex, &tea_rect(px, py, w*t->scale.x, h*t->scale.y), &tea_rect(x, y, w, h));
 }
 
-void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale) {
-  int x, y;
-  x = y = 0;
-  int w, h;
-  if (r) {
-    x = r->x;
-    y = r->y;
-    w = r->w;
-    h = r->h;
-  } else SDL_QueryTexture(tea()->textures[tex], NULL, NULL, &w, &h);
-
-  te_Rect dest = tea_rect(p.x, p.y, w*scale.x, h*scale.y);
-  te_Rect src = tea_rect(x, y, w, h);
-  // cmd.draw.color = ctx->_color;
-
-  tea_render_texture(tex, &dest, &src);
-}
-
-void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin) {
+void tea_draw_image_ex(te_Image img, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin) {
+  te_Texture *tex = &tea()->textures[img];
   te_RenderFlip flip = 0;
   if (scale.x < 0) {
     scale.x *= -1;
@@ -399,11 +578,14 @@ void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle
 
   te_Rect dest = tea_rect(p.x, p.y, size.x*scale.x, size.y*scale.y);
   te_Rect src = tea_rect(x, y, size.x, size.y);
-  tea_render_texture_ex(tex, &dest, &src, angle, tea_point(origin.x*scale.x, origin.y*scale.y), flip);
+  tea_draw_texture_ex(tex, &dest, &src, angle, tea_point(origin.x*scale.x, origin.y*scale.y), flip);
 }
 
 void tea_draw_canvas(te_Canvas canvas, te_Rect *rect, te_Point pos) {
-  tea_draw_texture(canvas, rect, pos);
+  // tea_draw_texture(canvas, rect, pos);
+  te_RenderTarget *target = &tea()->targets[canvas];
+
+  tea_draw_texture(&target->tex, NULL, NULL);
 }
 
 void tea_draw_text(te_Font *font, const char *text, te_Point pos) {
@@ -412,15 +594,16 @@ void tea_draw_text(te_Font *font, const char *text, te_Point pos) {
 
   char *p = (char*)text;
 
-  SDL_SetTextureColorMod(tea->textures[font->tex], tea->_color.r, tea->_color.g, tea->_color.b);
-  SDL_SetTextureAlphaMod(tea->textures[font->tex], tea->_color.a);
+  SDL_SetTextureColorMod(font->tex->tex, tea->_color.r, tea->_color.g, tea->_color.b);
+  SDL_SetTextureAlphaMod(font->tex->tex, tea->_color.a);
 
   while(*p) {
     te_Rect r;
     tea_font_char_rect(font, *p, &r);
 
     int index = (int)*p;
-    tea_draw_texture(font->tex, &r, pos);
+    tea_draw_texture(font->tex, &tea_rect(pos.x, pos.y, r.w, r.h), &r);
+    // tea_draw_texture(font->tex, &r, pos);
     pos.x += font->c[index].ax;
 
     p++;
@@ -488,76 +671,12 @@ void tea_render_swap(Tea *t) {
 }
 
 void tea_render_point(te_Point p) {
-  Tea *t = tea();
-  TE_ASSERT(t != NULL, "Tea cannot be NULL");
-  SDL_RenderDrawPoint(t->render, p.x, p.y);
+  
 }
 void tea_render_line(te_Point p0, te_Point p1) {
   Tea *t = tea();
   TE_ASSERT(t != NULL, "Tea cannot be NULL");
   SDL_RenderDrawLine(t->render, p0.x, p0.y, p1.x, p1.y);
-}
-
-void tea_render_rect_fill(RECT_ARGS) {
-  SDL_Rect r;
-  r.x = rect.x;
-  r.y = rect.y;
-  r.w = rect.w;
-  r.h = rect.h;
-  SDL_RenderFillRect(tea()->render, &r);
-}
-void tea_render_rect_line(RECT_ARGS) {
-  SDL_Rect r;
-  r.x = rect.x;
-  r.y = rect.y;
-  r.w = rect.w;
-  r.h = rect.h;
-  SDL_RenderDrawRect(tea()->render, &r);
-}
-
-void tea_render_circle_fill(CIRC_ARGS) {
-  int x = 0;
-  int y = radius;
-
-  int P = 1 - radius;
-
-  if (radius > 0) SDL_RenderDrawLine(tea()->render, p.x + radius, p.y, p.x - radius, p.y);
-
-  while (x <= y) {
-    if (P < 0) P += 2*x + 3;
-    else {
-      P += (2*(x-y))+5;
-      y--;
-    }
-    x++;
-
-    if (x > y) break;
-
-    SDL_RenderDrawLine(tea()->render, p.x - x, p.y + y, p.x + x, p.y + y);
-    SDL_RenderDrawLine(tea()->render, p.x + x, p.y - y, p.x - x, p.y - y);
-
-    if (x != y) {
-      SDL_RenderDrawLine(tea()->render, p.x - y, p.y + x, p.x + y, p.y + x);
-      SDL_RenderDrawLine(tea()->render, p.x + y, p.y - x, p.x - y, p.y - x);
-    }
-  }
-}
-
-void tea_render_circle_line(CIRC_ARGS) {
-  int x = -radius;
-  int y = 0;
-  int r = radius;
-  int err = 2 - 2*r;
-
-  do {
-    SDL_RenderDrawPoint(tea()->render, p.x - x, p.y + y);
-    SDL_RenderDrawPoint(tea()->render, p.x - y, p.y - x);
-    SDL_RenderDrawPoint(tea()->render, p.x + x, p.y - y);
-    SDL_RenderDrawPoint(tea()->render, p.x + y, p.y + x);
-    r = err;
-    if (r <= y) err += ++y*2+1;
-    if (r > x || err > y) err += ++x*2+1;
-  } while (x < 0);
 }
 
 static int cross_prod(te_Point v0, te_Point v1) {
@@ -586,190 +705,107 @@ static int get_intersection(te_Point p0, te_Point p1, te_Point p2, te_Point p3, 
   return 1;
 }
 
-static void fill_bottom_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
-  // float invslope0 = (p1.x - p0.x) / (p1.y - p0.y);
-  // float invslope1 = (p2.x - p0.x) / (p2.y - p0.y);
-  int dy = (p2.y - p0.y);
-  float invslope0 = (p1.x - p0.x) / dy;
-  float invslope1 = (p2.x - p0.x) / dy;
+// void tea_render_texture(te_Texture id, te_Rect *dest, te_Rect *src) {
+//   te_Point sz;
+//   // SDL_QueryTexture(t, NULL, NULL, &w, &h);
+//   tea_texture_size(id, &sz);
+//   SDL_Rect d;
+//   d.x = dest ? dest->x : 0;
+//   d.y = dest ? dest->y : 0;
+//   d.w = dest ? dest->w : sz.x;
+//   d.h = dest ? dest->h : sz.y;
 
-  float curx1 = p0.x;
-  float curx2 = p0.x;
-
-  int scanline_y;
-  for (scanline_y = p0.y; scanline_y <= p1.y; scanline_y++) {
-    tea_render_line(tea_point(curx1, scanline_y), tea_point(curx2, scanline_y));
-    curx1 += invslope0;
-    curx2 += invslope1;
-  }
-}
-
-static void fill_top_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
-  int dy = (p2.y - p0.y);
-  float invslope0 = (p2.x - p0.x) / dy;
-  float invslope1 = (p2.x - p1.x) / dy;
-
-  float curx1 = p2.x;
-  float curx2 = p2.x;
-
-  int scanline_y;
-  for (scanline_y = p2.y; scanline_y > p1.y; scanline_y--) {
-    tea_render_line(tea_point(curx1, scanline_y), tea_point(curx2, scanline_y));
-    curx1 -= invslope0;
-    curx2 -= invslope1;
-  }
-}
-
-static void points_ord_y(te_Point *points, int len) {
-  for (int i = 0; i < len; i++) {
-    for (int j = 0; j < len-1; j++) {
-      if (points[j].y < points[j+1].y) continue;
-      te_Point aux = points[j];
-      points[j] = points[j+1];
-      points[j+1] = aux;
-    }
-  }
-}
-
-void tea_render_triangle_fill(TRIANG_ARGS) {
-  te_Point points[3];
-  points[0] = p0;
-  points[1] = p1;
-  points[2] = p2;
-
-  points_ord_y(points, 3);
-
-  if (points[1].y == points[2].y) fill_bottom_flat_triangle(points[0], points[1], points[2]);
-  else if (points[0].y == points[1].y) fill_bottom_flat_triangle(points[0], points[1], points[2]);
-  else {
-    te_Point p = tea_point(
-      (points[0].x + ((points[1].y - points[0].y) / (points[2].y - points[0].y)) * (points[2].x - points[0].x)),
-      points[1].y
-      );
-
-    fill_bottom_flat_triangle(points[0], points[1], p);
-    fill_top_flat_triangle(points[1], p, points[2]);
-  }
-
-  // tea_render_triangle_line(t, p0, p1, p2);
-
-  // if (p0.y <= p1.y) {
-  //   if (p0.y <= p2.y) {
-  //     pp0 = p0;
-  //     pp1 = 
-  //   }
-  //   else {
-  //     pp0 = p1;
-  //   }
-  // }
-}
-
-void tea_render_triangle_line(TRIANG_ARGS) {
-  // printf("qqqq\n");
-  tea_render_line(p0, p1);
-  tea_render_line(p1, p2);
-  tea_render_line(p2, p0);
-}
-void tea_render_texture(te_Texture id, te_Rect *dest, te_Rect *src) {
-  te_Point sz;
-  // SDL_QueryTexture(t, NULL, NULL, &w, &h);
-  tea_texture_size(id, &sz);
-  SDL_Rect d;
-  d.x = dest ? dest->x : 0;
-  d.y = dest ? dest->y : 0;
-  d.w = dest ? dest->w : sz.x;
-  d.h = dest ? dest->h : sz.y;
-
-  SDL_Rect s;
-  s.x = src ? src->x : 0;
-  s.y = src ? src->y : 0;
-  s.w = src ? src->w : sz.x;
-  s.h = src ? src->h : sz.y;
-  // printf("q\n");
-  // SDL_Rect r = (SDL_Rect){dest->x, dest->y, dest->w, dest->h};
+//   SDL_Rect s;
+//   s.x = src ? src->x : 0;
+//   s.y = src ? src->y : 0;
+//   s.w = src ? src->w : sz.x;
+//   s.h = src ? src->h : sz.y;
+//   // printf("q\n");
+//   // SDL_Rect r = (SDL_Rect){dest->x, dest->y, dest->w, dest->h};
 
 
-  SDL_RenderCopy(tea()->render, tea()->textures[id], &s, &d);
-}
+//   SDL_RenderCopy(tea()->render, tea()->textures[id], &s, &d);
+// }
 
-void tea_render_texture_ex(te_Texture id, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point origin, te_RenderFlip flip) {
-  te_Point size;
-  tea_texture_size(id, &size);
-  SDL_Rect d;
-  d.x = (dest ? dest->x : 0) - origin.x;
-  d.y = (dest ? dest->y : 0) - origin.y;
-  d.w = dest ? dest->w : size.x - origin.x;
-  d.h = dest ? dest->h : size.y - origin.y;
-  // d.x = d.y = 0;
-  // d.w = d.h = 256;
-  // printf("%d %d %d %d\n", d.x, d.y, d.w, d.h);
+// void tea_render_texture_ex(te_Texture id, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point origin, te_RenderFlip flip) {
+//   te_Point size;
+//   tea_texture_size(id, &size);
+//   SDL_Rect d;
+//   d.x = (dest ? dest->x : 0) - origin.x;
+//   d.y = (dest ? dest->y : 0) - origin.y;
+//   d.w = dest ? dest->w : size.x - origin.x;
+//   d.h = dest ? dest->h : size.y - origin.y;
+//   // d.x = d.y = 0;
+//   // d.w = d.h = 256;
+//   // printf("%d %d %d %d\n", d.x, d.y, d.w, d.h);
 
-  SDL_Rect s;
-  s.x = src ? src->x : 0;
-  s.y = src ? src->y : 0;
-  s.w = src ? src->w : size.x;
-  s.h = src ? src->h : size.y;
+//   SDL_Rect s;
+//   s.x = src ? src->x : 0;
+//   s.y = src ? src->y : 0;
+//   s.w = src ? src->w : size.x;
+//   s.h = src ? src->h : size.y;
 
-  SDL_Point sdl_origin = {origin.x, origin.y};
-  // printf("%d %d\n", sdl_origin.x, sdl_origin.y);
+//   SDL_Point sdl_origin = {origin.x, origin.y};
+//   // printf("%d %d\n", sdl_origin.x, sdl_origin.y);
 
-  SDL_RenderCopyEx(tea()->render, tea()->textures[id], &s, &d, angle, &sdl_origin, (SDL_RendererFlip)flip);
-}
+//   SDL_RenderCopyEx(tea()->render, tea()->textures[id], &s, &d, angle, &sdl_origin, (SDL_RendererFlip)flip);
+// }
 
-void tea_render_canvas(te_Canvas id, te_Rect *dest, te_Rect *src) {
-  /*int w, h;
-  Texture *tex = tea()->canvas[id];
-  SDL_QueryTexture(tex, NULL, NULL,  &w, &h);
+// void tea_render_canvas(te_Canvas id, te_Rect *dest, te_Rect *src) {
+//   /*int w, h;
+//   Texture *tex = tea()->canvas[id];
+//   SDL_QueryTexture(tex, NULL, NULL,  &w, &h);
 
-  te_Point size = tea_point(w, h);
-  SDL_Rect r;
-  if (dest) 
-    r = (SDL_Rect){dest->x, dest->y, dest->w, dest->h};
-  else 
-    r = (SDL_Rect){0, 0, size.x, size.y};
+//   te_Point size = tea_point(w, h);
+//   SDL_Rect r;
+//   if (dest) 
+//     r = (SDL_Rect){dest->x, dest->y, dest->w, dest->h};
+//   else 
+//     r = (SDL_Rect){0, 0, size.x, size.y};
   
-  SDL_Rect s;
-  if (src) s = (SDL_Rect){src->x, src->y, src->w, src->h};
-  else s = (SDL_Rect){0, 0, size.x, size.y};
+//   SDL_Rect s;
+//   if (src) s = (SDL_Rect){src->x, src->y, src->w, src->h};
+//   else s = (SDL_Rect){0, 0, size.x, size.y};
   
-  SDL_RenderCopy(tea()->render, tex, &s, &r);*/
-  tea_render_texture(id, dest, src);
-}
+//   SDL_RenderCopy(tea()->render, tex, &s, &r);*/
+//   tea_render_texture(id, dest, src);
+// }
 
-void tea_render_text(te_Font *font, const char *text, te_Point pos) {
-  if (!text) return;
-  Tea *tea = tea();
+// void tea_render_text(te_Font *font, const char *text, te_Point pos) {
+//   if (!text) return;
+//   Tea *tea = tea();
 
-  char *p = (char*)text;
-  te_Rect r;
-  // int w, h;
-  // SDL_QueryTexture(font->tex, NULL, NULL, &w, &h);
-  te_Point size;
-  tea_texture_size(font->tex, &size);
+//   char *p = (char*)text;
+//   te_Rect r;
+//   // int w, h;
+//   // SDL_QueryTexture(font->tex, NULL, NULL, &w, &h);
+//   te_Point size;
+//   tea_texture_size(font->tex, &size);
 
 
-  r.x = pos.x;
-  r.y = pos.y;
-  r.w = size.x;
-  r.h = size.y;
-  SDL_SetTextureColorMod(tea->textures[font->tex], tea->_color.r, tea->_color.g, tea->_color.b);
-  SDL_SetTextureAlphaMod(tea->textures[font->tex], tea->_color.a);
-  // tea_render_texture(tea, font->tex, &r, NULL);
-  while(*p) {
-    tea_font_char_rect(font, *p, &r);
-    te_Rect dest = tea_rect(pos.x, pos.y, r.w, r.h);
-    int index = (int)*p;
-    pos.x += font->c[index].ax;
-    tea_render_texture(font->tex, &dest, &r);
-    p++;
-  }
-}
+//   r.x = pos.x;
+//   r.y = pos.y;
+//   r.w = size.x;
+//   r.h = size.y;
+//   SDL_SetTextureColorMod(font->tex->tex, tea->_color.r, tea->_color.g, tea->_color.b);
+//   SDL_SetTextureAlphaMod(font->tex->tex, tea->_color.a);
+//   // tea_render_texture(tea, font->tex, &r, NULL);
+//   while(*p) {
+//     tea_font_char_rect(font, *p, &r);
+//     te_Rect dest = tea_rect(pos.x, pos.y, r.w, r.h);
+//     int index = (int)*p;
+//     pos.x += font->c[index].ax;
+//     tea_render_texture(font->tex, &dest, &r);
+//     p++;
+//   }
+// }
 
-static int _set_texture(Texture *tex) {
+static int _set_texture(te_Texture tex) {
   int i = 1;
   while (i < MAX_TEXTURES) {
-    if (tea()->textures[i] == NULL) {
+    if (tea()->textures[i].tex == NULL) {
       tea()->textures[i] = tex;
+      // return i;
       return i;
     }
     i++;
@@ -782,15 +818,20 @@ static int _set_texture(Texture *tex) {
 
 static int _create_texture(int w, int h, unsigned int format, int access) {
   Tea *tea = tea();
-  return _set_texture(SDL_CreateTexture(tea->render, format, access, w, h));
+  te_Texture tex = {0};
+  tex.tex = SDL_CreateTexture(tea->render, format, access, w, h);
+  tex.width = w;
+  tex.height = h;
+  return _set_texture(tex);
 }
 
 
-te_Texture tea_texture(int w, int h, unsigned int format) {
-  return _create_texture(w, h, format, SDL_TEXTUREACCESS_STATIC);
+te_Texture* tea_texture(int w, int h, unsigned int format, int access) {
+  int i = _create_texture(w, h, format, access);
+  return &tea()->textures[i];
 }
 
-te_Texture tea_texture_load(const char *str) {
+te_Texture* tea_texture_load(const char *str) {
   Tea *t = tea();
   int req_format = STBI_rgb_alpha;
   int w, h, format;
@@ -816,12 +857,19 @@ te_Texture tea_texture_load(const char *str) {
 
   TE_ASSERT(surf != NULL, "Failed to create surface");
 
-  Texture *tex = SDL_CreateTextureFromSurface(t->render, surf);
+  Texture *stex = SDL_CreateTextureFromSurface(t->render, surf);
 
-  TE_ASSERT(tex != NULL, "Failed to create texture");
+  TE_ASSERT(stex != NULL, "Failed to create texture");
   SDL_FreeSurface(surf);
 
-  return _set_texture(tex);
+  te_Texture tex = {0};
+  tex.tex = stex;
+  tex.width = w;
+  tex.height = h;
+
+  int id = _set_texture(tex);
+
+  return &tea()->textures[id];
 }
 
 te_Texture* tea_texture_memory(unsigned char *pixels, int w, int h, unsigned int format) {
@@ -829,29 +877,102 @@ te_Texture* tea_texture_memory(unsigned char *pixels, int w, int h, unsigned int
 }
 
 
-int tea_texture_width(te_Texture id) {
-  int w;
-  Texture *tex = tea()->textures[id];
+int tea_texture_width(te_Texture *tex) {
+  // int w;
+  // Texture *tex = tea()->textures[id];
   TE_ASSERT(tex != NULL, "invalid texture");
 
-  SDL_QueryTexture(tex, NULL, NULL, &w, NULL);
-  return w;
+  // SDL_QueryTexture(tex, NULL, NULL, &w, NULL);
+  return tex->width;
 }
-int tea_texture_height(te_Texture id) {
-  int h;
-  Texture *tex = tea()->textures[id];
+int tea_texture_height(te_Texture *tex) {
+  // int h;
+  // Texture *tex = tea()->textures[id];
   TE_ASSERT(tex != NULL, "invalid texture");
 
-  SDL_QueryTexture(tex, NULL, NULL, NULL, &h);
-  return h;
+  // SDL_QueryTexture(tex, NULL, NULL, NULL, &h);
+  return tex->height;
 }
-void tea_texture_size(te_Texture id, te_Point *size) {
+void tea_texture_size(te_Texture *tex, te_Point *size) {
   int w, h;
-  Texture *tex = tea()->textures[id];
+  // Texture *tex = tea()->textures[id];
   TE_ASSERT(tex != NULL, "invalid texture");
 
-  SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-  if (size) *size = tea_point(w, h);
+  // SDL_QueryTexture(tex, NULL, NULL, &w, &h);
+  if (size) *size = tea_point(tex->width, tex->height);
+}
+
+// Image
+
+te_Image tea_image(int w, int h, int format) {
+  return _create_texture(w, h, format, SDL_TEXTUREACCESS_STATIC);
+}
+
+te_Image tea_image_load(const char *filename) {
+  te_Texture *t = tea_texture_load(filename);
+  return (int)(t - tea()->textures);
+}
+
+te_Texture* tea_image_texture(te_Image img) {
+  return &tea()->textures[img];
+}
+
+tea_image_destroy(te_Image *img) {
+  TE_ASSERT(img != NULL, "te_Image must not be NULL");
+  // tea_texture_destroy(tea_image_texture(*img));
+}
+
+
+// Canvas
+
+static int _push_rtarget(te_RenderTarget target) {
+  int i = 0;
+  while (i < MAX_RTARGETS) {
+    if (tea()->targets[i].stex == NULL) {
+      tea()->targets[i] = target;
+      return i;
+    }
+    i++;
+  }
+
+  tea_error("max canvas reached");
+
+  return -1;
+}
+
+static int _create_rtarget(int w, int h, unsigned int format) {
+  // te_Canvas c = _create_texture(w, h, format, SDL_TEXTUREACCESS_TARGET);
+  te_RenderTarget target = {0};
+  target.stex = SDL_CreateTexture(tea()->render, format, SDL_TEXTUREACCESS_TARGET, w, h);
+  target.width = w;
+  target.height = h;
+  // _push_canvas(c);
+  return _push_rtarget(target);
+}
+
+te_Canvas tea_canvas(int width, int height) {
+  TE_ASSERT(width > 0, "Canvas width must be greater than zero");
+  TE_ASSERT(height > 0, "Canvas height must be greater than zero");
+  te_Canvas canvas = _create_rtarget(width, height, SDL_PIXELFORMAT_RGBA32)+1;
+  // printf("%d\n", canvas);
+
+  return canvas;
+}
+
+te_Texture* tea_canvas_texture(te_Canvas canvas) {
+  return &tea()->targets[canvas-1].tex;
+}
+
+void tea_canvas_set(te_Canvas canvas) {
+  // canvas -= 1;
+ /*if (canvas > 0) {
+    SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);
+    tea_render_clear(BLACK);
+  } else SDL_SetRenderTarget(tea()->render, NULL);*/
+  te_Texture *target = canvas <= 0 ? NULL : tea()->targets[canvas-1].stex;
+  // Texture *tex = tea()->textures[canvas];
+  // printf("%p\n", tex);
+  SDL_SetRenderTarget(tea()->render, target);  
 }
 
 /* Font */
@@ -933,7 +1054,7 @@ int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_siz
   // font->tex = tea_texture(tea, tw, th, pixel_format.format);
   font->tex = _create_texture(tw, th, pixel_format.format, SDL_TEXTUREACCESS_STREAMING);
 
-  SDL_SetTextureBlendMode(tea->textures[font->tex], SDL_BLENDMODE_BLEND);
+  SDL_SetTextureBlendMode(font->tex->tex, SDL_BLENDMODE_BLEND);
 
   int x = 0;
   for (i = 0; i < MAX_FONT_CHAR; i++) {
@@ -964,7 +1085,7 @@ int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_siz
     r.w = ww;
     r.h = hh;
 
-    if (SDL_LockTexture(tea->textures[font->tex], &r, (void**)&pixels, &pitch) != 0) {
+    if (SDL_LockTexture(font->tex->tex, &r, (void**)&pixels, &pitch) != 0) {
       fprintf(stderr, "[tea] error: %s\n", SDL_GetError());
       exit(1);
     }
@@ -983,7 +1104,7 @@ int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_siz
       pixels[index] = pp;
       // pixels[index] = SDL_MapRGBA(&format, 255, 255, 255, bitmap[j]);
     }
-    SDL_UnlockTexture(tea->textures[font->tex]);
+    SDL_UnlockTexture(font->tex->tex);
 
     // printf("%c: %d\n", i, ww);
     // if (SDL_UpdateTexture(font->tex, &r, pixels, tw*sizeof(*pixels)) != 0) {
@@ -1007,7 +1128,7 @@ void tea_font_get_rect(te_Font* font, const int c, TEA_VALUE *x, TEA_VALUE *y, t
     *x = 0;
     int h;
     // SDL_QueryTexture(font->tex, NULL, NULL, NULL, &h);
-    h = tea_texture_height(font->tex);
+    h = tea_texture_height(&font->tex);
     *y += h;
     return;
   }
@@ -1033,11 +1154,49 @@ void tea_error(const char *msg) {
   exit(1);
 }
 
+/*******************
+ *      Input      *
+ *******************/
 
+int tea_update_input() {
+  memcpy(tea()->input.old_key, tea()->input.key_array, TEA_KEY_COUNT);
+  SDL_PollEvent(&tea()->event);  
+}
+
+int tea_keyboard_is_down(int key) {
+  return tea()->input.key_array[key];
+}
+
+int tea_keyboard_is_up(int key) {
+  return !tea_keyboard_is_down(key);
+}
+
+int tea_keyboard_was_pressed(int key) {
+  return !tea()->input.old_key[key] && tea_keyboard_is_down(key);
+}
+int tea_keyboard_was_released(int key) {
+  return tea()->input.old_key[key] && tea_keyboard_is_up(key);
+}
+
+int tea_mouse_is_down(int button) {
+  return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(button+1);
+}
+int tea_mouse_is_up(int button) {
+  return !tea_mouse_is_down(button);
+}
+
+int tea_mouse_was_pressed(int button);
+int tea_mouse_was_released(int button);
+
+int tea_joystick_axis(int jid, int axis);
+int tea_joystick_is_down(int jid, int button);
+int tea_joystick_is_up(int jid, int button);
+int tea_joystick_was_pressed(int jid, int button);
+int tea_joystick_was_released(int jid, int button);
 
 /***************** Garbage ******************/
 
-void tea_render_triangle_fill0(TRIANG_ARGS) {
+void tea_render_triangle_fill0(te_Point p0, te_Point p1, te_Point p2) {
   Tea *tea = tea();
   // tea_render_triangle_line(t, p0, p1, p2);
   int minX = tea_min(p0.x, tea_min(p1.x, p2.x));
@@ -1101,86 +1260,3 @@ void tea_render_triangle_fill0(TRIANG_ARGS) {
     // }
   }
 }
-
-
-// Canvas
-
-static int _push_canvas(te_Canvas canvas) {
-  int i = 0;
-  while (i < MAX_CANVAS) {
-    if (tea()->canvas[i] == 0) {
-      tea()->canvas[i] = canvas;
-      return i;
-    }
-    i++;
-  }
-
-  tea_error("max canvas reached");
-
-  return -1;
-}
-
-static int _create_canvas(int w, int h, unsigned int format) {
-  te_Canvas c = _create_texture(w, h, format, SDL_TEXTUREACCESS_TARGET);
-  _push_canvas(c);
-  return c;
-}
-
-te_Canvas tea_canvas(int width, int height) {
-  TE_ASSERT(width > 0, "Canvas width must be greater than zero");
-  TE_ASSERT(height > 0, "Canvas height must be greater than zero");
-  te_Canvas canvas = _create_canvas(width, height, SDL_PIXELFORMAT_RGBA32);
-  // printf("%d\n", canvas);
-
-  return canvas;
-}
-
-void tea_canvas_set(te_Canvas canvas) {
- /*if (canvas > 0) {
-    SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);
-    tea_render_clear(BLACK);
-  } else SDL_SetRenderTarget(tea()->render, NULL);*/
-  Texture *tex = tea()->textures[canvas];
-  // printf("%p\n", tex);
-  SDL_SetRenderTarget(tea()->render, tex);  
-}
-
-/*******************
- *      Input      *
- *******************/
-
-int tea_update_input() {
-  memcpy(tea()->input.old_key, tea()->input.key_array, TEA_KEY_COUNT);
-  SDL_PollEvent(&tea()->event);  
-}
-
-int tea_keyboard_is_down(int key) {
-  return tea()->input.key_array[key];
-}
-
-int tea_keyboard_is_up(int key) {
-  return !tea_keyboard_is_down(key);
-}
-
-int tea_keyboard_was_pressed(int key) {
-  return !tea()->input.old_key[key] && tea_keyboard_is_down(key);
-}
-int tea_keyboard_was_released(int key) {
-  return tea()->input.old_key[key] && tea_keyboard_is_up(key);
-}
-
-int tea_mouse_is_down(int button) {
-  return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(button+1);
-}
-int tea_mouse_is_up(int button) {
-  return !tea_mouse_is_down(button);
-}
-
-int tea_mouse_was_pressed(int button);
-int tea_mouse_was_released(int button);
-
-int tea_joystick_axis(int jid, int axis);
-int tea_joystick_is_down(int jid, int button);
-int tea_joystick_is_up(int jid, int button);
-int tea_joystick_was_pressed(int jid, int button);
-int tea_joystick_was_released(int jid, int button);

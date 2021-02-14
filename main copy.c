@@ -120,7 +120,7 @@ int main(int argc, char ** argv) {
     tea_set_scale(tea_point(8, 8));
     tea_draw_texture(tex, 0, tea_point(0, 0));
     
-    tea_draw_circle(tea_point(0, 0), 8);
+    tea_draw_circle(tea_point(128, 128), 8);
     tea_set_transform(NULL);
       
     if (tea_keyboard_is_down(TEA_KEY_RIGHT)) xx += 80 * tea_get_delta();
