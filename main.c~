@@ -21,29 +21,19 @@ int main(int argc, char ** argv) {
 
   float x, y;
   x = y = 32;
-  int frame = 0;
 
   while (!tea_should_close()) {
     tea_begin_render();
 
     // tea_draw_texture(tex, &tea_rect(0, 0, 16*4, 16*4), &tea_rect(0, 0, 16, 16));
-    //if (tea_keyboard_was_pressed(TEA_KEY_A)) x -= 16;
-    //else if (tea_keyboard_was_pressed(TEA_KEY_D)) x += 16;
-    if (tea_keyboard_was_pressed(TEA_KEY_A)) frame = frame - 1 < 0 ? 5 : frame-1;
-    else if (tea_keyboard_was_pressed(TEA_KEY_D)) frame = frame + 1 > 5 ? 0 : frame + 1;
-    
-    te_Rect r = tea_rect(frame*16, 0, 16, 16);
+    if (tea_keyboard_was_pressed(TEA_KEY_A)) x -= 10;
+    else if (tea_keyboard_was_pressed(TEA_KEY_D)) x += 10;
 
     tea_set_canvas(canvas);
     tea_render_clear(BLACK);
+    tea_draw_image(img, &tea_rect(0, 0, 16, 16), tea_point(x, y));
     tea_draw_color(WHITE);
-    tea_draw_image(img, NULL, tea_point(0, 0));
-    tea_draw_rect(tea_rect(frame*16, 0, 16, 16));
-    tea_draw_image(img, &r, tea_point(frame*16, 32));
-    
-    
-    
-    // tea_draw_circle(tea_point(x, 0), 8);
+    tea_draw_rect(tea_rect(x, y, 16, 16));
     tea_set_canvas(0);
 
     if (tea_keyboard_was_pressed(TEA_KEY_ESCAPE)) break;

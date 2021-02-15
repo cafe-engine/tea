@@ -923,7 +923,7 @@ tea_image_destroy(te_Image *img) {
 }
 
 
-// Render Target
+// Canvas
 
 static int _push_rtarget(te_RenderTarget target) {
   int i = 0;
@@ -935,7 +935,7 @@ static int _push_rtarget(te_RenderTarget target) {
     i++;
   }
 
-  tea_error("max render target reached");
+  tea_error("max canvas reached");
 
   return -1;
 }
@@ -950,19 +950,6 @@ static int _create_rtarget(int w, int h, unsigned int format) {
   return _push_rtarget(target);
 }
 
-te_RenderTarget* tea_render_target(int w, int h, int format) {
-  int id = _create_rtarget(w, h, format);
-  return &tea()->targets[id];
-}
-
-void tea_set_render_target(te_RenderTarget *target) {
-  //te_Texture *tex = target ? &target->tex : NULL;
-  SDL_Texture *tex = target ? target->tex.tex : NULL;
-  SDL_SetRenderTarget(tea()->render, tex);
-}
-
-// Canvas
-
 te_Canvas tea_canvas(int width, int height) {
   TE_ASSERT(width > 0, "Canvas width must be greater than zero");
   TE_ASSERT(height > 0, "Canvas height must be greater than zero");
@@ -972,12 +959,8 @@ te_Canvas tea_canvas(int width, int height) {
   return canvas;
 }
 
-te_RenderTarget* tea_canvas_render_target(te_Canvas canvas) {
-  return canvas <= 0 ? NULL : &tea()->targets[canvas-1];
-}
-
 te_Texture* tea_canvas_texture(te_Canvas canvas) {
-  return canvas <= 0 ? NULL : &tea()->targets[canvas-1].tex;
+  return &tea()->targets[canvas-1].tex;
 }
 
 void tea_canvas_set(te_Canvas canvas) {
@@ -986,12 +969,10 @@ void tea_canvas_set(te_Canvas canvas) {
     SDL_SetRenderTarget(tea()->render, tea()->textures[canvas]);
     tea_render_clear(BLACK);
   } else SDL_SetRenderTarget(tea()->render, NULL);*/
-  // te_Texture *target = canvas <= 0 ? NULL : tea()->targets[canvas-1].stex;
-  te_RenderTarget *target = tea_canvas_render_target(canvas);
+  te_Texture *target = canvas <= 0 ? NULL : tea()->targets[canvas-1].stex;
   // Texture *tex = tea()->textures[canvas];
   // printf("%p\n", tex);
-  //SDL_SetRenderTarget(tea()->render, target);  
-  tea_set_render_target(target); 
+  SDL_SetRenderTarget(tea()->render, target);  
 }
 
 /* Font */
