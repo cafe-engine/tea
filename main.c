@@ -24,7 +24,7 @@ int main(int argc, char ** argv) {
   int frame = 0;
 
   while (!tea_should_close()) {
-    tea_begin_render();
+    tea_begin();
 
     // tea_draw_texture(tex, &tea_rect(0, 0, 16*4, 16*4), &tea_rect(0, 0, 16, 16));
     //if (tea_keyboard_was_pressed(TEA_KEY_A)) x -= 16;
@@ -35,7 +35,8 @@ int main(int argc, char ** argv) {
     te_Rect r = tea_rect(frame*16, 0, 16, 16);
 
     tea_set_canvas(canvas);
-    tea_render_clear(BLACK);
+    tea_clear_color(BLACK);
+    tea_clear();
     tea_draw_color(WHITE);
     tea_draw_image(img, NULL, tea_point(0, 0));
     tea_draw_rect(tea_rect(frame*16, 0, 16, 16));
@@ -53,7 +54,7 @@ int main(int argc, char ** argv) {
     tea_draw_texture_ex(ct, &tea_rect(0, 0, 160*4, 95*4), NULL, 0, tea_point(0, 0), TEA_FLIP_NONE);
 
 
-    tea_end_render();
+    tea_end();
   }
 
   tea_terminate();

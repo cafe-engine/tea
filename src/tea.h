@@ -562,8 +562,8 @@ TE_API void tea_set_origin(te_Point origin);
 
 // Graphics
 
-TE_API void tea_begin_render();
-TE_API void tea_end_render();
+TE_API void tea_begin();
+TE_API void tea_end();
 
 TE_API void tea_clear();
 TE_API void tea_clear_color(te_Color color);
@@ -585,10 +585,6 @@ TE_API void tea_draw_image_ex(te_Image img, te_Rect *r, te_Point p, TEA_VALUE an
 TE_API void tea_draw_texture(te_Texture *tex, te_Rect *dest, te_Rect *src);
 TE_API void tea_draw_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point origin, te_RenderFlip flip);
 
-// TE_API void tea_draw_texture(te_Texture tex, te_Rect *r, te_Point p);
-// TE_API void tea_draw_texture_scale(te_Texture tex, te_Rect *r, te_Point p, te_Point scale);
-// TE_API void tea_draw_texture_ex(te_Texture tex, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin);
-
 TE_API void tea_draw_canvas(te_Canvas canvas, te_Rect *r, te_Point p);
 TE_API void tea_draw_canvas_ex(te_Canvas canvas, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin);
 
@@ -606,12 +602,11 @@ TE_API int tea_window_should_close(te_Window *window);
 TE_API te_Render* tea_render_create(te_Window *window, TEA_RENDER_FLAGS flags);
 TE_API void tea_render_destroy(te_Render *render);
 
-TE_API void tea_render_draw_color(te_Color color);
-TE_API void tea_render_clear(te_Color color);
 TE_API void tea_render_swap();
 
 // Texture
 
+TE_API void tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access);
 TE_API te_Texture* tea_texture(int w, int h, unsigned int format, int access);
 TE_API te_Texture* tea_texture_load(const char *filename);
 // TE_API int tea_texture_init(te_Texture *t, int w, int h, unsigned int format);
@@ -629,12 +624,10 @@ TE_API te_Image tea_image_load(const char *filename);
 
 TE_API te_Texture* tea_image_texture(te_Image img);
 
-// TE_API void tea_image_size(te_Image img, te_Point *sz);
 #define tea_image_width(img) tea_texture_width(tea_image_texture((img)));
 #define tea_image_height(img) tea_texture_height(tea_image_texture((img)));
 #define tea_image_size(img, sz) tea_texture_size(tea_image_texture((img)), (sz));
-// #define tea_image_destroy(img) tea_texture_destroy(tea_image_texture(*(img)));
-TE_API tea_image_destroy(te_Image *img);
+TE_API void tea_image_destroy(te_Image *img);
 
 // Render Target
 
@@ -644,14 +637,11 @@ TE_API void tea_set_render_target(te_RenderTarget *target);
 TE_API te_Texture* tea_render_target_texture(te_RenderTarget *target);
 
 // Canvas
+
 TE_API te_Canvas tea_canvas(int width, int height);
 TE_API te_RenderTarget* tea_canvas_render_target(te_Canvas canvas);
 TE_API te_Texture* tea_canvas_texture(te_Canvas canvas);
 TE_API void tea_canvas_destroy(te_Canvas *canvas);
-
-TE_API void tea_attach_canvas(te_Canvas canvas);
-TE_API void tea_detach_canvas(void);
-TE_API void tea_canvas_set(te_Canvas canvas);
 
 // Font
 
