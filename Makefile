@@ -1,5 +1,7 @@
 CC = gcc
+AR = ar
 SRC = src/tea.c
+INCLUDE =
 OUT = tea
 CFLAGS = -std=c99 -Wall -lSDL2 -lm
 
@@ -8,10 +10,10 @@ LIBNAME = libtea
 OBJS = $(SRC:%.c=%.o)
 
 $(OUT): main.c $(LIBNAME).a
-	$(CC) main.c -o $(OUT) -L. -ltea $(CFLAGS) $(INCLUDE)
+	$(CC) main.c -o $(OUT) -L. -ltea $(INCLUDE)  $(CFLAGS) $(INCLUDE)
 
 $(LIBNAME).a: $(OBJS)
-	ar rcs $(LIBNAME).a src/*.o
+	$(AR) rcs $(LIBNAME).a src/*.o
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS)

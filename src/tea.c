@@ -284,7 +284,7 @@ te_Transform tea_get_transform() {
 }
 
 void tea_set_transform(te_Transform *t) {
-  if (!t) tea()->current_transform = (te_Transform){0, 0, 0, 1, 1};
+  if (!t) tea()->current_transform = (te_Transform){{0, 0}, 0, {1, 1}};
   else tea()->current_transform = *t;
 }
 

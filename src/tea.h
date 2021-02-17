@@ -592,6 +592,8 @@ TE_API void tea_draw_text(te_Font *font, const char *text, te_Point pos);
 
 // Window
 
+TE_API void tea_init_window(const char *title, int width, int height, int flags);
+
 TE_API te_Window* tea_window_create(const char *title, int width, int height, int flags);
 TE_API void tea_window_destroy(te_Window *window);
 

@@ -14,7 +14,7 @@ The idea is to create a modular render, that can be compiled with different rend
 	- [ ] mouse input
 	- [x] keyboard input
 	- [ ] joystick input
-- [ ] Software Render
+- [ ] Software Renderer
 	- [ ] primitives
 		- [ ] point
 		- [ ] line
@@ -25,14 +25,14 @@ The idea is to create a modular render, that can be compiled with different rend
 	- [ ] textures
  	- [ ] render texture
  	- [ ] render text
-- [ ] Wrap for SDL_Renderer
+- [ ] SDL Renderer
 	- [ ] primitives
 		- [x] circle
 		- [x] triangle
 		- [ ] polygon
  	- [ ] CPU transforms
  	- [x] render text
-- [ ] OpenGL batched render
+- [ ] OpenGL Batched Renderer
  	- [ ] primitives
 		- [ ] circle
 		- [ ] polygon
