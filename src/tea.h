@@ -39,7 +39,10 @@
 
 #define TEA_FPS 30
 
-#define TEA_VALUE float
+#ifndef TEA_VALUE
+  #define TEA_VALUE float
+#endif
+
 #define COMMAND_MAX 2048
 #define STACK_MAX 255
 

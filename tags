@@ -1,533 +1,516 @@
-!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
-!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
-!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
-!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
-!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
-!_TAG_PROC_CWD	/home/k1n4y/tea/	//
-!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
-!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
-!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
-!_TAG_PROGRAM_VERSION	5.9.0	//
-BLACK	src/tea.h	/^#define BLACK /;"	d
-CAT	src/tea.h	/^#define CAT(/;"	d
-COMMAND_MAX	src/tea.h	/^#define COMMAND_MAX /;"	d
-Canvas	src/tea.c	/^typedef SDL_Texture Canvas;$/;"	t	typeref:typename:SDL_Texture	file:
-DRAW_MODE_COUNT	src/tea.h	/^  DRAW_MODE_COUNT$/;"	e	enum:__anonb6282e2c0503
-MAX_FONT_CHAR	src/tea.h	/^#define MAX_FONT_CHAR /;"	d
-MAX_RTARGETS	src/tea.h	/^#define MAX_RTARGETS /;"	d
-MAX_TEXTURES	src/tea.h	/^#define MAX_TEXTURES /;"	d
-MAX_TRANSFORMS	src/tea.h	/^#define MAX_TRANSFORMS /;"	d
-RenderCircleFn	src/tea.h	/^typedef void(*RenderCircleFn)(te_Point, TEA_VALUE);$/;"	t	typeref:typename:void (*)(te_Point,TEA_VALUE)
-RenderLineFn	src/tea.h	/^typedef void(*RenderLineFn)(te_Point, te_Point);$/;"	t	typeref:typename:void (*)(te_Point,te_Point)
-RenderPointFn	src/tea.h	/^typedef void(*RenderPointFn)(te_Point);$/;"	t	typeref:typename:void (*)(te_Point)
-RenderRectFn	src/tea.h	/^typedef void(*RenderRectFn)(te_Rect);$/;"	t	typeref:typename:void (*)(te_Rect)
-RenderTextureExFn	src/tea.h	/^typedef void(*RenderTextureExFn)(te_Texture, te_Rect*, te_Rect*, TEA_VALUE, te_Point, te_RenderF/;"	t	typeref:typename:void (*)(te_Texture,te_Rect *,te_Rect *,TEA_VALUE,te_Point,te_RenderFlip flip)
-RenderTextureFn	src/tea.h	/^typedef void(*RenderTextureFn)(te_Texture, te_Rect*, te_Rect*);$/;"	t	typeref:typename:void (*)(te_Texture,te_Rect *,te_Rect *)
-RenderTriangleFn	src/tea.h	/^typedef void(*RenderTriangleFn)(te_Point, te_Point, te_Point);$/;"	t	typeref:typename:void (*)(te_Point,te_Point,te_Point)
-STACK_MAX	src/tea.h	/^#define STACK_MAX /;"	d
-STB_IMAGE_IMPLEMENTATION	src/tea.c	/^#define STB_IMAGE_IMPLEMENTATION$/;"	d	file:
-STB_TRUETYPE_IMPLEMENTATION	src/tea.c	/^#define STB_TRUETYPE_IMPLEMENTATION$/;"	d	file:
-STR	src/tea.h	/^#define STR(/;"	d
-TEA_ALPHA	src/tea.h	/^  TEA_ALPHA,$/;"	e	enum:__anonb6282e2c0303
-TEA_BATCH_RENDER	src/tea.h	/^  TEA_BATCH_RENDER = (1 << 2)$/;"	e	enum:__anonb6282e2c0403
-TEA_BLUE	src/tea.h	/^  TEA_BLUE,$/;"	e	enum:__anonb6282e2c0303
-TEA_BUTTON_COUNT	src/tea.h	/^  TEA_BUTTON_COUNT$/;"	e	enum:__anonb6282e2c0103
-TEA_BUTTON_LEFT	src/tea.h	/^  TEA_BUTTON_LEFT = 0,$/;"	e	enum:__anonb6282e2c0103
-TEA_BUTTON_MIDDLE	src/tea.h	/^  TEA_BUTTON_MIDDLE,$/;"	e	enum:__anonb6282e2c0103
-TEA_BUTTON_RIGHT	src/tea.h	/^  TEA_BUTTON_RIGHT,$/;"	e	enum:__anonb6282e2c0103
-TEA_DEFAULT	src/tea.h	/^  TEA_DEFAULT = 0,$/;"	e	enum:__anonb6282e2c0403
-TEA_DRAW_MODE	src/tea.h	/^} TEA_DRAW_MODE;$/;"	t	typeref:enum:__anonb6282e2c0503
-TEA_FILL	src/tea.h	/^  TEA_FILL,$/;"	e	enum:__anonb6282e2c0503
-TEA_FLIP_H	src/tea.h	/^typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;$/;"	e	enum:__anonb6282e2c0903
-TEA_FLIP_NONE	src/tea.h	/^typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;$/;"	e	enum:__anonb6282e2c0903
-TEA_FLIP_V	src/tea.h	/^typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;$/;"	e	enum:__anonb6282e2c0903
-TEA_FPS	src/tea.h	/^#define TEA_FPS /;"	d
-TEA_GREEN	src/tea.h	/^  TEA_GREEN,$/;"	e	enum:__anonb6282e2c0303
-TEA_H	src/tea.h	/^#define TEA_H$/;"	d
-TEA_HARDWARE_RENDER	src/tea.h	/^  TEA_HARDWARE_RENDER = (1 << 1),$/;"	e	enum:__anonb6282e2c0403
-TEA_KEY	src/tea.h	/^} TEA_KEY;$/;"	t	typeref:enum:__anonb6282e2c0203
-TEA_KEY_0	src/tea.h	/^    TEA_KEY_0 = 39,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_1	src/tea.h	/^    TEA_KEY_1 = 30,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_2	src/tea.h	/^    TEA_KEY_2 = 31,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_3	src/tea.h	/^    TEA_KEY_3 = 32,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_4	src/tea.h	/^    TEA_KEY_4 = 33,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_5	src/tea.h	/^    TEA_KEY_5 = 34,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_6	src/tea.h	/^    TEA_KEY_6 = 35,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_7	src/tea.h	/^    TEA_KEY_7 = 36,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_8	src/tea.h	/^    TEA_KEY_8 = 37,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_9	src/tea.h	/^    TEA_KEY_9 = 38,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_A	src/tea.h	/^    TEA_KEY_A = 4,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_BACK	src/tea.h	/^    TEA_KEY_AC_BACK = 270,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_BOOKMARKS	src/tea.h	/^    TEA_KEY_AC_BOOKMARKS = 274,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_FORWARD	src/tea.h	/^    TEA_KEY_AC_FORWARD = 271,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_HOME	src/tea.h	/^    TEA_KEY_AC_HOME = 269,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_REFRESH	src/tea.h	/^    TEA_KEY_AC_REFRESH = 273,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_SEARCH	src/tea.h	/^    TEA_KEY_AC_SEARCH = 268,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AC_STOP	src/tea.h	/^    TEA_KEY_AC_STOP = 272,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AGAIN	src/tea.h	/^    TEA_KEY_AGAIN = 121,   \/**< redo *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_ALTERASE	src/tea.h	/^    TEA_KEY_ALTERASE = 153, \/**< Erase-Eaze *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_APOSTROPHE	src/tea.h	/^    TEA_KEY_APOSTROPHE = 52,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_APP1	src/tea.h	/^    TEA_KEY_APP1 = 283,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_APP2	src/tea.h	/^    TEA_KEY_APP2 = 284,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_APPLICATION	src/tea.h	/^    TEA_KEY_APPLICATION = 101, \/**< windows contextual menu, compose *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIOFASTFORWARD	src/tea.h	/^    TEA_KEY_AUDIOFASTFORWARD = 286,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIOMUTE	src/tea.h	/^    TEA_KEY_AUDIOMUTE = 262,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIONEXT	src/tea.h	/^    TEA_KEY_AUDIONEXT = 258,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIOPLAY	src/tea.h	/^    TEA_KEY_AUDIOPLAY = 261,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIOPREV	src/tea.h	/^    TEA_KEY_AUDIOPREV = 259,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIOREWIND	src/tea.h	/^    TEA_KEY_AUDIOREWIND = 285,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_AUDIOSTOP	src/tea.h	/^    TEA_KEY_AUDIOSTOP = 260,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_B	src/tea.h	/^    TEA_KEY_B = 5,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_BACKSLASH	src/tea.h	/^    TEA_KEY_BACKSLASH = 49, \/**< Located at the lower left of the return$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_BACKSPACE	src/tea.h	/^    TEA_KEY_BACKSPACE = 42,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_BRIGHTNESSDOWN	src/tea.h	/^    TEA_KEY_BRIGHTNESSDOWN = 275,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_BRIGHTNESSUP	src/tea.h	/^    TEA_KEY_BRIGHTNESSUP = 276,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_C	src/tea.h	/^    TEA_KEY_C = 6,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CALCULATOR	src/tea.h	/^    TEA_KEY_CALCULATOR = 266,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CANCEL	src/tea.h	/^    TEA_KEY_CANCEL = 155,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CAPSLOCK	src/tea.h	/^    TEA_KEY_CAPSLOCK = 57,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CLEAR	src/tea.h	/^    TEA_KEY_CLEAR = 156,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CLEARAGAIN	src/tea.h	/^    TEA_KEY_CLEARAGAIN = 162,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_COMMA	src/tea.h	/^    TEA_KEY_COMMA = 54,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_COMPUTER	src/tea.h	/^    TEA_KEY_COMPUTER = 267,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_COPY	src/tea.h	/^    TEA_KEY_COPY = 124,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_COUNT	src/tea.h	/^    TEA_KEY_COUNT = 512 \/**< not a key, just marks the number of scancodes$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CRSEL	src/tea.h	/^    TEA_KEY_CRSEL = 163,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CURRENCYSUBUNIT	src/tea.h	/^    TEA_KEY_CURRENCYSUBUNIT = 181,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CURRENCYUNIT	src/tea.h	/^    TEA_KEY_CURRENCYUNIT = 180,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_CUT	src/tea.h	/^    TEA_KEY_CUT = 123,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_D	src/tea.h	/^    TEA_KEY_D = 7,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_DECIMALSEPARATOR	src/tea.h	/^    TEA_KEY_DECIMALSEPARATOR = 179,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_DELETE	src/tea.h	/^    TEA_KEY_DELETE = 76,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_DISPLAYSWITCH	src/tea.h	/^    TEA_KEY_DISPLAYSWITCH = 277, \/**< display mirroring\/dual display$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_DOWN	src/tea.h	/^    TEA_KEY_DOWN = 81,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_E	src/tea.h	/^    TEA_KEY_E = 8,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_EJECT	src/tea.h	/^    TEA_KEY_EJECT = 281,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_END	src/tea.h	/^    TEA_KEY_END = 77,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_EQUALS	src/tea.h	/^    TEA_KEY_EQUALS = 46,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_ESCAPE	src/tea.h	/^    TEA_KEY_ESCAPE = 41,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_EXECUTE	src/tea.h	/^    TEA_KEY_EXECUTE = 116,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_EXSEL	src/tea.h	/^    TEA_KEY_EXSEL = 164,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F	src/tea.h	/^    TEA_KEY_F = 9,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F1	src/tea.h	/^    TEA_KEY_F1 = 58,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F10	src/tea.h	/^    TEA_KEY_F10 = 67,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F11	src/tea.h	/^    TEA_KEY_F11 = 68,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F12	src/tea.h	/^    TEA_KEY_F12 = 69,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F13	src/tea.h	/^    TEA_KEY_F13 = 104,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F14	src/tea.h	/^    TEA_KEY_F14 = 105,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F15	src/tea.h	/^    TEA_KEY_F15 = 106,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F16	src/tea.h	/^    TEA_KEY_F16 = 107,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F17	src/tea.h	/^    TEA_KEY_F17 = 108,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F18	src/tea.h	/^    TEA_KEY_F18 = 109,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F19	src/tea.h	/^    TEA_KEY_F19 = 110,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F2	src/tea.h	/^    TEA_KEY_F2 = 59,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F20	src/tea.h	/^    TEA_KEY_F20 = 111,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F21	src/tea.h	/^    TEA_KEY_F21 = 112,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F22	src/tea.h	/^    TEA_KEY_F22 = 113,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F23	src/tea.h	/^    TEA_KEY_F23 = 114,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F24	src/tea.h	/^    TEA_KEY_F24 = 115,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F3	src/tea.h	/^    TEA_KEY_F3 = 60,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F4	src/tea.h	/^    TEA_KEY_F4 = 61,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F5	src/tea.h	/^    TEA_KEY_F5 = 62,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F6	src/tea.h	/^    TEA_KEY_F6 = 63,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F7	src/tea.h	/^    TEA_KEY_F7 = 64,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F8	src/tea.h	/^    TEA_KEY_F8 = 65,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_F9	src/tea.h	/^    TEA_KEY_F9 = 66,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_FIND	src/tea.h	/^    TEA_KEY_FIND = 126,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_G	src/tea.h	/^    TEA_KEY_G = 10,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_GRAVE	src/tea.h	/^    TEA_KEY_GRAVE = 53, \/**< Located in the top left corner (on both ANSI$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_H	src/tea.h	/^    TEA_KEY_H = 11,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_HELP	src/tea.h	/^    TEA_KEY_HELP = 117,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_HOME	src/tea.h	/^    TEA_KEY_HOME = 74,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_I	src/tea.h	/^    TEA_KEY_I = 12,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INSERT	src/tea.h	/^    TEA_KEY_INSERT = 73, \/**< insert on PC, help on some Mac keyboards (but$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL1	src/tea.h	/^    TEA_KEY_INTERNATIONAL1 = 135, \/**< used on Asian keyboards, see$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL2	src/tea.h	/^    TEA_KEY_INTERNATIONAL2 = 136,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL3	src/tea.h	/^    TEA_KEY_INTERNATIONAL3 = 137, \/**< Yen *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL4	src/tea.h	/^    TEA_KEY_INTERNATIONAL4 = 138,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL5	src/tea.h	/^    TEA_KEY_INTERNATIONAL5 = 139,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL6	src/tea.h	/^    TEA_KEY_INTERNATIONAL6 = 140,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL7	src/tea.h	/^    TEA_KEY_INTERNATIONAL7 = 141,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL8	src/tea.h	/^    TEA_KEY_INTERNATIONAL8 = 142,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_INTERNATIONAL9	src/tea.h	/^    TEA_KEY_INTERNATIONAL9 = 143,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_J	src/tea.h	/^    TEA_KEY_J = 13,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_K	src/tea.h	/^    TEA_KEY_K = 14,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KBDILLUMDOWN	src/tea.h	/^    TEA_KEY_KBDILLUMDOWN = 279,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KBDILLUMTOGGLE	src/tea.h	/^    TEA_KEY_KBDILLUMTOGGLE = 278,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KBDILLUMUP	src/tea.h	/^    TEA_KEY_KBDILLUMUP = 280,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_0	src/tea.h	/^    TEA_KEY_KP_0 = 98,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_00	src/tea.h	/^    TEA_KEY_KP_00 = 176,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_000	src/tea.h	/^    TEA_KEY_KP_000 = 177,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_1	src/tea.h	/^    TEA_KEY_KP_1 = 89,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_2	src/tea.h	/^    TEA_KEY_KP_2 = 90,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_3	src/tea.h	/^    TEA_KEY_KP_3 = 91,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_4	src/tea.h	/^    TEA_KEY_KP_4 = 92,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_5	src/tea.h	/^    TEA_KEY_KP_5 = 93,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_6	src/tea.h	/^    TEA_KEY_KP_6 = 94,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_7	src/tea.h	/^    TEA_KEY_KP_7 = 95,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_8	src/tea.h	/^    TEA_KEY_KP_8 = 96,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_9	src/tea.h	/^    TEA_KEY_KP_9 = 97,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_A	src/tea.h	/^    TEA_KEY_KP_A = 188,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_AMPERSAND	src/tea.h	/^    TEA_KEY_KP_AMPERSAND = 199,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_AT	src/tea.h	/^    TEA_KEY_KP_AT = 206,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_B	src/tea.h	/^    TEA_KEY_KP_B = 189,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_BACKSPACE	src/tea.h	/^    TEA_KEY_KP_BACKSPACE = 187,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_BINARY	src/tea.h	/^    TEA_KEY_KP_BINARY = 218,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_C	src/tea.h	/^    TEA_KEY_KP_C = 190,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_CLEAR	src/tea.h	/^    TEA_KEY_KP_CLEAR = 216,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_CLEARENTRY	src/tea.h	/^    TEA_KEY_KP_CLEARENTRY = 217,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_COLON	src/tea.h	/^    TEA_KEY_KP_COLON = 203,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_COMMA	src/tea.h	/^    TEA_KEY_KP_COMMA = 133,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_D	src/tea.h	/^    TEA_KEY_KP_D = 191,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_DBLAMPERSAND	src/tea.h	/^    TEA_KEY_KP_DBLAMPERSAND = 200,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_DBLVERTICALBAR	src/tea.h	/^    TEA_KEY_KP_DBLVERTICALBAR = 202,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_DECIMAL	src/tea.h	/^    TEA_KEY_KP_DECIMAL = 220,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_DIVIDE	src/tea.h	/^    TEA_KEY_KP_DIVIDE = 84,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_E	src/tea.h	/^    TEA_KEY_KP_E = 192,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_ENTER	src/tea.h	/^    TEA_KEY_KP_ENTER = 88,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_EQUALS	src/tea.h	/^    TEA_KEY_KP_EQUALS = 103,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_EQUALSAS400	src/tea.h	/^    TEA_KEY_KP_EQUALSAS400 = 134,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_EXCLAM	src/tea.h	/^    TEA_KEY_KP_EXCLAM = 207,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_F	src/tea.h	/^    TEA_KEY_KP_F = 193,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_GREATER	src/tea.h	/^    TEA_KEY_KP_GREATER = 198,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_HASH	src/tea.h	/^    TEA_KEY_KP_HASH = 204,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_HEXADECIMAL	src/tea.h	/^    TEA_KEY_KP_HEXADECIMAL = 221,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_LEFTBRACE	src/tea.h	/^    TEA_KEY_KP_LEFTBRACE = 184,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_LEFTPAREN	src/tea.h	/^    TEA_KEY_KP_LEFTPAREN = 182,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_LESS	src/tea.h	/^    TEA_KEY_KP_LESS = 197,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMADD	src/tea.h	/^    TEA_KEY_KP_MEMADD = 211,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMCLEAR	src/tea.h	/^    TEA_KEY_KP_MEMCLEAR = 210,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMDIVIDE	src/tea.h	/^    TEA_KEY_KP_MEMDIVIDE = 214,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMMULTIPLY	src/tea.h	/^    TEA_KEY_KP_MEMMULTIPLY = 213,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMRECALL	src/tea.h	/^    TEA_KEY_KP_MEMRECALL = 209,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMSTORE	src/tea.h	/^    TEA_KEY_KP_MEMSTORE = 208,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MEMSUBTRACT	src/tea.h	/^    TEA_KEY_KP_MEMSUBTRACT = 212,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MINUS	src/tea.h	/^    TEA_KEY_KP_MINUS = 86,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_MULTIPLY	src/tea.h	/^    TEA_KEY_KP_MULTIPLY = 85,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_OCTAL	src/tea.h	/^    TEA_KEY_KP_OCTAL = 219,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_PERCENT	src/tea.h	/^    TEA_KEY_KP_PERCENT = 196,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_PERIOD	src/tea.h	/^    TEA_KEY_KP_PERIOD = 99,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_PLUS	src/tea.h	/^    TEA_KEY_KP_PLUS = 87,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_PLUSMINUS	src/tea.h	/^    TEA_KEY_KP_PLUSMINUS = 215,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_POWER	src/tea.h	/^    TEA_KEY_KP_POWER = 195,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_RIGHTBRACE	src/tea.h	/^    TEA_KEY_KP_RIGHTBRACE = 185,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_RIGHTPAREN	src/tea.h	/^    TEA_KEY_KP_RIGHTPAREN = 183,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_SPACE	src/tea.h	/^    TEA_KEY_KP_SPACE = 205,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_TAB	src/tea.h	/^    TEA_KEY_KP_TAB = 186,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_VERTICALBAR	src/tea.h	/^    TEA_KEY_KP_VERTICALBAR = 201,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_KP_XOR	src/tea.h	/^    TEA_KEY_KP_XOR = 194,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_L	src/tea.h	/^    TEA_KEY_L = 15,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LALT	src/tea.h	/^    TEA_KEY_LALT = 226, \/**< alt, option *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG1	src/tea.h	/^    TEA_KEY_LANG1 = 144, \/**< Hangul\/English toggle *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG2	src/tea.h	/^    TEA_KEY_LANG2 = 145, \/**< Hanja conversion *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG3	src/tea.h	/^    TEA_KEY_LANG3 = 146, \/**< Katakana *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG4	src/tea.h	/^    TEA_KEY_LANG4 = 147, \/**< Hiragana *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG5	src/tea.h	/^    TEA_KEY_LANG5 = 148, \/**< Zenkaku\/Hankaku *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG6	src/tea.h	/^    TEA_KEY_LANG6 = 149, \/**< reserved *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG7	src/tea.h	/^    TEA_KEY_LANG7 = 150, \/**< reserved *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG8	src/tea.h	/^    TEA_KEY_LANG8 = 151, \/**< reserved *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LANG9	src/tea.h	/^    TEA_KEY_LANG9 = 152, \/**< reserved *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LCTRL	src/tea.h	/^    TEA_KEY_LCTRL = 224,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LEFT	src/tea.h	/^    TEA_KEY_LEFT = 80,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LEFTBRACKET	src/tea.h	/^    TEA_KEY_LEFTBRACKET = 47,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LGUI	src/tea.h	/^    TEA_KEY_LGUI = 227, \/**< windows, command(apple), meta *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_LSHIFT	src/tea.h	/^    TEA_KEY_LSHIFT = 225,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_M	src/tea.h	/^    TEA_KEY_M = 16,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_MAIL	src/tea.h	/^    TEA_KEY_MAIL = 265,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_MEDIASELECT	src/tea.h	/^    TEA_KEY_MEDIASELECT = 263,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_MENU	src/tea.h	/^    TEA_KEY_MENU = 118,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_MINUS	src/tea.h	/^    TEA_KEY_MINUS = 45,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_MODE	src/tea.h	/^    TEA_KEY_MODE = 257,    \/**< I'm not sure if this is really not covered$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_MUTE	src/tea.h	/^    TEA_KEY_MUTE = 127,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_N	src/tea.h	/^    TEA_KEY_N = 17,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_NONUSBACKSLASH	src/tea.h	/^    TEA_KEY_NONUSBACKSLASH = 100, \/**< This is the additional key that ISO$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_NONUSHASH	src/tea.h	/^    TEA_KEY_NONUSHASH = 50, \/**< ISO USB keyboards actually use this code$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_NUMLOCKCLEAR	src/tea.h	/^    TEA_KEY_NUMLOCKCLEAR = 83, \/**< num lock on PC, clear on Mac keyboards$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_O	src/tea.h	/^    TEA_KEY_O = 18,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_OPER	src/tea.h	/^    TEA_KEY_OPER = 161,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_OUT	src/tea.h	/^    TEA_KEY_OUT = 160,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_P	src/tea.h	/^    TEA_KEY_P = 19,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PAGEDOWN	src/tea.h	/^    TEA_KEY_PAGEDOWN = 78,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PAGEUP	src/tea.h	/^    TEA_KEY_PAGEUP = 75,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PASTE	src/tea.h	/^    TEA_KEY_PASTE = 125,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PAUSE	src/tea.h	/^    TEA_KEY_PAUSE = 72,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PERIOD	src/tea.h	/^    TEA_KEY_PERIOD = 55,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_POWER	src/tea.h	/^    TEA_KEY_POWER = 102, \/**< The USB document says this is a status flag,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PRINTSCREEN	src/tea.h	/^    TEA_KEY_PRINTSCREEN = 70,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_PRIOR	src/tea.h	/^    TEA_KEY_PRIOR = 157,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_Q	src/tea.h	/^    TEA_KEY_Q = 20,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_R	src/tea.h	/^    TEA_KEY_R = 21,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RALT	src/tea.h	/^    TEA_KEY_RALT = 230, \/**< alt gr, option *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RCTRL	src/tea.h	/^    TEA_KEY_RCTRL = 228,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RETURN	src/tea.h	/^    TEA_KEY_RETURN = 40,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RETURN2	src/tea.h	/^    TEA_KEY_RETURN2 = 158,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RGUI	src/tea.h	/^    TEA_KEY_RGUI = 231, \/**< windows, command (apple), meta *\/$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RIGHT	src/tea.h	/^    TEA_KEY_RIGHT = 79,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RIGHTBRACKET	src/tea.h	/^    TEA_KEY_RIGHTBRACKET = 48,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_RSHIFT	src/tea.h	/^    TEA_KEY_RSHIFT = 229,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_S	src/tea.h	/^    TEA_KEY_S = 22,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SCROLLLOCK	src/tea.h	/^    TEA_KEY_SCROLLLOCK = 71,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SELECT	src/tea.h	/^    TEA_KEY_SELECT = 119,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SEMICOLON	src/tea.h	/^    TEA_KEY_SEMICOLON = 51,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SEPARATOR	src/tea.h	/^    TEA_KEY_SEPARATOR = 159,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SLASH	src/tea.h	/^    TEA_KEY_SLASH = 56,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SLEEP	src/tea.h	/^    TEA_KEY_SLEEP = 282,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SPACE	src/tea.h	/^    TEA_KEY_SPACE = 44,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_STOP	src/tea.h	/^    TEA_KEY_STOP = 120,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_SYSREQ	src/tea.h	/^    TEA_KEY_SYSREQ = 154,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_T	src/tea.h	/^    TEA_KEY_T = 23,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_TAB	src/tea.h	/^    TEA_KEY_TAB = 43,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_THOUSANDSSEPARATOR	src/tea.h	/^    TEA_KEY_THOUSANDSSEPARATOR = 178,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_U	src/tea.h	/^    TEA_KEY_U = 24,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_UNDO	src/tea.h	/^    TEA_KEY_UNDO = 122,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_UNKNOWN	src/tea.h	/^    TEA_KEY_UNKNOWN = 0,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_UP	src/tea.h	/^    TEA_KEY_UP = 82,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_V	src/tea.h	/^    TEA_KEY_V = 25,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_VOLUMEDOWN	src/tea.h	/^    TEA_KEY_VOLUMEDOWN = 129,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_VOLUMEUP	src/tea.h	/^    TEA_KEY_VOLUMEUP = 128,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_W	src/tea.h	/^    TEA_KEY_W = 26,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_WWW	src/tea.h	/^    TEA_KEY_WWW = 264,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_X	src/tea.h	/^    TEA_KEY_X = 27,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_Y	src/tea.h	/^    TEA_KEY_Y = 28,$/;"	e	enum:__anonb6282e2c0203
-TEA_KEY_Z	src/tea.h	/^    TEA_KEY_Z = 29,$/;"	e	enum:__anonb6282e2c0203
-TEA_LINE	src/tea.h	/^  TEA_LINE = 0,$/;"	e	enum:__anonb6282e2c0503
-TEA_MOUSE_BUTTON	src/tea.h	/^} TEA_MOUSE_BUTTON;$/;"	t	typeref:enum:__anonb6282e2c0103
-TEA_PIXELFORMAT	src/tea.h	/^} TEA_PIXELFORMAT;$/;"	t	typeref:enum:__anonb6282e2c0303
-TEA_PIXELFORMAT_COUNT	src/tea.h	/^  TEA_PIXELFORMAT_COUNT$/;"	e	enum:__anonb6282e2c0303
-TEA_RED	src/tea.h	/^  TEA_RED,$/;"	e	enum:__anonb6282e2c0303
-TEA_RENDER_FLAGS	src/tea.h	/^} TEA_RENDER_FLAGS;$/;"	t	typeref:enum:__anonb6282e2c0403
-TEA_RGB	src/tea.h	/^  TEA_RGB,$/;"	e	enum:__anonb6282e2c0303
-TEA_RGBA	src/tea.h	/^  TEA_RGBA,$/;"	e	enum:__anonb6282e2c0303
-TEA_SOFTWARE_RENDER	src/tea.h	/^  TEA_SOFTWARE_RENDER = (1 << 0),$/;"	e	enum:__anonb6282e2c0403
-TEA_VALUE	src/tea.h	/^#define TEA_VALUE /;"	d
-TEA_VERSION	src/tea.h	/^#define TEA_VERSION /;"	d
-TE_API	src/tea.h	/^#define TE_API /;"	d
-TE_ASSERT	src/tea.h	/^#define TE_ASSERT(/;"	d
-Tea	src/tea.c	/^struct Tea {$/;"	s	file:
-Tea	src/tea.h	/^typedef struct Tea Tea;$/;"	t	typeref:struct:Tea
-Texture	src/tea.c	/^struct Texture {$/;"	s	file:
-Texture	src/tea.c	/^typedef SDL_Texture Texture;$/;"	t	typeref:typename:SDL_Texture	file:
-Texture	src/tea.c	/^typedef struct Texture Texture;$/;"	t	typeref:struct:Texture	file:
-WHITE	src/tea.h	/^#define WHITE /;"	d
-__anonb6282e27010a	src/tea.c	/^  union {$/;"	u	struct:te_RenderTarget	file:
-__anonb6282e270208	src/tea.c	/^    struct {$/;"	s	union:te_RenderTarget::__anonb6282e27010a	file:
-__anonb6282e270308	src/tea.c	/^  struct {$/;"	s	struct:te_Font	file:
-__anonb6282e270408	src/tea.c	/^  struct {$/;"	s	struct:Tea	file:
-__anonb6282e270508	src/tea.c	/^  struct {$/;"	s	struct:Tea	file:
-__anonb6282e270608	src/tea.c	/^  struct {$/;"	s	struct:Tea	file:
-__anonb6282e2c0103	src/tea.h	/^typedef enum {$/;"	g
-__anonb6282e2c0203	src/tea.h	/^typedef enum {$/;"	g
-__anonb6282e2c0303	src/tea.h	/^typedef enum {$/;"	g
-__anonb6282e2c0403	src/tea.h	/^typedef enum {$/;"	g
-__anonb6282e2c0503	src/tea.h	/^typedef enum {$/;"	g
-__anonb6282e2c0608	src/tea.h	/^typedef struct { TEA_VALUE x, y; } te_Point;$/;"	s
-__anonb6282e2c0708	src/tea.h	/^typedef struct { TEA_VALUE x, y, w, h; } te_Rect;$/;"	s
-__anonb6282e2c0808	src/tea.h	/^typedef struct { unsigned char r, g, b, a; } te_Color;$/;"	s
-__anonb6282e2c0903	src/tea.h	/^typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;$/;"	g
-__anonb6282e2c0a08	src/tea.h	/^typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Tran/;"	s
-_clear_color	src/tea.c	/^  te_Color _clear_color;$/;"	m	struct:Tea	typeref:typename:te_Color	file:
-_color	src/tea.c	/^  te_Color _color;$/;"	m	struct:Tea	typeref:typename:te_Color	file:
-_conf	src/tea.c	/^static te_Config _conf;$/;"	v	typeref:typename:te_Config	file:
-_create_rtarget	src/tea.c	/^static int _create_rtarget(int w, int h, unsigned int format) {$/;"	f	typeref:typename:int	file:
-_create_texture	src/tea.c	/^static int _create_texture(int w, int h, unsigned int format, int access) {$/;"	f	typeref:typename:int	file:
-_ctx	src/tea.c	/^static Tea _ctx;$/;"	v	typeref:typename:Tea	file:
-_draw_fill_circle	src/tea.c	/^void _draw_fill_circle(te_Point p, TEA_VALUE radius) {$/;"	f	typeref:typename:void
-_draw_fill_rect	src/tea.c	/^void _draw_fill_rect(te_Rect rect) {$/;"	f	typeref:typename:void
-_draw_fill_triangle	src/tea.c	/^void _draw_fill_triangle(te_Point p0, te_Point p1, te_Point p2) {$/;"	f	typeref:typename:void
-_draw_line_circle	src/tea.c	/^void _draw_line_circle(te_Point p, TEA_VALUE radius) {$/;"	f	typeref:typename:void
-_draw_line_rect	src/tea.c	/^void _draw_line_rect(te_Rect rect) {$/;"	f	typeref:typename:void
-_draw_line_triangle	src/tea.c	/^void _draw_line_triangle(te_Point p0, te_Point p1, te_Point p2) {$/;"	f	typeref:typename:void
-_mode	src/tea.c	/^  TEA_DRAW_MODE _mode;$/;"	m	struct:Tea	typeref:typename:TEA_DRAW_MODE	file:
-_push_rtarget	src/tea.c	/^static int _push_rtarget(te_RenderTarget target) {$/;"	f	typeref:typename:int	file:
-_set_texture	src/tea.c	/^static int _set_texture(te_Texture tex) {$/;"	f	typeref:typename:int	file:
-a	src/tea.h	/^typedef struct { unsigned char r, g, b, a; } te_Color;$/;"	m	struct:__anonb6282e2c0808	typeref:typename:unsigned char
-angle	src/tea.h	/^typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Tran/;"	m	struct:__anonb6282e2c0a08	typeref:typename:TEA_VALUE
-atlas_vao	src/tea.c	/^  unsigned int atlas_vao;$/;"	m	struct:te_Font	typeref:typename:unsigned int	file:
-atlas_vbo	src/tea.c	/^  unsigned int atlas_vbo;$/;"	m	struct:te_Font	typeref:typename:unsigned int	file:
-ax	src/tea.c	/^    int ax; \/\/ advance.x$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:int	file:
-ay	src/tea.c	/^    int ay; \/\/ advance.y$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:int	file:
-b	src/tea.h	/^typedef struct { unsigned char r, g, b, a; } te_Color;$/;"	m	struct:__anonb6282e2c0808	typeref:typename:unsigned char
-baseline	src/tea.c	/^  int baseline;$/;"	m	struct:te_Font	typeref:typename:int	file:
-bh	src/tea.c	/^    int bh; \/\/ bitmap.rows;$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:int	file:
-bl	src/tea.c	/^    int bl; \/\/ bitmap_left;$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:int	file:
-bt	src/tea.c	/^    int bt; \/\/ bitmap_top;$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:int	file:
-bw	src/tea.c	/^    int bw; \/\/ bitmap.width;$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:int	file:
-c	src/tea.c	/^  } c[MAX_FONT_CHAR];$/;"	m	struct:te_Font	typeref:struct:te_Font::__anonb6282e270308[]	file:
-calc_vec_scale	src/tea.c	/^static te_Point calc_vec_scale(te_Point p0, te_Point p1, te_Point scale) {$/;"	f	typeref:typename:te_Point	file:
-canvas	src/tea.c	/^    Canvas *canvas[STACK_MAX];$/;"	m	struct:Tea::__anonb6282e270508	typeref:typename:Canvas * []	file:
-circle_fn	src/tea.c	/^static RenderCircleFn circle_fn[2] = {_draw_line_circle, _draw_fill_circle};$/;"	v	typeref:typename:RenderCircleFn[2]	file:
-cp	src/tea.c	/^    unsigned char cp; \/\/ canvas pointer$/;"	m	struct:Tea::__anonb6282e270508	typeref:typename:unsigned char	file:
-cross_prod	src/tea.c	/^static int cross_prod(te_Point v0, te_Point v1) {$/;"	f	typeref:typename:int	file:
-current_time	src/tea.c	/^    Uint32 current_time;$/;"	m	struct:Tea::__anonb6282e270608	typeref:typename:Uint32	file:
-current_transform	src/tea.c	/^  te_Transform current_transform;$/;"	m	struct:Tea	typeref:typename:te_Transform	file:
-data	src/tea.c	/^  void *data;$/;"	m	struct:te_Font	typeref:typename:void *	file:
-delta	src/tea.c	/^    float delta;$/;"	m	struct:Tea::__anonb6282e270608	typeref:typename:float	file:
-event	src/tea.c	/^  te_Event event;$/;"	m	struct:Tea	typeref:typename:te_Event	file:
-fbo	src/tea.c	/^  unsigned int fbo;$/;"	m	struct:te_RenderTarget	typeref:typename:unsigned int	file:
-fill_bottom_flat_triangle	src/tea.c	/^static void fill_bottom_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {$/;"	f	typeref:typename:void	file:
-fill_top_flat_triangle	src/tea.c	/^static void fill_top_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {$/;"	f	typeref:typename:void	file:
-filter	src/tea.c	/^      unsigned short filter[2];$/;"	m	struct:te_RenderTarget::__anonb6282e27010a::__anonb6282e270208	typeref:typename:unsigned short[2]	file:
-filter	src/tea.c	/^  int wrap[2], filter[2];$/;"	m	struct:Texture	typeref:typename:int[2]	file:
-filter	src/tea.c	/^  unsigned short filter[2];$/;"	m	struct:te_Texture	typeref:typename:unsigned short[2]	file:
-flags	src/tea.h	/^  int flags;$/;"	m	struct:te_Config	typeref:typename:int
-fps	src/tea.c	/^    Uint32 fps;$/;"	m	struct:Tea::__anonb6282e270608	typeref:typename:Uint32	file:
-frame	src/tea.c	/^    Uint32 frame;$/;"	m	struct:Tea::__anonb6282e270608	typeref:typename:Uint32	file:
-g	src/tea.h	/^typedef struct { unsigned char r, g, b, a; } te_Color;$/;"	m	struct:__anonb6282e2c0808	typeref:typename:unsigned char
-get_intersection	src/tea.c	/^static int get_intersection(te_Point p0, te_Point p1, te_Point p2, te_Point p3, te_Point *out) {$/;"	f	typeref:typename:int	file:
-h	src/tea.h	/^typedef struct { TEA_VALUE x, y, w, h; } te_Rect;$/;"	m	struct:__anonb6282e2c0708	typeref:typename:TEA_VALUE
-height	src/tea.c	/^      unsigned int width, height;$/;"	m	struct:te_RenderTarget::__anonb6282e27010a::__anonb6282e270208	typeref:typename:unsigned int	file:
-height	src/tea.c	/^  int width, height;$/;"	m	struct:Texture	typeref:typename:int	file:
-height	src/tea.c	/^  unsigned int width, height;$/;"	m	struct:te_Texture	typeref:typename:unsigned int	file:
-height	src/tea.h	/^  int width, height;$/;"	m	struct:te_Config	typeref:typename:int
-id	src/tea.c	/^  unsigned int id;$/;"	m	struct:Texture	typeref:typename:unsigned int	file:
-info	src/tea.c	/^  stbtt_fontinfo info;$/;"	m	struct:te_Font	typeref:typename:stbtt_fontinfo	file:
-input	src/tea.c	/^  } input;$/;"	m	struct:Tea	typeref:struct:Tea::__anonb6282e270408	file:
-key_array	src/tea.c	/^    const Uint8* key_array;$/;"	m	struct:Tea::__anonb6282e270408	typeref:typename:const Uint8 *	file:
-old_button	src/tea.c	/^    Uint8 old_button;    $/;"	m	struct:Tea::__anonb6282e270408	typeref:typename:Uint8	file:
-old_key	src/tea.c	/^    Uint8 old_key[TEA_KEY_COUNT];$/;"	m	struct:Tea::__anonb6282e270408	typeref:typename:Uint8[]	file:
-origin	src/tea.h	/^typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Tran/;"	m	struct:__anonb6282e2c0a08	typeref:typename:te_Point
-points_ord_y	src/tea.c	/^static void points_ord_y(te_Point *points, int len) {$/;"	f	typeref:typename:void	file:
-prev_fps_time	src/tea.c	/^    Uint32 prev_fps_time;$/;"	m	struct:Tea::__anonb6282e270608	typeref:typename:Uint32	file:
-prev_time	src/tea.c	/^    Uint32 prev_time;$/;"	m	struct:Tea::__anonb6282e270608	typeref:typename:Uint32	file:
-ptsize	src/tea.c	/^  float ptsize;$/;"	m	struct:te_Font	typeref:typename:float	file:
-r	src/tea.h	/^typedef struct { unsigned char r, g, b, a; } te_Color;$/;"	m	struct:__anonb6282e2c0808	typeref:typename:unsigned char
-rect_fn	src/tea.c	/^static RenderRectFn rect_fn[2] = {_draw_line_rect, _draw_fill_rect};$/;"	v	typeref:typename:RenderRectFn[2]	file:
-render	src/tea.c	/^  te_Render *render;$/;"	m	struct:Tea	typeref:typename:te_Render *	file:
-render_flags	src/tea.h	/^  int render_flags;$/;"	m	struct:te_Config	typeref:typename:int
-scale	src/tea.c	/^  float scale;$/;"	m	struct:te_Font	typeref:typename:float	file:
-scale	src/tea.h	/^typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Tran/;"	m	struct:__anonb6282e2c0a08	typeref:typename:te_Point
-shader	src/tea.c	/^    te_Shader *shader[STACK_MAX];$/;"	m	struct:Tea::__anonb6282e270508	typeref:typename:te_Shader * []	file:
-size	src/tea.c	/^  unsigned char size;$/;"	m	struct:te_Font	typeref:typename:unsigned char	file:
-sp	src/tea.c	/^    unsigned char sp; \/\/ shader pointer$/;"	m	struct:Tea::__anonb6282e270508	typeref:typename:unsigned char	file:
-stack	src/tea.c	/^  } stack;   $/;"	m	struct:Tea	typeref:struct:Tea::__anonb6282e270508	file:
-stex	src/tea.c	/^      SDL_Texture* stex;$/;"	m	struct:te_RenderTarget::__anonb6282e27010a::__anonb6282e270208	typeref:typename:SDL_Texture *	file:
-targets	src/tea.c	/^  te_RenderTarget targets[MAX_RTARGETS];$/;"	m	struct:Tea	typeref:typename:te_RenderTarget[]	file:
-te_Canvas	src/tea.h	/^typedef unsigned int te_Canvas;$/;"	t	typeref:typename:unsigned int
-te_Color	src/tea.h	/^typedef struct { unsigned char r, g, b, a; } te_Color;$/;"	t	typeref:struct:__anonb6282e2c0808
-te_Config	src/tea.h	/^struct te_Config {$/;"	s
-te_Config	src/tea.h	/^typedef struct te_Config te_Config;$/;"	t	typeref:struct:te_Config
-te_Event	src/tea.h	/^typedef SDL_Event te_Event;$/;"	t	typeref:typename:SDL_Event
-te_Font	src/tea.c	/^struct te_Font {$/;"	s	file:
-te_Font	src/tea.h	/^typedef struct te_Font te_Font;$/;"	t	typeref:struct:te_Font
-te_Image	src/tea.h	/^typedef unsigned int te_Image;$/;"	t	typeref:typename:unsigned int
-te_Point	src/tea.h	/^typedef struct { TEA_VALUE x, y; } te_Point;$/;"	t	typeref:struct:__anonb6282e2c0608
-te_Rect	src/tea.h	/^typedef struct { TEA_VALUE x, y, w, h; } te_Rect;$/;"	t	typeref:struct:__anonb6282e2c0708
-te_Render	src/tea.h	/^typedef SDL_Renderer te_Render;$/;"	t	typeref:typename:SDL_Renderer
-te_RenderFlip	src/tea.h	/^typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;$/;"	t	typeref:enum:__anonb6282e2c0903
-te_RenderTarget	src/tea.c	/^struct te_RenderTarget {$/;"	s	file:
-te_RenderTarget	src/tea.h	/^typedef struct te_RenderTarget te_RenderTarget;$/;"	t	typeref:struct:te_RenderTarget
-te_Shader	src/tea.h	/^typedef struct te_Shader te_Shader;$/;"	t	typeref:struct:te_Shader
-te_Texture	src/tea.c	/^struct te_Texture {$/;"	s	file:
-te_Texture	src/tea.h	/^typedef struct te_Texture te_Texture;$/;"	t	typeref:struct:te_Texture
-te_Transform	src/tea.h	/^typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Tran/;"	t	typeref:struct:__anonb6282e2c0a08
-te_Window	src/tea.h	/^typedef SDL_Window te_Window;$/;"	t	typeref:typename:SDL_Window
-tea	src/tea.c	/^#define tea(/;"	d	file:
-tea_begin_render	src/tea.c	/^void tea_begin_render() {$/;"	f	typeref:typename:void
-tea_canvas	src/tea.c	/^te_Canvas tea_canvas(int width, int height) {$/;"	f	typeref:typename:te_Canvas
-tea_canvas_render_target	src/tea.c	/^te_RenderTarget* tea_canvas_render_target(te_Canvas canvas) {$/;"	f	typeref:typename:te_RenderTarget *
-tea_canvas_set	src/tea.c	/^void tea_canvas_set(te_Canvas canvas) {$/;"	f	typeref:typename:void
-tea_canvas_texture	src/tea.c	/^te_Texture* tea_canvas_texture(te_Canvas canvas) {$/;"	f	typeref:typename:te_Texture *
-tea_clear_color	src/tea.c	/^void tea_clear_color(te_Color color) {$/;"	f	typeref:typename:void
-tea_color	src/tea.h	/^#define tea_color(/;"	d
-tea_config_init	src/tea.c	/^int tea_config_init(te_Config *conf, const char *title, int width, int height) {$/;"	f	typeref:typename:int
-tea_context	src/tea.c	/^Tea* tea_context() {$/;"	f	typeref:typename:Tea *
-tea_draw_canvas	src/tea.c	/^void tea_draw_canvas(te_Canvas canvas, te_Rect *rect, te_Point pos) {$/;"	f	typeref:typename:void
-tea_draw_circle	src/tea.c	/^void tea_draw_circle(te_Point p, TEA_VALUE radius) {$/;"	f	typeref:typename:void
-tea_draw_color	src/tea.c	/^void tea_draw_color(te_Color color) {$/;"	f	typeref:typename:void
-tea_draw_image	src/tea.c	/^void tea_draw_image(te_Image img, te_Rect *r, te_Point p) {$/;"	f	typeref:typename:void
-tea_draw_image_ex	src/tea.c	/^void tea_draw_image_ex(te_Image img, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te/;"	f	typeref:typename:void
-tea_draw_line	src/tea.c	/^void tea_draw_line(te_Point p0, te_Point p1) {$/;"	f	typeref:typename:void
-tea_draw_mode	src/tea.c	/^void tea_draw_mode(TEA_DRAW_MODE mode) {$/;"	f	typeref:typename:void
-tea_draw_point	src/tea.c	/^void tea_draw_point(te_Point p) {$/;"	f	typeref:typename:void
-tea_draw_rect	src/tea.c	/^void tea_draw_rect(te_Rect r) {$/;"	f	typeref:typename:void
-tea_draw_rect_	src/tea.c	/^void tea_draw_rect_(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h) {$/;"	f	typeref:typename:void
-tea_draw_rect_point	src/tea.c	/^void tea_draw_rect_point(te_Point p, te_Point s) {$/;"	f	typeref:typename:void
-tea_draw_text	src/tea.c	/^void tea_draw_text(te_Font *font, const char *text, te_Point pos) {$/;"	f	typeref:typename:void
-tea_draw_texture	src/tea.c	/^void tea_draw_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {$/;"	f	typeref:typename:void
-tea_draw_texture_ex	src/tea.c	/^void tea_draw_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point/;"	f	typeref:typename:void
-tea_draw_triangle	src/tea.c	/^void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2) {$/;"	f	typeref:typename:void
-tea_end_render	src/tea.c	/^void tea_end_render() {$/;"	f	typeref:typename:void
-tea_error	src/tea.c	/^void tea_error(const char *msg) {$/;"	f	typeref:typename:void
-tea_font	src/tea.c	/^te_Font* tea_font(const void *data, size_t buf_size, int font_size) {$/;"	f	typeref:typename:te_Font *
-tea_font_char_rect	src/tea.c	/^void tea_font_char_rect(te_Font *font, const unsigned int c, te_Rect *r) {$/;"	f	typeref:typename:void
-tea_font_destroy	src/tea.c	/^void tea_font_destroy(te_Font *font) {$/;"	f	typeref:typename:void
-tea_font_get_rect	src/tea.c	/^void tea_font_get_rect(te_Font* font, const int c, TEA_VALUE *x, TEA_VALUE *y, te_Point *out_pos/;"	f	typeref:typename:void
-tea_font_init	src/tea.c	/^int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_size) {$/;"	f	typeref:typename:int
-tea_font_load	src/tea.c	/^te_Font* tea_font_load(const char *filename, int font_size) {$/;"	f	typeref:typename:te_Font *
-tea_get_delta	src/tea.c	/^float tea_get_delta() {$/;"	f	typeref:typename:float
-tea_get_framerate	src/tea.c	/^int tea_get_framerate() {$/;"	f	typeref:typename:int
-tea_get_transform	src/tea.c	/^te_Transform tea_get_transform() {$/;"	f	typeref:typename:te_Transform
-tea_image	src/tea.c	/^te_Image tea_image(int w, int h, int format) {$/;"	f	typeref:typename:te_Image
-tea_image_destroy	src/tea.c	/^tea_image_destroy(te_Image *img) {$/;"	f
-tea_image_height	src/tea.h	/^#define tea_image_height(/;"	d
-tea_image_load	src/tea.c	/^te_Image tea_image_load(const char *filename) {$/;"	f	typeref:typename:te_Image
-tea_image_size	src/tea.h	/^#define tea_image_size(/;"	d
-tea_image_texture	src/tea.c	/^te_Texture* tea_image_texture(te_Image img) {$/;"	f	typeref:typename:te_Texture *
-tea_image_width	src/tea.h	/^#define tea_image_width(/;"	d
-tea_init	src/tea.c	/^Tea* tea_init(te_Config *c) {$/;"	f	typeref:typename:Tea *
-tea_keyboard_is_down	src/tea.c	/^int tea_keyboard_is_down(int key) {$/;"	f	typeref:typename:int
-tea_keyboard_is_up	src/tea.c	/^int tea_keyboard_is_up(int key) {$/;"	f	typeref:typename:int
-tea_keyboard_was_pressed	src/tea.c	/^int tea_keyboard_was_pressed(int key) {$/;"	f	typeref:typename:int
-tea_keyboard_was_released	src/tea.c	/^int tea_keyboard_was_released(int key) {$/;"	f	typeref:typename:int
-tea_max	src/tea.h	/^#define tea_max(/;"	d
-tea_min	src/tea.h	/^#define tea_min(/;"	d
-tea_mouse_is_down	src/tea.c	/^int tea_mouse_is_down(int button) {$/;"	f	typeref:typename:int
-tea_mouse_is_up	src/tea.c	/^int tea_mouse_is_up(int button) {$/;"	f	typeref:typename:int
-tea_point	src/tea.h	/^#define tea_point(/;"	d
-tea_pop_canvas	src/tea.c	/^te_Canvas tea_pop_canvas() {$/;"	f	typeref:typename:te_Canvas
-tea_rect	src/tea.h	/^#define tea_rect(/;"	d
-tea_render_clear	src/tea.c	/^void tea_render_clear(te_Color color) {$/;"	f	typeref:typename:void
-tea_render_create	src/tea.c	/^te_Render* tea_render_create(te_Window *window, TEA_RENDER_FLAGS flags) {$/;"	f	typeref:typename:te_Render *
-tea_render_destroy	src/tea.c	/^void tea_render_destroy(te_Render *render) {$/;"	f	typeref:typename:void
-tea_render_draw_color	src/tea.c	/^void tea_render_draw_color(te_Color color) {$/;"	f	typeref:typename:void
-tea_render_line	src/tea.c	/^void tea_render_line(te_Point p0, te_Point p1) {$/;"	f	typeref:typename:void
-tea_render_point	src/tea.c	/^void tea_render_point(te_Point p) {$/;"	f	typeref:typename:void
-tea_render_swap	src/tea.c	/^void tea_render_swap(Tea *t) {$/;"	f	typeref:typename:void
-tea_render_target	src/tea.c	/^te_RenderTarget* tea_render_target(int w, int h, int format) {$/;"	f	typeref:typename:te_RenderTarget *
-tea_render_triangle_fill0	src/tea.c	/^void tea_render_triangle_fill0(te_Point p0, te_Point p1, te_Point p2) {$/;"	f	typeref:typename:void
-tea_set_angle	src/tea.c	/^void tea_set_angle(TEA_VALUE angle) {$/;"	f	typeref:typename:void
-tea_set_canvas	src/tea.c	/^void tea_set_canvas(te_Canvas canvas) {$/;"	f	typeref:typename:void
-tea_set_origin	src/tea.c	/^void tea_set_origin(te_Point origin) {$/;"	f	typeref:typename:void
-tea_set_render_target	src/tea.c	/^void tea_set_render_target(te_RenderTarget *target) {$/;"	f	typeref:typename:void
-tea_set_scale	src/tea.c	/^void tea_set_scale(te_Point scale) {$/;"	f	typeref:typename:void
-tea_set_transform	src/tea.c	/^void tea_set_transform(te_Transform *t) {$/;"	f	typeref:typename:void
-tea_set_translate	src/tea.c	/^void tea_set_translate(te_Point translate) {$/;"	f	typeref:typename:void
-tea_should_close	src/tea.c	/^int tea_should_close() {$/;"	f	typeref:typename:int
-tea_terminate	src/tea.c	/^void tea_terminate() {$/;"	f	typeref:typename:void
-tea_texture	src/tea.c	/^te_Texture* tea_texture(int w, int h, unsigned int format, int access) {$/;"	f	typeref:typename:te_Texture *
-tea_texture_height	src/tea.c	/^int tea_texture_height(te_Texture *tex) {$/;"	f	typeref:typename:int
-tea_texture_load	src/tea.c	/^te_Texture* tea_texture_load(const char *str) {$/;"	f	typeref:typename:te_Texture *
-tea_texture_memory	src/tea.c	/^te_Texture* tea_texture_memory(unsigned char *pixels, int w, int h, unsigned int format) {$/;"	f	typeref:typename:te_Texture *
-tea_texture_size	src/tea.c	/^void tea_texture_size(te_Texture *tex, te_Point *size) {$/;"	f	typeref:typename:void
-tea_texture_width	src/tea.c	/^int tea_texture_width(te_Texture *tex) {$/;"	f	typeref:typename:int
-tea_update_input	src/tea.c	/^int tea_update_input() {$/;"	f	typeref:typename:int
-tea_vec2	src/tea.h	/^#define tea_vec2(/;"	d
-tea_window_create	src/tea.c	/^te_Window* tea_window_create(const char *title, int width, int height, int flags) {  $/;"	f	typeref:typename:te_Window *
-tea_window_destroy	src/tea.c	/^void tea_window_destroy(te_Window *window) {$/;"	f	typeref:typename:void
-tex	src/tea.c	/^    te_Texture tex;$/;"	m	union:te_RenderTarget::__anonb6282e27010a	typeref:typename:te_Texture	file:
-tex	src/tea.c	/^  SDL_Texture* tex;$/;"	m	struct:te_Texture	typeref:typename:SDL_Texture *	file:
-tex	src/tea.c	/^  te_Texture* tex;$/;"	m	struct:te_Font	typeref:typename:te_Texture *	file:
-textures	src/tea.c	/^  te_Texture textures[MAX_TEXTURES];$/;"	m	struct:Tea	typeref:typename:te_Texture[]	file:
-timer	src/tea.c	/^  } timer;$/;"	m	struct:Tea	typeref:struct:Tea::__anonb6282e270608	file:
-title	src/tea.h	/^  unsigned char title[100];$/;"	m	struct:te_Config	typeref:typename:unsigned char[100]
-tp	src/tea.c	/^    unsigned char tp; \/\/ transform pointer$/;"	m	struct:Tea::__anonb6282e270508	typeref:typename:unsigned char	file:
-transform	src/tea.c	/^    te_Transform *transform[STACK_MAX];$/;"	m	struct:Tea::__anonb6282e270508	typeref:typename:te_Transform * []	file:
-transform	src/tea.c	/^  te_Transform transform[MAX_TRANSFORMS];$/;"	m	struct:Tea	typeref:typename:te_Transform[]	file:
-translate	src/tea.h	/^typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Tran/;"	m	struct:__anonb6282e2c0a08	typeref:typename:te_Point
-triangle_fn	src/tea.c	/^static RenderTriangleFn triangle_fn[2] = {_draw_line_triangle, _draw_fill_triangle};$/;"	v	typeref:typename:RenderTriangleFn[2]	file:
-tx	src/tea.c	/^    float tx; \/\/ x offset of glyph in texture coordinates$/;"	m	struct:te_Font::__anonb6282e270308	typeref:typename:float	file:
-w	src/tea.h	/^typedef struct { TEA_VALUE x, y, w, h; } te_Rect;$/;"	m	struct:__anonb6282e2c0708	typeref:typename:TEA_VALUE
-width	src/tea.c	/^      unsigned int width, height;$/;"	m	struct:te_RenderTarget::__anonb6282e27010a::__anonb6282e270208	typeref:typename:unsigned int	file:
-width	src/tea.c	/^  int width, height;$/;"	m	struct:Texture	typeref:typename:int	file:
-width	src/tea.c	/^  unsigned int width, height;$/;"	m	struct:te_Texture	typeref:typename:unsigned int	file:
-width	src/tea.h	/^  int width, height;$/;"	m	struct:te_Config	typeref:typename:int
-window	src/tea.c	/^  te_Window *window;$/;"	m	struct:Tea	typeref:typename:te_Window *	file:
-window_flags	src/tea.h	/^  int window_flags;$/;"	m	struct:te_Config	typeref:typename:int
-wrap	src/tea.c	/^      unsigned short wrap[2];$/;"	m	struct:te_RenderTarget::__anonb6282e27010a::__anonb6282e270208	typeref:typename:unsigned short[2]	file:
-wrap	src/tea.c	/^  int wrap[2], filter[2];$/;"	m	struct:Texture	typeref:typename:int[2]	file:
-wrap	src/tea.c	/^  unsigned short wrap[2];$/;"	m	struct:te_Texture	typeref:typename:unsigned short[2]	file:
-x	src/tea.h	/^typedef struct { TEA_VALUE x, y, w, h; } te_Rect;$/;"	m	struct:__anonb6282e2c0708	typeref:typename:TEA_VALUE
-x	src/tea.h	/^typedef struct { TEA_VALUE x, y; } te_Point;$/;"	m	struct:__anonb6282e2c0608	typeref:typename:TEA_VALUE
-y	src/tea.h	/^typedef struct { TEA_VALUE x, y, w, h; } te_Rect;$/;"	m	struct:__anonb6282e2c0708	typeref:typename:TEA_VALUE
-y	src/tea.h	/^typedef struct { TEA_VALUE x, y; } te_Point;$/;"	m	struct:__anonb6282e2c0608	typeref:typename:TEA_VALUE
+BLACK	src/tea.h	62
+CAT	src/tea.h	/^#define CAT(a, b) a b$/
+COMMAND_MAX	src/tea.h	46
+DRAW_MODE_COUNT	src/tea.h	468
+E¬HPH‹…pÿÿÿH	src/tea.o	14
+Eôs‹E	src/tea.o	66
+Eôv‹EðƒÀ‰Eä	src/tea.o	66
+H	src/tea.o	193
+H‰Çè¶ÿÿ·Àƒè‰Eè‹E	src/tea.o	66
+MAX_FONT_CHAR	src/tea.h	49
+MAX_RTARGETS	src/tea.h	51
+MAX_TEXTURES	src/tea.h	50
+MAX_TRANSFORMS	src/tea.h	52
+RenderCircleFn	src/tea.h	528
+RenderLineFn	src/tea.h	526
+RenderPointFn	src/tea.h	525
+RenderRectFn	src/tea.h	527
+RenderTarget	src/tea.c	85
+RenderTarget	src/tea.c	89
+RenderTextureExFn	src/tea.h	531
+RenderTextureFn	src/tea.h	530
+RenderTriangleFn	src/tea.h	529
+STACK_MAX	src/tea.h	47
+STB_IMAGE_IMPLEMENTATION	src/tea.c	32
+STB_TRUETYPE_IMPLEMENTATION	src/tea.c	29
+STR	src/tea.h	/^#define STR(expr) #expr$/
+Shader	src/tea.c	86
+Shader	src/tea.c	90
+TEA_ALPHA	src/tea.h	450
+TEA_BATCH_RENDER	src/tea.h	461
+TEA_BLUE	src/tea.h	449
+TEA_BUTTON_COUNT	src/tea.h	73
+TEA_BUTTON_LEFT	src/tea.h	69
+TEA_BUTTON_MIDDLE	src/tea.h	70
+TEA_BUTTON_RIGHT	src/tea.h	71
+TEA_DEFAULT	src/tea.h	458
+TEA_DRAW_MODE	src/tea.h	469
+TEA_FILL	src/tea.h	466
+TEA_FLIP_H	src/tea.h	522
+TEA_FLIP_NONE	src/tea.h	522
+TEA_FLIP_V	src/tea.h	522
+TEA_FPS	src/tea.h	40
+TEA_GREEN	src/tea.h	448
+TEA_H	src/tea.h	28
+TEA_HARDWARE_RENDER	src/tea.h	460
+TEA_KEY	src/tea.h	444
+TEA_KEY_0	src/tea.h	123
+TEA_KEY_1	src/tea.h	114
+TEA_KEY_2	src/tea.h	115
+TEA_KEY_3	src/tea.h	116
+TEA_KEY_4	src/tea.h	117
+TEA_KEY_5	src/tea.h	118
+TEA_KEY_6	src/tea.h	119
+TEA_KEY_7	src/tea.h	120
+TEA_KEY_8	src/tea.h	121
+TEA_KEY_9	src/tea.h	122
+TEA_KEY_A	src/tea.h	87
+TEA_KEY_AC_BACK	src/tea.h	396
+TEA_KEY_AC_BOOKMARKS	src/tea.h	400
+TEA_KEY_AC_FORWARD	src/tea.h	397
+TEA_KEY_AC_HOME	src/tea.h	395
+TEA_KEY_AC_REFRESH	src/tea.h	399
+TEA_KEY_AC_SEARCH	src/tea.h	394
+TEA_KEY_AC_STOP	src/tea.h	398
+TEA_KEY_AGAIN	src/tea.h	265
+TEA_KEY_ALTERASE	src/tea.h	301
+TEA_KEY_APOSTROPHE	src/tea.h	162
+TEA_KEY_APP1	src/tea.h	421
+TEA_KEY_APP2	src/tea.h	422
+TEA_KEY_APPLICATION	src/tea.h	243
+TEA_KEY_AUDIOFASTFORWARD	src/tea.h	434
+TEA_KEY_AUDIOMUTE	src/tea.h	388
+TEA_KEY_AUDIONEXT	src/tea.h	384
+TEA_KEY_AUDIOPLAY	src/tea.h	387
+TEA_KEY_AUDIOPREV	src/tea.h	385
+TEA_KEY_AUDIOREWIND	src/tea.h	433
+TEA_KEY_AUDIOSTOP	src/tea.h	386
+TEA_KEY_B	src/tea.h	88
+TEA_KEY_BACKSLASH	src/tea.h	135
+TEA_KEY_BACKSPACE	src/tea.h	127
+TEA_KEY_BRIGHTNESSDOWN	src/tea.h	411
+TEA_KEY_BRIGHTNESSUP	src/tea.h	412
+TEA_KEY_C	src/tea.h	89
+TEA_KEY_CALCULATOR	src/tea.h	392
+TEA_KEY_CANCEL	src/tea.h	303
+TEA_KEY_CAPSLOCK	src/tea.h	184
+TEA_KEY_CLEAR	src/tea.h	304
+TEA_KEY_CLEARAGAIN	src/tea.h	310
+TEA_KEY_COMMA	src/tea.h	180
+TEA_KEY_COMPUTER	src/tea.h	393
+TEA_KEY_COPY	src/tea.h	268
+TEA_KEY_COUNT	src/tea.h	442
+TEA_KEY_CRSEL	src/tea.h	311
+TEA_KEY_CURRENCYSUBUNIT	src/tea.h	319
+TEA_KEY_CURRENCYUNIT	src/tea.h	318
+TEA_KEY_CUT	src/tea.h	267
+TEA_KEY_D	src/tea.h	90
+TEA_KEY_DECIMALSEPARATOR	src/tea.h	317
+TEA_KEY_DELETE	src/tea.h	206
+TEA_KEY_DISPLAYSWITCH	src/tea.h	413
+TEA_KEY_DOWN	src/tea.h	211
+TEA_KEY_E	src/tea.h	91
+TEA_KEY_EJECT	src/tea.h	418
+TEA_KEY_END	src/tea.h	207
+TEA_KEY_EQUALS	src/tea.h	132
+TEA_KEY_ESCAPE	src/tea.h	126
+TEA_KEY_EXECUTE	src/tea.h	260
+TEA_KEY_EXSEL	src/tea.h	312
+TEA_KEY_F	src/tea.h	92
+TEA_KEY_F1	src/tea.h	186
+TEA_KEY_F10	src/tea.h	195
+TEA_KEY_F11	src/tea.h	196
+TEA_KEY_F12	src/tea.h	197
+TEA_KEY_F13	src/tea.h	248
+TEA_KEY_F14	src/tea.h	249
+TEA_KEY_F15	src/tea.h	250
+TEA_KEY_F16	src/tea.h	251
+TEA_KEY_F17	src/tea.h	252
+TEA_KEY_F18	src/tea.h	253
+TEA_KEY_F19	src/tea.h	254
+TEA_KEY_F2	src/tea.h	187
+TEA_KEY_F20	src/tea.h	255
+TEA_KEY_F21	src/tea.h	256
+TEA_KEY_F22	src/tea.h	257
+TEA_KEY_F23	src/tea.h	258
+TEA_KEY_F24	src/tea.h	259
+TEA_KEY_F3	src/tea.h	188
+TEA_KEY_F4	src/tea.h	189
+TEA_KEY_F5	src/tea.h	190
+TEA_KEY_F6	src/tea.h	191
+TEA_KEY_F7	src/tea.h	192
+TEA_KEY_F8	src/tea.h	193
+TEA_KEY_F9	src/tea.h	194
+TEA_KEY_FIND	src/tea.h	270
+TEA_KEY_G	src/tea.h	93
+TEA_KEY_GRAVE	src/tea.h	163
+TEA_KEY_H	src/tea.h	94
+TEA_KEY_HELP	src/tea.h	261
+TEA_KEY_HOME	src/tea.h	204
+TEA_KEY_I	src/tea.h	95
+TEA_KEY_INSERT	src/tea.h	202
+TEA_KEY_INTERNATIONAL1	src/tea.h	281
+TEA_KEY_INTERNATIONAL2	src/tea.h	283
+TEA_KEY_INTERNATIONAL3	src/tea.h	284
+TEA_KEY_INTERNATIONAL4	src/tea.h	285
+TEA_KEY_INTERNATIONAL5	src/tea.h	286
+TEA_KEY_INTERNATIONAL6	src/tea.h	287
+TEA_KEY_INTERNATIONAL7	src/tea.h	288
+TEA_KEY_INTERNATIONAL8	src/tea.h	289
+TEA_KEY_INTERNATIONAL9	src/tea.h	290
+TEA_KEY_J	src/tea.h	96
+TEA_KEY_K	src/tea.h	97
+TEA_KEY_KBDILLUMDOWN	src/tea.h	416
+TEA_KEY_KBDILLUMTOGGLE	src/tea.h	415
+TEA_KEY_KBDILLUMUP	src/tea.h	417
+TEA_KEY_KP_0	src/tea.h	230
+TEA_KEY_KP_00	src/tea.h	314
+TEA_KEY_KP_000	src/tea.h	315
+TEA_KEY_KP_1	src/tea.h	221
+TEA_KEY_KP_2	src/tea.h	222
+TEA_KEY_KP_3	src/tea.h	223
+TEA_KEY_KP_4	src/tea.h	224
+TEA_KEY_KP_5	src/tea.h	225
+TEA_KEY_KP_6	src/tea.h	226
+TEA_KEY_KP_7	src/tea.h	227
+TEA_KEY_KP_8	src/tea.h	228
+TEA_KEY_KP_9	src/tea.h	229
+TEA_KEY_KP_A	src/tea.h	326
+TEA_KEY_KP_AMPERSAND	src/tea.h	337
+TEA_KEY_KP_AT	src/tea.h	344
+TEA_KEY_KP_B	src/tea.h	327
+TEA_KEY_KP_BACKSPACE	src/tea.h	325
+TEA_KEY_KP_BINARY	src/tea.h	356
+TEA_KEY_KP_C	src/tea.h	328
+TEA_KEY_KP_CLEAR	src/tea.h	354
+TEA_KEY_KP_CLEARENTRY	src/tea.h	355
+TEA_KEY_KP_COLON	src/tea.h	341
+TEA_KEY_KP_COMMA	src/tea.h	278
+TEA_KEY_KP_D	src/tea.h	329
+TEA_KEY_KP_DBLAMPERSAND	src/tea.h	338
+TEA_KEY_KP_DBLVERTICALBAR	src/tea.h	340
+TEA_KEY_KP_DECIMAL	src/tea.h	358
+TEA_KEY_KP_DIVIDE	src/tea.h	216
+TEA_KEY_KP_E	src/tea.h	330
+TEA_KEY_KP_ENTER	src/tea.h	220
+TEA_KEY_KP_EQUALS	src/tea.h	247
+TEA_KEY_KP_EQUALSAS400	src/tea.h	279
+TEA_KEY_KP_EXCLAM	src/tea.h	345
+TEA_KEY_KP_F	src/tea.h	331
+TEA_KEY_KP_GREATER	src/tea.h	336
+TEA_KEY_KP_HASH	src/tea.h	342
+TEA_KEY_KP_HEXADECIMAL	src/tea.h	359
+TEA_KEY_KP_LEFTBRACE	src/tea.h	322
+TEA_KEY_KP_LEFTPAREN	src/tea.h	320
+TEA_KEY_KP_LESS	src/tea.h	335
+TEA_KEY_KP_MEMADD	src/tea.h	349
+TEA_KEY_KP_MEMCLEAR	src/tea.h	348
+TEA_KEY_KP_MEMDIVIDE	src/tea.h	352
+TEA_KEY_KP_MEMMULTIPLY	src/tea.h	351
+TEA_KEY_KP_MEMRECALL	src/tea.h	347
+TEA_KEY_KP_MEMSTORE	src/tea.h	346
+TEA_KEY_KP_MEMSUBTRACT	src/tea.h	350
+TEA_KEY_KP_MINUS	src/tea.h	218
+TEA_KEY_KP_MULTIPLY	src/tea.h	217
+TEA_KEY_KP_OCTAL	src/tea.h	357
+TEA_KEY_KP_PERCENT	src/tea.h	334
+TEA_KEY_KP_PERIOD	src/tea.h	231
+TEA_KEY_KP_PLUS	src/tea.h	219
+TEA_KEY_KP_PLUSMINUS	src/tea.h	353
+TEA_KEY_KP_POWER	src/tea.h	333
+TEA_KEY_KP_RIGHTBRACE	src/tea.h	323
+TEA_KEY_KP_RIGHTPAREN	src/tea.h	321
+TEA_KEY_KP_SPACE	src/tea.h	343
+TEA_KEY_KP_TAB	src/tea.h	324
+TEA_KEY_KP_VERTICALBAR	src/tea.h	339
+TEA_KEY_KP_XOR	src/tea.h	332
+TEA_KEY_L	src/tea.h	98
+TEA_KEY_LALT	src/tea.h	363
+TEA_KEY_LANG1	src/tea.h	291
+TEA_KEY_LANG2	src/tea.h	292
+TEA_KEY_LANG3	src/tea.h	293
+TEA_KEY_LANG4	src/tea.h	294
+TEA_KEY_LANG5	src/tea.h	295
+TEA_KEY_LANG6	src/tea.h	296
+TEA_KEY_LANG7	src/tea.h	297
+TEA_KEY_LANG8	src/tea.h	298
+TEA_KEY_LANG9	src/tea.h	299
+TEA_KEY_LCTRL	src/tea.h	361
+TEA_KEY_LEFT	src/tea.h	210
+TEA_KEY_LEFTBRACKET	src/tea.h	133
+TEA_KEY_LGUI	src/tea.h	364
+TEA_KEY_LSHIFT	src/tea.h	362
+TEA_KEY_M	src/tea.h	99
+TEA_KEY_MAIL	src/tea.h	391
+TEA_KEY_MEDIASELECT	src/tea.h	389
+TEA_KEY_MENU	src/tea.h	262
+TEA_KEY_MINUS	src/tea.h	131
+TEA_KEY_MODE	src/tea.h	370
+TEA_KEY_MUTE	src/tea.h	271
+TEA_KEY_N	src/tea.h	100
+TEA_KEY_NONUSBACKSLASH	src/tea.h	233
+TEA_KEY_NONUSHASH	src/tea.h	149
+TEA_KEY_NUMLOCKCLEAR	src/tea.h	214
+TEA_KEY_O	src/tea.h	101
+TEA_KEY_OPER	src/tea.h	309
+TEA_KEY_OUT	src/tea.h	308
+TEA_KEY_P	src/tea.h	102
+TEA_KEY_PAGEDOWN	src/tea.h	208
+TEA_KEY_PAGEUP	src/tea.h	205
+TEA_KEY_PASTE	src/tea.h	269
+TEA_KEY_PAUSE	src/tea.h	201
+TEA_KEY_PERIOD	src/tea.h	181
+TEA_KEY_POWER	src/tea.h	244
+TEA_KEY_PRINTSCREEN	src/tea.h	199
+TEA_KEY_PRIOR	src/tea.h	305
+TEA_KEY_Q	src/tea.h	103
+TEA_KEY_R	src/tea.h	104
+TEA_KEY_RALT	src/tea.h	367
+TEA_KEY_RCTRL	src/tea.h	365
+TEA_KEY_RETURN	src/tea.h	125
+TEA_KEY_RETURN2	src/tea.h	306
+TEA_KEY_RGUI	src/tea.h	368
+TEA_KEY_RIGHT	src/tea.h	209
+TEA_KEY_RIGHTBRACKET	src/tea.h	134
+TEA_KEY_RSHIFT	src/tea.h	366
+TEA_KEY_S	src/tea.h	105
+TEA_KEY_SCROLLLOCK	src/tea.h	200
+TEA_KEY_SELECT	src/tea.h	263
+TEA_KEY_SEMICOLON	src/tea.h	161
+TEA_KEY_SEPARATOR	src/tea.h	307
+TEA_KEY_SLASH	src/tea.h	182
+TEA_KEY_SLEEP	src/tea.h	419
+TEA_KEY_SPACE	src/tea.h	129
+TEA_KEY_STOP	src/tea.h	264
+TEA_KEY_SYSREQ	src/tea.h	302
+TEA_KEY_T	src/tea.h	106
+TEA_KEY_TAB	src/tea.h	128
+TEA_KEY_THOUSANDSSEPARATOR	src/tea.h	316
+TEA_KEY_U	src/tea.h	107
+TEA_KEY_UNDO	src/tea.h	266
+TEA_KEY_UNKNOWN	src/tea.h	78
+TEA_KEY_UP	src/tea.h	212
+TEA_KEY_V	src/tea.h	108
+TEA_KEY_VOLUMEDOWN	src/tea.h	273
+TEA_KEY_VOLUMEUP	src/tea.h	272
+TEA_KEY_W	src/tea.h	109
+TEA_KEY_WWW	src/tea.h	390
+TEA_KEY_X	src/tea.h	110
+TEA_KEY_Y	src/tea.h	111
+TEA_KEY_Z	src/tea.h	112
+TEA_LINE	src/tea.h	465
+TEA_MOUSE_BUTTON	src/tea.h	74
+TEA_PIXELFORMAT	src/tea.h	455
+TEA_PIXELFORMAT_COUNT	src/tea.h	454
+TEA_RED	src/tea.h	447
+TEA_RENDER_FLAGS	src/tea.h	462
+TEA_RGB	src/tea.h	451
+TEA_RGBA	src/tea.h	452
+TEA_SOFTWARE_RENDER	src/tea.h	459
+TEA_VALUE	src/tea.h	43
+TEA_VERSION	src/tea.h	37
+TE_API	src/tea.h	30
+TE_ASSERT	src/tea.h	/^#define TE_ASSERT(expr, msg) if (!(expr)) tea_erro/
+Tea	src/tea.c	150
+Tea	src/tea.h	471
+Texture	src/tea.c	84
+Texture	src/tea.c	88
+WHITE	src/tea.h	61
+_clear_color	src/tea.c	155
+_color	src/tea.c	156
+_conf	src/tea.c	193
+_create_rtarget	src/tea.c	/^static int _create_rtarget(int w, int h, unsigned /
+_create_texture	src/tea.c	/^static int _create_texture(int w, int h, unsigned /
+_ctx	src/tea.c	192
+_draw_fill_circle	src/tea.c	/^void _draw_fill_circle(te_Point p, TEA_VALUE radiu/
+_draw_fill_rect	src/tea.c	/^void _draw_fill_rect(te_Rect rect) {$/
+_draw_fill_triangle	src/tea.c	/^void _draw_fill_triangle(te_Point p0, te_Point p1,/
+_draw_line_circle	src/tea.c	/^void _draw_line_circle(te_Point p, TEA_VALUE radiu/
+_draw_line_rect	src/tea.c	/^void _draw_line_rect(te_Rect rect) {$/
+_draw_line_triangle	src/tea.c	/^void _draw_line_triangle(te_Point p0, te_Point p1,/
+_key_callback	src/tea.c	/^static void _key_callback(te_Window* window, int k/
+_mode	src/tea.c	157
+_push_rtarget	src/tea.c	/^static int _push_rtarget(te_RenderTarget target) {/
+_set_texture	src/tea.c	/^static int _set_texture(te_Texture tex) {$/
+_shader	src/tea.c	94
+_tex	src/tea.c	111
+a	src/tea.h	521
+angle	src/tea.h	523
+atlas_vao	src/tea.c	144
+atlas_vbo	src/tea.c	145
+ax	src/tea.c	122
+ay	src/tea.c	123
+b	src/tea.h	521
+baseline	src/tea.c	140
+bh	src/tea.c	126
+bl	src/tea.c	128
+bt	src/tea.c	129
+bw	src/tea.c	125
+c	src/tea.c	132
+calc_vec_scale	src/tea.c	/^static te_Point calc_vec_scale(te_Point p0, te_Poi/
+canvas	src/tea.c	176
+circle_fn	src/tea.c	436
+cp	src/tea.c	172
+cross_prod	src/tea.c	/^static int cross_prod(te_Point v0, te_Point v1) {$/
+current_time	src/tea.c	183
+current_transform	src/tea.c	162
+data	src/tea.c	141
+delta	src/tea.c	184
+event	src/tea.c	153
+fill_bottom_flat_triangle	src/tea.c	/^static void fill_bottom_flat_triangle(te_Point p0,/
+fill_top_flat_triangle	src/tea.c	/^static void fill_top_flat_triangle(te_Point p0, te/
+filter	src/tea.c	100
+filter	src/tea.c	113
+flags	src/tea.h	478
+fps	src/tea.c	188
+frame	src/tea.c	187
+g	src/tea.h	521
+get_intersection	src/tea.c	/^static int get_intersection(te_Point p0, te_Point /
+h	src/tea.h	520
+height	src/tea.c	99
+height	src/tea.c	112
+height	src/tea.h	476
+info	src/tea.c	137
+input	src/tea.c	169
+keyboard	src/tea.c	166
+mouse	src/tea.c	167
+old_button	src/tea.c	168
+old_state	src/tea.c	166
+old_state	src/tea.c	167
+origin	src/tea.h	523
+points_ord_y	src/tea.c	/^static void points_ord_y(te_Point *points, int len/
+prev_fps_time	src/tea.c	186
+prev_time	src/tea.c	182
+ptsize	src/tea.c	138
+r	src/tea.h	521
+rect_fn	src/tea.c	373
+render	src/tea.c	151
+render_flags	src/tea.h	480
+scale	src/tea.c	139
+scale	src/tea.h	523
+shader	src/tea.c	178
+size	src/tea.c	135
+sp	src/tea.c	174
+stack	src/tea.c	179
+state	src/tea.c	166
+state	src/tea.c	167
+target	src/tea.c	106
+targets	src/tea.c	160
+te_Canvas	src/tea.h	510
+te_Color	src/tea.h	521
+te_Config	src/tea.h	472
+te_Config	src/tea.h	474
+te_Event	src/tea.h	485
+te_Font	src/tea.c	119
+te_Font	src/tea.h	487
+te_Image	src/tea.h	509
+te_Point	src/tea.h	519
+te_Rect	src/tea.h	520
+te_Render	src/tea.h	484
+te_RenderFlip	src/tea.h	522
+te_RenderTarget	src/tea.c	104
+te_RenderTarget	src/tea.h	507
+te_Shader	src/tea.c	93
+te_Shader	src/tea.h	511
+te_Texture	src/tea.c	97
+te_Texture	src/tea.h	506
+te_Transform	src/tea.h	523
+te_Window	src/tea.h	483
+tea	src/tea.c	/^#define tea() (&_ctx)$/
+tea_begin	src/tea.c	/^void tea_begin() {$/
+tea_canvas	src/tea.c	/^te_Canvas tea_canvas(int width, int height) {$/
+tea_canvas_render_target	src/tea.c	/^te_RenderTarget* tea_canvas_render_target(te_Canva/
+tea_canvas_set	src/tea.c	/^void tea_canvas_set(te_Canvas canvas) {$/
+tea_canvas_texture	src/tea.c	/^te_Texture* tea_canvas_texture(te_Canvas canvas) {/
+tea_clear	src/tea.c	/^void tea_clear() {$/
+tea_clear_color	src/tea.c	/^void tea_clear_color(te_Color color) {$/
+tea_color	src/tea.h	/^#define tea_color(r, g, b) ((te_Color){(r), (g), (/
+tea_config_init	src/tea.c	/^int tea_config_init(te_Config *conf, const char *t/
+tea_context	src/tea.c	/^Tea* tea_context() {$/
+tea_draw_canvas	src/tea.c	/^void tea_draw_canvas(te_Canvas canvas, te_Rect *re/
+tea_draw_circle	src/tea.c	/^void tea_draw_circle(te_Point p, TEA_VALUE radius)/
+tea_draw_color	src/tea.c	/^void tea_draw_color(te_Color color) {$/
+tea_draw_image	src/tea.c	/^void tea_draw_image(te_Image img, te_Rect *r, te_P/
+tea_draw_image_ex	src/tea.c	/^void tea_draw_image_ex(te_Image img, te_Rect *r, t/
+tea_draw_line	src/tea.c	/^void tea_draw_line(te_Point p0, te_Point p1) {$/
+tea_draw_mode	src/tea.c	/^void tea_draw_mode(TEA_DRAW_MODE mode) {$/
+tea_draw_point	src/tea.c	/^void tea_draw_point(te_Point p) {$/
+tea_draw_rect	src/tea.c	/^void tea_draw_rect(te_Rect r) {$/
+tea_draw_rect_	src/tea.c	/^void tea_draw_rect_(TEA_VALUE x, TEA_VALUE y, TEA_/
+tea_draw_rect_point	src/tea.c	/^void tea_draw_rect_point(te_Point p, te_Point s) {/
+tea_draw_text	src/tea.c	/^void tea_draw_text(te_Font *font, const char *text/
+tea_draw_texture	src/tea.c	/^void tea_draw_texture(te_Texture *tex, te_Rect *de/
+tea_draw_texture_ex	src/tea.c	/^void tea_draw_texture_ex(te_Texture *tex, te_Rect /
+tea_draw_triangle	src/tea.c	/^void tea_draw_triangle(te_Point p0, te_Point p1, t/
+tea_end	src/tea.c	/^void tea_end() {$/
+tea_error	src/tea.c	/^void tea_error(const char *msg) {$/
+tea_font	src/tea.c	/^te_Font* tea_font(const void *data, size_t buf_siz/
+tea_font_char_rect	src/tea.c	/^void tea_font_char_rect(te_Font *font, const unsig/
+tea_font_destroy	src/tea.c	/^void tea_font_destroy(te_Font *font) {$/
+tea_font_get_rect	src/tea.c	/^void tea_font_get_rect(te_Font* font, const int c,/
+tea_font_init	src/tea.c	/^int tea_font_init(te_Font *font, const void *data,/
+tea_font_load	src/tea.c	/^te_Font* tea_font_load(const char *filename, int f/
+tea_get_delta	src/tea.c	/^float tea_get_delta() {$/
+tea_get_framerate	src/tea.c	/^int tea_get_framerate() {$/
+tea_get_transform	src/tea.c	/^te_Transform tea_get_transform() {$/
+tea_image	src/tea.c	/^te_Image tea_image(int w, int h, int format) {$/
+tea_image_destroy	src/tea.c	/^void tea_image_destroy(te_Image *img) {$/
+tea_image_height	src/tea.h	/^#define tea_image_height(img) tea_texture_height(t/
+tea_image_load	src/tea.c	/^te_Image tea_image_load(const char *filename) {$/
+tea_image_size	src/tea.h	/^#define tea_image_size(img, sz) tea_texture_size(t/
+tea_image_texture	src/tea.c	/^te_Texture* tea_image_texture(te_Image img) {$/
+tea_image_width	src/tea.h	/^#define tea_image_width(img) tea_texture_width(tea/
+tea_init	src/tea.c	/^Tea* tea_init(te_Config *c) {$/
+tea_keyboard_is_down	src/tea.c	/^int tea_keyboard_is_down(int key) {$/
+tea_keyboard_is_up	src/tea.c	/^int tea_keyboard_is_up(int key) {$/
+tea_keyboard_was_pressed	src/tea.c	/^int tea_keyboard_was_pressed(int key) {$/
+tea_keyboard_was_released	src/tea.c	/^int tea_keyboard_was_released(int key) {$/
+tea_max	src/tea.h	/^#define tea_max(a, b) ((a) > (b) ? (a) : (b))$/
+tea_min	src/tea.h	/^#define tea_min(a, b) ((a) > (b) ? (b) : (a))$/
+tea_mouse_is_down	src/tea.c	/^int tea_mouse_is_down(int button) {$/
+tea_mouse_is_up	src/tea.c	/^int tea_mouse_is_up(int button) {$/
+tea_mouse_was_pressed	src/tea.c	/^int tea_mouse_was_pressed(int button) {$/
+tea_mouse_was_released	src/tea.c	/^int tea_mouse_was_released(int button) {$/
+tea_point	src/tea.h	/^#define tea_point(x, y) ((te_Point){(x), (y)})$/
+tea_pop_canvas	src/tea.c	/^te_Canvas tea_pop_canvas() {$/
+tea_rect	src/tea.h	/^#define tea_rect(x, y, w, h) ((te_Rect){(x), (y), /
+tea_render_create	src/tea.c	/^te_Render* tea_render_create(te_Window *window, TE/
+tea_render_destroy	src/tea.c	/^void tea_render_destroy(te_Render *render) {$/
+tea_render_swap	src/tea.c	/^void tea_render_swap(Tea *t) {$/
+tea_render_target	src/tea.c	/^te_RenderTarget* tea_render_target(int w, int h, i/
+tea_render_triangle_fill0	src/tea.c	/^void tea_render_triangle_fill0(te_Point p0, te_Poi/
+tea_set_angle	src/tea.c	/^void tea_set_angle(TEA_VALUE angle) {$/
+tea_set_canvas	src/tea.c	/^void tea_set_canvas(te_Canvas canvas) {$/
+tea_set_origin	src/tea.c	/^void tea_set_origin(te_Point origin) {$/
+tea_set_render_target	src/tea.c	/^void tea_set_render_target(te_RenderTarget *target/
+tea_set_scale	src/tea.c	/^void tea_set_scale(te_Point scale) {$/
+tea_set_transform	src/tea.c	/^void tea_set_transform(te_Transform *t) {$/
+tea_set_translate	src/tea.c	/^void tea_set_translate(te_Point translate) {$/
+tea_should_close	src/tea.c	/^int tea_should_close() {$/
+tea_terminate	src/tea.c	/^void tea_terminate() {$/
+tea_texture	src/tea.c	/^te_Texture* tea_texture(int w, int h, unsigned int/
+tea_texture_height	src/tea.c	/^int tea_texture_height(te_Texture *tex) {$/
+tea_texture_init	src/tea.c	/^void tea_texture_init(te_Texture *tex, int w, int /
+tea_texture_load	src/tea.c	/^te_Texture* tea_texture_load(const char *str) {$/
+tea_texture_memory	src/tea.c	/^te_Texture* tea_texture_memory(unsigned char *pixe/
+tea_texture_size	src/tea.c	/^void tea_texture_size(te_Texture *tex, te_Point *s/
+tea_texture_width	src/tea.c	/^int tea_texture_width(te_Texture *tex) {$/
+tea_update_input	src/tea.c	/^int tea_update_input() {$/
+tea_vec2	src/tea.h	/^#define tea_vec2(x, y) (te_Vec2){(x), (y)}$/
+tea_window_create	src/tea.c	/^te_Window* tea_window_create(const char *title, in/
+tea_window_destroy	src/tea.c	/^void tea_window_destroy(te_Window *window) {$/
+tex	src/tea.c	98
+tex	src/tea.c	109
+tex	src/tea.c	120
+textures	src/tea.c	159
+timer	src/tea.c	189
+title	src/tea.h	475
+tp	src/tea.c	173
+transform	src/tea.c	163
+transform	src/tea.c	177
+translate	src/tea.h	523
+triangle_fn	src/tea.c	519
+tx	src/tea.c	131
+u	src/tea.o	257
+w	src/tea.h	520
+width	src/tea.c	99
+width	src/tea.c	112
+width	src/tea.h	476
+window	src/tea.c	152
+window_flags	src/tea.h	479
+wrap	src/tea.c	101
+wrap	src/tea.c	114
+x	src/tea.h	519
+x	src/tea.h	520
+y	src/tea.h	519
+y	src/tea.h	520
