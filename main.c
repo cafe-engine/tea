@@ -47,7 +47,7 @@ int main_loop() {
   tea_set_canvas(0);
 
   if (tea_keyboard_was_pressed(TEA_KEY_ESCAPE)) return 0;
-
+    if (tea_keyboard_was_pressed(TEA_KEY_P)) return 0;
 
   //te_Texture *ct = tea_canvas_texture(canvas);
   //tea_draw_texture_ex(ct, &tea_rect(0, 0, 160*4, 95*4), NULL, 0, tea_point(0, 0), TEA_FLIP_NONE);
