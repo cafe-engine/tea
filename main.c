@@ -1,4 +1,4 @@
-#include "src/tea.h"
+#include "tea.h"
 
 #define GRAVITY 100
 
