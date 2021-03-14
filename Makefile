@@ -130,7 +130,7 @@ $(OBJ_DIR)/%.d.o: %.c
 	$(CROSS_CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS)
 
 $(MODULES):
-	make lib$@.a -C $(MODDIR)/$@
+	make -C $(MODDIR)/$@
 
 clean_modules: $(MODS)
 	make clean -C $<
