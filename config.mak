@@ -1,3 +1,4 @@
 NAME = tea
+CSTD=c99
 INCLUDE += -Iexternal
-LFLAGS = -lSDL2 -ldl -lm
+LFLAGS = -lSDL2 -lm -ldl 

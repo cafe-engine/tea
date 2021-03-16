@@ -7,3 +7,4 @@ bin/
 *.a
 *.so
 *.sublime-*
+external/SDL*
