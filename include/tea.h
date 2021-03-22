@@ -50,9 +50,12 @@
 #endif
 
 #define MAX_FONT_CHAR 256
-#define MAX_TEXTURES 64
-#define MAX_RTARGETS 64
 #define MAX_TRANSFORMS 64
+
+// GL batched configuration
+#define MAX_QUADS 10000
+#define MAX_VERTICES 4 * MAX_QUADS
+#define MAX_INDICES 6 * MAX_QUADS
 
 #define tea_max(a, b) ((a) > (b) ? (a) : (b))
 #define tea_min(a, b) ((a) > (b) ? (b) : (a))
@@ -506,6 +509,27 @@ typedef enum {
 typedef struct Tea Tea;
 typedef struct te_Config te_Config;
 
+typedef struct te_Vertex {
+    union {
+        TEA_VALUE data[8];
+        struct {
+            TEA_VALUE pos[2];
+            TEA_VALUE color[4];
+            TEA_VALUE uv[2];
+        };
+        struct {
+            TEA_VALUE x;
+            TEA_VALUE y;
+            TEA_VALUE r;
+            TEA_VALUE g;
+            TEA_VALUE b;
+            TEA_VALUE a;
+            TEA_VALUE s;
+            TEA_VALUE t;
+        };
+    };
+} te_Vertex;
+
 struct te_Config {
   unsigned char title[100];
   int width, height;
@@ -516,7 +540,7 @@ struct te_Config {
 };
 
 typedef SDL_Window te_Window;
-typedef SDL_Renderer te_Render;
+typedef struct te_Render te_Render;
 typedef SDL_Event te_Event;
 
 typedef struct te_Font te_Font;
@@ -617,14 +641,8 @@ TE_API void tea_draw_rect_point(te_Point pos, te_Point sz);
 TE_API void tea_draw_circle(te_Point p, TEA_VALUE radius);
 TE_API void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2);
 
-TE_API void tea_draw_image(te_Image img, te_Rect *r, te_Point p);
-TE_API void tea_draw_image_ex(te_Image img, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin);
-
 TE_API void tea_draw_texture(te_Texture *tex, te_Rect *dest, te_Rect *src);
 TE_API void tea_draw_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point origin, te_RenderFlip flip);
-
-TE_API void tea_draw_canvas(te_Canvas canvas, te_Rect *r, te_Point p);
-TE_API void tea_draw_canvas_ex(te_Canvas canvas, te_Rect *r, te_Point p, TEA_VALUE angle, te_Point scale, te_Point origin);
 
 TE_API void tea_draw_text(te_Font *font, const char *text, te_Point pos);
 
@@ -639,7 +657,8 @@ TE_API int tea_window_should_close(te_Window *window);
 
 // Render
 
-TE_API te_Render* tea_render_create(te_Window *window, TEA_RENDER_FLAGS flags);
+TE_API int tea_render_init(te_Render *render, te_Window *window, int flags);
+TE_API te_Render* tea_render_create(te_Window *window, int flags);
 TE_API void tea_render_destroy(te_Render *render);
 
 TE_API void tea_render_swap(te_Render *render);
@@ -647,6 +666,7 @@ TE_API void tea_render_swap(te_Render *render);
 // Texture
 
 TE_API int tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access);
+TE_API int tea_texture_init_from_data(te_Texture *tex, int w, int h, void *data, int format);
 TE_API int tea_texture_init_from_file(te_Texture *tex, const char *filename);
 TE_API te_Texture* tea_texture(int w, int h, unsigned int format, int access);
 TE_API te_Texture* tea_texture_load(const char *filename);

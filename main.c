@@ -36,3 +36,8 @@ int main(int argc, char ** argv) {
 
     return 0;
 }
+
+#ifdef CAFE_ENGINE
+#define CSTAR_IMPLEMENTATION
+#include "cstar.h"
+#endif
