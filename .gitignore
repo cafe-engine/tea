@@ -8,3 +8,5 @@ bin/
 *.so
 *.sublime-*
 external/SDL*
+.clangd
+compile_commands.json

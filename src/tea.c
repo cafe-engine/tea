@@ -25,13 +25,19 @@
  **********************************************************************************/
 
 #include "tea.h"
+#include "SDL_error.h"
+#include "SDL_render.h"
+#include "SDL_surface.h"
+
+#include <SDL.h>
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "../external/stb_truetype.h"
+#include "stb_truetype.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../external/stb_image.h"
+#include "stb_image.h"
 
+#include "cstar.h"
 // struct te_Texture {
 // #if defined(TEA_GL_RENDER)
 //   unsigned int id;
@@ -102,9 +108,6 @@ struct te_Texture {
 };
 
 struct te_RenderTarget {
-#ifdef TEA_GL_RENDER
-  RenderTarget target;
-#endif
   union {
     te_Texture tex;
     struct {
@@ -114,6 +117,9 @@ struct te_RenderTarget {
       unsigned short wrap[2];
     };
   };
+#ifdef TEA_GL_RENDER
+  RenderTarget target;
+#endif
 };
 
 struct te_Font {
@@ -166,19 +172,13 @@ struct Tea {
 
   struct {
     struct { const Uint8 *state; Uint8 old_state[TEA_KEY_COUNT]; } keyboard;
-    struct { Uint8 state[TEA_BUTTON_COUNT], old_state[TEA_BUTTON_COUNT]; } mouse;
+    struct { 
+        Uint8 state[TEA_BUTTON_COUNT], old_state[TEA_BUTTON_COUNT]; 
+        TEA_VALUE x, y;
+        TEA_VALUE scroll_x, scroll_y;
+    } mouse;
     Uint8 old_button;    
   } input;
-
-  struct {
-    unsigned char cp; // canvas pointer
-    unsigned char tp; // transform pointer
-    unsigned char sp; // shader pointer
-
-    te_Canvas canvas[STACK_MAX];
-    te_Transform transform[STACK_MAX];
-    te_Shader shader[STACK_MAX];
-  } stack;   
 
   struct {
     Uint32 prev_time;
@@ -196,7 +196,7 @@ static te_Config _conf;
 
 int tea_config_init(te_Config *conf, const char *title, int width, int height) {
   if (!conf) conf = &_conf;
-  title = title ? title : CAT("tea ", TEA_VERSION);
+  title = title ? title : ("tea "TEA_VERSION);
 
   if (title) strcpy((char*)conf->title, title);
   conf->width = width;
@@ -204,14 +204,14 @@ int tea_config_init(te_Config *conf, const char *title, int width, int height) {
   conf->flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_TIMER | SDL_INIT_EVENTS;
   conf->render_flags = SDL_RENDERER_ACCELERATED;
   conf->window_flags = SDL_WINDOW_SHOWN;
-  conf->render_flags = SDL_RENDERER_ACCELERATED;
 
   return 1;
 }
 
 Tea* tea_init(te_Config *c) {
   // if (!c) c = &_conf;
-  TE_ASSERT(c != NULL, "te_Config cannot be NULL");
+  if (c == NULL) cst_fatal("te_Config cannot be NULL");
+
   // memset(tea(), 0, sizeof(*tea()));
 
   SDL_Init(c->flags);
@@ -221,6 +221,7 @@ Tea* tea_init(te_Config *c) {
   ctx->current_transform.scale = tea_point(1, 1);
 
   ctx->_clear_color = BLACK;
+  ctx->_color = WHITE;
   // ctx->key_array = SDL_GetKeyboardState(NULL);
   // ctx->input.key_array = SDL_GetKeyboardState(NULL);
   // memcpy(ctx->input.old_key, ctx->input.key_array, TEA_KEY_COUNT);
@@ -242,7 +243,7 @@ Tea* tea_init(te_Config *c) {
   memset(ctx->targets, 0, MAX_RTARGETS * sizeof(te_RenderTarget));
 
   ctx->window = tea_window_create((const char*)c->title, c->width, c->height, c->window_flags);
-  ctx->render = tea_render_create(ctx->window, TEA_RENDER_2D);
+  ctx->render = tea_render_create(ctx->window, c->render_flags);
 
   return ctx;
 }
@@ -314,20 +315,25 @@ te_Canvas tea_pop_canvas() {
 
 
 void tea_clear() {
-  SDL_RenderClear(tea()->render);
+    te_Color *c = &tea()->_clear_color;
+    SDL_SetRenderDrawColor(tea()->render, c->r, c->g, c->b, c->a);
+    SDL_RenderClear(tea()->render);
+    c = &tea()->_color;
+    SDL_SetRenderDrawColor(tea()->render, c->r, c->g, c->b, c->a);
 }
 
 void tea_clear_color(te_Color color) {
   tea()->_clear_color = color;
-  SDL_SetRenderDrawColor(tea()->render, color.r, color.g, color.b, color.a);
 }
 void tea_draw_color(te_Color color) {
-  tea()->_color = color;
-  // tea_render_draw_color(color);
-  SDL_SetRenderDrawColor(tea()->render, color.r, color.g, color.b, color.a);
+    tea()->_color = color;
+    te_Color *c = &color;
+    SDL_SetRenderDrawColor(tea()->render, c->r, c->g, c->b, c->a);
 }
 void tea_draw_mode(TEA_DRAW_MODE mode) {
-  tea()->_mode = mode;
+    if (mode < TEA_LINE || mode > TEA_FILL) {
+    }
+    tea()->_mode = mode;
 }
 
 te_Transform tea_get_transform() {
@@ -733,7 +739,7 @@ void tea_window_destroy(te_Window *window) {
 }
 
 te_Render* tea_render_create(te_Window *window, TEA_RENDER_FLAGS flags) {
-  TE_ASSERT(window != NULL, "te_Window cannot be NULL");
+  if (window == NULL) cst_fatal("te_Window cannot be NULL");
   te_Render *r = SDL_CreateRenderer(window, -1, flags);
 
   // te_Render *r = (te_Render*)malloc(sizeof(*r));
@@ -762,9 +768,8 @@ void tea_render_destroy(te_Render *render) {
   SDL_DestroyRenderer(render);
 }
 
-void tea_render_swap(Tea *t) {
-  TE_ASSERT(t != NULL, "Tea cannot be NULL");
-  SDL_RenderPresent(t->render);
+void tea_render_swap(te_Render *render) {
+  SDL_RenderPresent(render);
 }
 
 static int cross_prod(te_Point v0, te_Point v1) {
@@ -818,23 +823,87 @@ static int _create_texture(int w, int h, unsigned int format, int access) {
   return _set_texture(tex);
 }
 
-void tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access) {
-  TE_ASSERT(tex != NULL, "te_Texture cannot be null");
-  TE_ASSERT(format >= 0, "invalid pixel format");
-  TE_ASSERT(format < TEA_PIXELFORMAT_COUNT, "invalid texture format");
+int tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access) {
+    if (!tex) {
+        cst_traceerror("te_Texture cannot be NULL");     
+        return 0;
+    }
+    if (format < 0 || format >= TEA_PIXELFORMAT_COUNT) {
+        cst_traceerror("invalida pixel format: %d", format);
+    }
   
-  tex->tex = SDL_CreateTexture(tea()->render, tea()->pixel_formats[format], access, w, h);
-  tex->width = w;
-  tex->height = h;
+    tex->tex = SDL_CreateTexture(tea()->render, tea()->pixel_formats[format], access, w, h);
+    if (!tex->tex) {
+        cst_error("[SDL] failed to create texture: %s", SDL_GetError());
+    }
+    tex->width = w;
+    tex->height = h;
+    return 1;
+}
+
+int tea_texture_init_from_file(te_Texture *tex, const char *filename) {
+    if (!tex) {
+        cst_traceerror("te_Texture cannot be NULL");
+        return 0;
+    }
+    if (!filename) { cst_traceerror("filename cannot be NULL"); return 0; }
+
+    int req_format = STBI_rgb_alpha;
+    int w, h, format;
+
+    unsigned char *data = stbi_load(filename, &w, &h, &format, req_format);
+    if (!tex) {
+        cst_error("failed to load image: %s", filename);
+    }
+
+    int depth, pitch;
+    Uint32 pixel_format;
+
+    if (req_format == STBI_rgb) {
+        depth = 24;
+        pitch = 3*w;
+        pixel_format = tea()->pixel_formats[TEA_RGB];
+    } else {
+        depth = 32;
+        pitch = 4*w;
+        pixel_format = tea()->pixel_formats[TEA_RGBA];
+    }
+
+    SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormatFrom(data, w, h, depth, pitch, pixel_format);
+
+    if (!surf) {
+        cst_error("failed to create SDL_Surface");
+        return 0;
+    }
+
+  SDL_Texture *stex = SDL_CreateTextureFromSurface(tea()->render, surf);
+
+    if (!stex) {
+        SDL_FreeSurface(surf);
+        cst_error("failed to create SDL_Texture");
+        return 0;
+    }
+    SDL_FreeSurface(surf);
+
+    tex->tex = stex;
+    tex->width = w;
+    tex->height = h;
+    return 1;
 }
 
 te_Texture* tea_texture(int w, int h, unsigned int format, int access) {
-  int i = _create_texture(w, h, format, access);
-  return &tea()->textures[i];
+    if (w <= 0) cst_fatal("texture width <= 0");
+    if (h <= 0) cst_fatal("texture height <= 0");
+  /*int i = _create_texture(w, h, format, access);
+  return &tea()->textures[i];*/
+    te_Texture *tex = (te_Texture*)malloc(sizeof(*tex));
+    tea_texture_init(tex, w, h, format, access);
+
+    return tex;
 }
 
 te_Texture* tea_texture_load(const char *str) {
-  Tea *t = tea();
+  /*Tea *t = tea();
   int req_format = STBI_rgb_alpha;
   int w, h, format;
   unsigned char *data = stbi_load(str, &w, &h, &format, req_format);
@@ -862,16 +931,21 @@ te_Texture* tea_texture_load(const char *str) {
   SDL_Texture *stex = SDL_CreateTextureFromSurface(t->render, surf);
 
   TE_ASSERT(stex != NULL, "Failed to create texture");
-  SDL_FreeSurface(surf);
+  SDL_FreeSurface(surf);*/
 
-  te_Texture tex = {0};
+  /*te_Texture tex = {0};
   tex.tex = stex;
   tex.width = w;
   tex.height = h;
 
   int id = _set_texture(tex);
 
-  return &tea()->textures[id];
+  return &tea()->textures[id];*/
+
+    te_Texture *tex = (te_Texture*)malloc(sizeof(*tex));
+    tea_texture_init_from_file(tex, str);
+
+    return tex;
 }
 
 te_Texture* tea_texture_memory(unsigned char *pixels, int w, int h, unsigned int format) {
@@ -882,7 +956,7 @@ te_Texture* tea_texture_memory(unsigned char *pixels, int w, int h, unsigned int
 int tea_texture_width(te_Texture *tex) {
   // int w;
   // Texture *tex = tea()->textures[id];
-  TE_ASSERT(tex != NULL, "invalid texture");
+  if (!tex) cst_fatal("invalid texture");
 
   // SDL_QueryTexture(tex, NULL, NULL, &w, NULL);
   return tex->width;
@@ -890,14 +964,13 @@ int tea_texture_width(te_Texture *tex) {
 int tea_texture_height(te_Texture *tex) {
   // int h;
   // Texture *tex = tea()->textures[id];
-  TE_ASSERT(tex != NULL, "invalid texture");
+  if (!tex) cst_fatal("invalid texture");
 
   // SDL_QueryTexture(tex, NULL, NULL, NULL, &h);
   return tex->height;
 }
 void tea_texture_size(te_Texture *tex, te_Point *size) {
-  TE_ASSERT(tex != NULL, "invalid texture");
-
+  if (!tex) cst_fatal("invalid texture");
   // SDL_QueryTexture(tex, NULL, NULL, &w, &h);
   if (size) *size = tea_point(tex->width, tex->height);
 }
@@ -918,7 +991,8 @@ te_Texture* tea_image_texture(te_Image img) {
 }
 
 void tea_image_destroy(te_Image *img) {
-  TE_ASSERT(img != NULL, "te_Image must not be NULL");
+  if (!img) cst_fatal("invalid texture");
+
   // tea_texture_destroy(tea_image_texture(*img));
 }
 
@@ -941,6 +1015,9 @@ static int _push_rtarget(te_RenderTarget target) {
 }
 
 static int _create_rtarget(int w, int h, unsigned int format) {
+    if (w <= 0) cst_fatal("render target width <= 0");
+    if (h <= 0) cst_fatal("render target height <= 0");
+
   // te_Canvas c = _create_texture(w, h, format, SDL_TEXTUREACCESS_TARGET);
   te_RenderTarget target = {0};
   // target._tex = SDL_CreateTexture(tea()->render, tea()->pixel_formats[format], SDL_TEXTUREACCESS_TARGET, w, h);
@@ -965,12 +1042,12 @@ void tea_set_render_target(te_RenderTarget *target) {
 // Canvas
 
 te_Canvas tea_canvas(int width, int height) {
-  TE_ASSERT(width > 0, "Canvas width must be greater than zero");
+  /*TE_ASSERT(width > 0, "Canvas width must be greater than zero");
   TE_ASSERT(height > 0, "Canvas height must be greater than zero");
-  te_Canvas canvas = _create_rtarget(width, height, TEA_RGBA)+1;
+  te_Canvas canvas = _create_rtarget(width, height, TEA_RGBA)+1;*/
   // printf("%d\n", canvas);
 
-  return canvas;
+  return 0;
 }
 
 te_RenderTarget* tea_canvas_render_target(te_Canvas canvas) {
@@ -994,19 +1071,23 @@ void tea_canvas_set(te_Canvas canvas) {
 /* Font */
 
 te_Font* tea_font(const void *data, size_t buf_size, int font_size) {
-  te_Font *f = malloc(sizeof(*f));
-  TE_ASSERT(f != NULL, "Failed to alloc a block for font");
+    if (!data) cst_tracefatal("invalid te_Font data");
+    if (buf_size <= 0) cst_tracefatal("buf_size <= 0");
+    if (font_size <= 0) cst_tracefatal("font_size <= 0");
+  
+    te_Font *f = malloc(sizeof(*f));
+    if (!f) cst_fatal("failed to alloc a block for te_Font");
 
-  tea_font_init(f, data, buf_size, font_size);
+    tea_font_init(f, data, buf_size, font_size);
 
-  return f;
+    return f;
 }
 
 te_Font* tea_font_load(const char *filename, int font_size) {
   size_t sz;
   FILE *fp;
   fp = fopen(filename, "rb");
-  TE_ASSERT(fp != NULL, "Failed to load font");
+  if (!fp) cst_tracefatal("failed to load font: %s", filename);
 
   fseek(fp, 0, SEEK_END);
   sz = ftell(fp);
@@ -1153,6 +1234,7 @@ void tea_font_get_rect(te_Font* font, const int c, TEA_VALUE *x, TEA_VALUE *y, t
 }
 
 void tea_font_char_rect(te_Font *font, const unsigned int c, te_Rect *r) {
+    if (!font) cst_trace("te_Font cannot be NULL");
   if (c == '\n' || c == '\t') return;
   if (c >= MAX_FONT_CHAR) return;
 
@@ -1188,6 +1270,7 @@ void tea_error(const char *msg) {
 int tea_update_input() {
   // memcpy(tea()->input.old_key, tea()->input.key_array, TEA_KEY_COUNT);
   memcpy(tea()->input.keyboard.old_state, tea()->input.keyboard.state, TEA_KEY_COUNT);
+  SDL_GetMouseState((int*)&tea()->input.mouse.x, (int*)&tea()->input.mouse.y);
   for (int i = 0; i < TEA_BUTTON_COUNT; i++) {
     tea()->input.mouse.old_state[i] = tea()->input.mouse.state[i];
     tea()->input.mouse.state[i] = SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(i+1);
@@ -1222,6 +1305,23 @@ int tea_keyboard_was_pressed(int key) {
 }
 int tea_keyboard_was_released(int key) {
   return tea()->input.keyboard.old_state[key] && tea_keyboard_is_up(key);
+}
+
+/* Mouse */
+
+TEA_VALUE tea_mouse_x() {
+    return tea()->input.mouse.x;
+}
+
+TEA_VALUE tea_mouse_y() {
+    return tea()->input.mouse.y;
+}
+
+int tea_mouse_pos(TEA_VALUE *x, TEA_VALUE *y) {
+    if (x) *x = tea()->input.mouse.x;
+    if (y) *y = tea()->input.mouse.y;
+
+    return 1;
 }
 
 int tea_mouse_is_down(int button) {
@@ -1310,3 +1410,8 @@ void tea_render_triangle_fill0(te_Point p0, te_Point p1, te_Point p2) {
     // }
   }
 }
+
+#ifndef CAFE_ENGINE
+    #define CSTAR_IMPLEMENTATION
+    #include "cstar.h"
+#endif

@@ -1,4 +1,5 @@
 NAME = tea
 CSTD=c99
 INCLUDE += -Iexternal
-LFLAGS = -lSDL2 -lm -ldl 
+CFLAGS += `sdl2-config --cflags`
+LFLAGS = `sdl2-config --libs` -lm -ldl

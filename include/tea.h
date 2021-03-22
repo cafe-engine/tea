@@ -27,19 +27,21 @@
 #ifndef TEA_H
 #define TEA_H
 
-#define TE_API extern
-#include <SDL2/SDL.h>
-
-#if defined(TEA_GL_RENDER)
-#include <SDL2/SDL_opengl.h>
-#endif
-
-#ifdef __unix__
-  #include <endian.h>
-#endif
+#include <SDL.h>
 
 #define TEA_VERSION "0.1.0"
-#define CAT(a, b) a b
+
+#ifndef TE_API
+    #if defined(_WIN32)
+        #if defined(BUILD_SHARE)
+            #define TE_API __declspec(dllexport)
+        #else
+            #define TE_API __declspec(dllimport)
+        #endif
+    #else
+        #define TE_API
+    #endif
+#endif
 
 #define TEA_FPS 30
 
@@ -47,16 +49,10 @@
   #define TEA_VALUE float
 #endif
 
-#define COMMAND_MAX 2048
-#define STACK_MAX 255
-
 #define MAX_FONT_CHAR 256
 #define MAX_TEXTURES 64
 #define MAX_RTARGETS 64
 #define MAX_TRANSFORMS 64
-
-#define STR(expr) #expr
-#define TE_ASSERT(expr, msg) if (!(expr)) tea_error(msg);
 
 #define tea_max(a, b) ((a) > (b) ? (a) : (b))
 #define tea_min(a, b) ((a) > (b) ? (b) : (a))
@@ -65,9 +61,17 @@
 #define WHITE tea_color(255, 255, 255)
 #define BLACK tea_color(0, 0, 0)
 
-#define tea_vec2(x, y) (te_Vec2){(x), (y)}
 #define tea_rect(x, y, w, h) ((te_Rect){(x), (y), (w), (h)})
 #define tea_point(x, y) ((te_Point){(x), (y)})
+
+enum {
+    TEA_LOG = 1,
+    TEA_ERROR,
+    TEA_WARNING,
+    TEA_FATAL,
+
+    TEA_TRACE = 8
+};
 
 typedef enum {
   TEA_BUTTON_LEFT = 0,
@@ -599,8 +603,8 @@ TE_API void tea_set_origin(te_Point origin);
 TE_API void tea_begin();
 TE_API void tea_end();
 
-TE_API void tea_clear();
 TE_API void tea_clear_color(te_Color color);
+TE_API void tea_clear();
 TE_API void tea_draw_color(te_Color color);
 TE_API void tea_draw_mode(TEA_DRAW_MODE mode);
 
@@ -638,11 +642,12 @@ TE_API int tea_window_should_close(te_Window *window);
 TE_API te_Render* tea_render_create(te_Window *window, TEA_RENDER_FLAGS flags);
 TE_API void tea_render_destroy(te_Render *render);
 
-TE_API void tea_render_swap();
+TE_API void tea_render_swap(te_Render *render);
 
 // Texture
 
-TE_API void tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access);
+TE_API int tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access);
+TE_API int tea_texture_init_from_file(te_Texture *tex, const char *filename);
 TE_API te_Texture* tea_texture(int w, int h, unsigned int format, int access);
 TE_API te_Texture* tea_texture_load(const char *filename);
 // TE_API int tea_texture_init(te_Texture *t, int w, int h, unsigned int format);
@@ -706,6 +711,14 @@ TE_API int tea_keyboard_is_down(int key);
 TE_API int tea_keyboard_is_up(int key);
 TE_API int tea_keyboard_was_pressed(int key);
 TE_API int tea_keyboard_was_released(int key);
+
+TE_API TEA_VALUE tea_mouse_x();
+TE_API TEA_VALUE tea_mouse_y();
+TE_API int tea_mouse_pos(TEA_VALUE *x, TEA_VALUE *y);
+
+TE_API TEA_VALUE tea_mouse_scroll_x();
+TE_API TEA_VALUE tea_mouse_scroll_y();
+TE_API int tea_mouse_scroll_pos(TEA_VALUE *x, TEA_VALUE *y);
 
 TE_API int tea_mouse_is_down(int button);
 TE_API int tea_mouse_is_up(int button);
