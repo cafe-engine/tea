@@ -1,80 +1,27 @@
-/*********************************************************************************
- *
- * MIT License
- *
- * Copyright (c) 2021 Canoi Gomes
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- *  in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- **********************************************************************************/
-
 #ifndef TEA_H
 #define TEA_H
 
-#include <SDL.h>
-
+#define TEA_API
 #define TEA_VERSION "0.1.0"
-
-#ifndef TE_API
-    #if defined(_WIN32)
-        #if defined(BUILD_SHARE)
-            #define TE_API __declspec(dllexport)
-        #else
-            #define TE_API __declspec(dllimport)
-        #endif
-    #else
-        #define TE_API
-    #endif
-#endif
 
 #define TEA_FPS 30
 
-#ifndef TEA_VALUE
-  #define TEA_VALUE float
+#ifndef TEA_TPIXEL
+    #define TEA_TPIXEL te_Byte
 #endif
 
-#define MAX_FONT_CHAR 256
-#define MAX_TRANSFORMS 64
+#ifndef TEA_TNUM
+    #define TEA_TNUM float
+#endif
 
-// GL batched configuration
-#define MAX_QUADS 10000
-#define MAX_VERTICES 4 * MAX_QUADS
-#define MAX_INDICES 6 * MAX_QUADS
+#define TEA_POINT(x, y) ((te_Point){(x),(y)})
+#define TEA_RECT(x, y, w, h) ((te_Rect){(x),(y),(w),(h)})
+#define TEA_COLOR(r,g,b,a) ((te_Color){(r),(g),(b),(a)})
 
-#define tea_max(a, b) ((a) > (b) ? (a) : (b))
-#define tea_min(a, b) ((a) > (b) ? (b) : (a))
+#define MAX_JID 4
 
-#define tea_color(r, g, b) ((te_Color){(r), (g), (b), 255})
-#define WHITE tea_color(255, 255, 255)
-#define BLACK tea_color(0, 0, 0)
-
-#define tea_rect(x, y, w, h) ((te_Rect){(x), (y), (w), (h)})
-#define tea_point(x, y) ((te_Point){(x), (y)})
-
-enum {
-    TEA_LOG = 1,
-    TEA_ERROR,
-    TEA_WARNING,
-    TEA_FATAL,
-
-    TEA_TRACE = 8
-};
+#define WHITE TEA_COLOR(255,255,255,255)
+#define BLACK TEA_COLOR(0,0,0,255)
 
 typedef enum {
   TEA_BUTTON_LEFT = 0,
@@ -454,305 +401,234 @@ typedef enum {
                                  for array bounds */
 } TEA_KEY;
 
-typedef enum {
-  // TEA_RED,
-  // TEA_GREEN,
-  // TEA_BLUE,
-  // TEA_ALPHA,
-  // TEA_RGB,
-  // TEA_RGBA,
+enum {
+    TEA_WINDOW_RESIZABLE  = (1 << 0),
+    TEA_WINDOW_FULLSCREEN = (1 << 1),
+    TEA_WINDOW_VSYNC      = (1 << 2)
+};
 
-  TEA_PIXELFORMAT_UNKOWN = 0,
-  TEA_RGB,
-  TEA_BGR,
+enum {
+    TEA_TEXTURE_STATIC = 0,
+    TEA_TEXTURE_STREAM,
+    TEA_TEXTURE_TARGET,
+};
 
-  TEA_RGBA,
-  TEA_ARGB,
-  TEA_BGRA,
-  TEA_ABGR,
+enum {
+    TEA_SHADER_NONE = (     0),
+    TEA_SHADER_FRAG = (1 << 0),
+    TEA_SHADER_VERT = (1 << 1)
+};
 
-  // SDL_PIXELFORMAT values
-//   TEA_ARGB8888 = 0x16362004,
-//   TEA_RGBA8888 = 0x16462004,
-//   TEA_ABGR8888 = 0x16762004,
-//   TEA_BGRA8888 = 0x16862004,
+enum {
+    TEA_UNIFORM_INT = 1,
+    TEA_UNIFORM_VEC2I,
+    TEA_UNIFORM_VEC3I,
+    TEA_UNIFORM_VEC4I,
+    TEA_UNIFORM_FLOAT,
+    TEA_UNIFORM_VEC2,
+    TEA_UNIFORM_VEC3,
+    TEA_UNIFORM_VEC4,
+    TEA_UNIFORM_MATRIX
+};
 
-// #if __BYTE_ORDER == __BIG_ENDIAN
-//   TEA_RGBA32 = TEA_RGBA8888,
-//   TEA_ARGB32 = TEA_ARGB8888,
-//   TEA_BGRA32 = TEA_BGRA8888,
-//   TEA_ABGR32 = TEA_ABGR8888
-// #else
-//   TEA_RGBA32 = TEA_ABGR8888,
-//   TEA_ARGB32 = TEA_BGRA8888,
-//   TEA_BGRA32 = TEA_ARGB8888,
-//   TEA_ABGR32 = TEA_RGBA8888,
-// #endif
+enum {
+    TEA_PIXELFORMAT_UNKNOWN = 0,
+    TEA_RGB,
+    TEA_BGR,
 
-  TEA_PIXELFORMAT_COUNT
-} TEA_PIXELFORMAT;
+    TEA_RGBA,
+    TEA_ARGB,
+    TEA_BGRA,
+    TEA_ABGR,
 
-typedef enum {
-  TEA_DEFAULT = 0,
-  TEA_RENDER_2D = (1 << 0),
-  TEA_RENDER_SDL = (1 << 1),
-  TEA_RENDER_OPENGL = (1 << 2)
-} TEA_RENDER_FLAGS;
+    TEA_PIXELFORMAT_COUNT
+};
 
-typedef enum {
-  TEA_LINE = 0,
-  TEA_FILL,
+enum {
+    TEA_WRAP_S = 1,
+    TEA_WRAP_T
+};
 
-  DRAW_MODE_COUNT
-} TEA_DRAW_MODE;
+enum {
+    TEA_CLAMP,
+    TEA_REPEAT,
+    TEA_MIRROR_REPEAT
+};
+
+enum {
+    TEA_FILTER_MIN = 1,
+    TEA_FILTER_MAG
+};
+
+enum {
+    TEA_FILTER_NEAREST = 0,
+    // TEA_FILTER_LINEAR,
+    // TEA_FILTER_BILINEAR
+};
+
+enum {
+    TEA_LINE = 0,
+    TEA_FILL,
+
+    TEA_DRAWMODE_COUNT
+};
+
+enum {
+    TEA_FLIP_NONE = (     0),
+    TEA_FLIP_H    = (1 << 0),
+    TEA_FLIP_V    = (1 << 1)
+};
+
+typedef struct te_Render te_Render; 
+typedef struct te_Window te_Window;
+typedef struct te_Event te_Event;
 
 typedef struct Tea Tea;
 typedef struct te_Config te_Config;
 
-typedef struct te_Vertex {
-    union {
-        TEA_VALUE data[8];
-        struct {
-            TEA_VALUE pos[2];
-            TEA_VALUE color[4];
-            TEA_VALUE uv[2];
-        };
-        struct {
-            TEA_VALUE x;
-            TEA_VALUE y;
-            TEA_VALUE r;
-            TEA_VALUE g;
-            TEA_VALUE b;
-            TEA_VALUE a;
-            TEA_VALUE s;
-            TEA_VALUE t;
-        };
-    };
-} te_Vertex;
-
-struct te_Config {
-  unsigned char title[100];
-  int width, height;
-
-  int flags;
-  int window_flags;
-  int render_flags;
-};
-
-typedef SDL_Window te_Window;
-typedef struct te_Render te_Render;
-typedef SDL_Event te_Event;
-
-typedef struct te_Font te_Font;
-
-
-// #ifndef TEA_GL_RENDER
-
-// typedef struct SDL_Texture te_Texture;
-// typedef struct SDL_Texture te_RenderTarget;
-
-// #else
-
-// typedef unsigned int te_Texture;
-
-// typedef struct te_RenderTarget {
-//   unsigned int id;
-//   te_Texture tex;
-// } te_RenderTarget;
-
-// #endif
+typedef struct {
+    int width, height;
+    int format, usage;
+    int filter[2];
+    int wrap[2];
+} te_TextureInfo;
 
 typedef struct te_Texture te_Texture;
-typedef struct te_RenderTarget te_RenderTarget;
+typedef unsigned int te_Shader;
+typedef struct te_Font te_Font;
 
-typedef unsigned int te_Image;
-typedef unsigned int te_Canvas;
-typedef struct te_Shader te_Shader;
+typedef unsigned char te_Byte;
 
-// typedef struct te_Transform te_Transform;
-
-// typedef TEA_VALUE te_Vec2[2];
-// typedef TEA_VALUE te_Vec3[3];
-// typedef TEA_VALUE te_Vec4[4];
-// typedef TEA_VALUE te_Matrix[4][4];
-typedef struct { TEA_VALUE x, y; } te_Point;
-typedef struct { TEA_VALUE x, y, w, h; } te_Rect;
 typedef struct { unsigned char r, g, b, a; } te_Color;
-typedef enum { TEA_FLIP_NONE = 0, TEA_FLIP_H = (1 << 0), TEA_FLIP_V = (1 << 1) } te_RenderFlip;
-typedef struct { te_Point translate; TEA_VALUE angle; te_Point scale; te_Point origin; } te_Transform;
+typedef struct { TEA_TNUM x, y, w, h; } te_Rect;
+typedef struct { TEA_TNUM x, y; } te_Point;
+typedef struct { 
+    te_Point translate; 
+    TEA_TNUM angle; 
+    te_Point scale;
+    te_Point origin;
+} te_Transform;
 
-typedef void(*RenderPointFn)(te_Point);
-typedef void(*RenderLineFn)(te_Point, te_Point);
-typedef void(*RenderRectFn)(te_Rect);
-typedef void(*RenderCircleFn)(te_Point, TEA_VALUE);
-typedef void(*RenderTriangleFn)(te_Point, te_Point, te_Point);
-typedef void(*RenderTextureFn)(te_Texture, te_Rect*, te_Rect*);
-typedef void(*RenderTextureExFn)(te_Texture, te_Rect*, te_Rect*, TEA_VALUE, te_Point, te_RenderFlip flip);
+struct te_Config {
+    unsigned char title[100];
+    int width, height;
 
-// struct te_Texture {
-//   SDL_Texture *tex;
-//   int width, height;
-// };
+    int flags;
+    int render_flags;
+    int window_flags;
+};
 
-// Config
-TE_API int tea_config_init(te_Config *conf, const char *title, int width, int height);
+TEA_API int tea_config_init(te_Config *conf, const char *title, int width, int height);
 
-// Core
-TE_API Tea* tea_context();
-TE_API Tea* tea_init(struct te_Config *c);
-TE_API void tea_terminate(void);
+TEA_API int tea_init(te_Config *conf);
+TEA_API int tea_quit();
 
-TE_API int tea_should_close();
+TEA_API int tea_begin();
+TEA_API int tea_end();
 
-TE_API void tea_set_target(te_RenderTarget *target);
-TE_API void tea_set_canvas(te_Canvas canvas);
+TEA_API float tea_delta();
+TEA_API int tea_framerate();
 
-// Timer
+TEA_API int tea_should_close();
 
-TE_API float tea_get_delta(void);
-TE_API int tea_get_framerate(void);
+TEA_API int tea_clear_color(te_Color color);
+TEA_API int tea_clear();
 
-// Transforms
+TEA_API int tea_draw_color(te_Color color);
+TEA_API int tea_draw_mode(int mode);
 
-TE_API te_Transform tea_get_transform();
-TE_API void tea_set_transform(te_Transform *t);
+TEA_API int tea_set_transform(te_Transform *t);
+TEA_API int tea_get_transform(te_Transform *out);
 
-TE_API void tea_set_scale(te_Point scale);
-TE_API void tea_set_position(te_Point position);
-TE_API void tea_set_angle(TEA_VALUE angle);
-TE_API void tea_set_origin(te_Point origin);
+TEA_API int tea_clip(te_Rect *clip);
+TEA_API int tea_translate(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_rotate(TEA_TNUM angle);
+TEA_API int tea_scale(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_origin(TEA_TNUM x, TEA_TNUM y);
 
-// Graphics
+TEA_API int tea_point(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_line(te_Point p0, te_Point p1);
+TEA_API int tea_rect(te_Rect *r);
+TEA_API int tea_circle(te_Point p, TEA_TNUM radius);
+TEA_API int tea_triangle(te_Point p0, te_Point p1, te_Point p2);
 
-TE_API void tea_begin();
-TE_API void tea_end();
+TEA_API int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src);
+TEA_API int tea_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_TNUM angle, te_Point origin, int flip);
 
-TE_API void tea_clear_color(te_Color color);
-TE_API void tea_clear();
-TE_API void tea_draw_color(te_Color color);
-TE_API void tea_draw_mode(TEA_DRAW_MODE mode);
+TEA_API int tea_print(te_Font *font, const char *text, TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_printf(te_Font *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_Point origin);
 
-TE_API void tea_draw_point(te_Point p);
-TE_API void tea_draw_line(te_Point p0, te_Point p1);
+/* Texture */
+TEA_API int tea_texture_info(te_Texture *tex, te_TextureInfo *out);
+TEA_API te_Texture* tea_create_texture(void *data, int w, int h, int format, int usage);
+TEA_API te_Texture* tea_load_texture(const char *filename, int usage);
 
-TE_API void tea_draw_rect(te_Rect r);
-TE_API void tea_draw_rect_(TEA_VALUE x, TEA_VALUE y, TEA_VALUE w, TEA_VALUE h);
-TE_API void tea_draw_rect_point(te_Point pos, te_Point sz);
-TE_API void tea_draw_circle(te_Point p, TEA_VALUE radius);
-TE_API void tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2);
+TEA_API int tea_texture_set_filter(int type, int filter);
+TEA_API int tea_texture_set_wrap(int type, int filter);
 
-TE_API void tea_draw_texture(te_Texture *tex, te_Rect *dest, te_Rect *src);
-TE_API void tea_draw_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_VALUE angle, te_Point origin, te_RenderFlip flip);
+TEA_API int tea_set_target(te_Texture *tex);
 
-TE_API void tea_draw_text(te_Font *font, const char *text, te_Point pos);
+/* Font */
+TEA_API te_Font* tea_create_font(const void *data, unsigned int buf_size, int font_size);
+TEA_API te_Font* tea_load_font(const char *filename, int font_size);
 
-// Window
+TEA_API int tea_destroy_font(te_Font *font);
 
-TE_API void tea_init_window(const char *title, int width, int height, int flags);
-
-TE_API te_Window* tea_window_create(const char *title, int width, int height, int flags);
-TE_API void tea_window_destroy(te_Window *window);
-
-TE_API int tea_window_should_close(te_Window *window);
-
-// Render
-
-TE_API int tea_render_init(te_Render *render, te_Window *window, int flags);
-TE_API te_Render* tea_render_create(te_Window *window, int flags);
-TE_API void tea_render_destroy(te_Render *render);
-
-TE_API void tea_render_swap(te_Render *render);
-
-// Texture
-
-TE_API int tea_texture_init(te_Texture *tex, int w, int h, unsigned int format, int access);
-TE_API int tea_texture_init_from_data(te_Texture *tex, int w, int h, void *data, int format);
-TE_API int tea_texture_init_from_file(te_Texture *tex, const char *filename);
-TE_API te_Texture* tea_texture(int w, int h, unsigned int format, int access);
-TE_API te_Texture* tea_texture_load(const char *filename);
-// TE_API int tea_texture_init(te_Texture *t, int w, int h, unsigned int format);
-
-TE_API int tea_texture_width(te_Texture *tex);
-TE_API int tea_texture_height(te_Texture *tex);
-TE_API void tea_texture_size(te_Texture *tex, te_Point *size);
-
-TE_API void tea_texture_destroy(te_Texture *tex);
-
-// Image
-
-TE_API te_Image tea_image(int w, int h, int format);
-TE_API te_Image tea_image_load(const char *filename);
-
-TE_API te_Texture* tea_image_texture(te_Image img);
-
-#define tea_image_width(img) tea_texture_width(tea_image_texture((img)));
-#define tea_image_height(img) tea_texture_height(tea_image_texture((img)));
-#define tea_image_size(img, sz) tea_texture_size(tea_image_texture((img)), (sz));
-TE_API void tea_image_destroy(te_Image *img);
-
-// Render Target
-
-TE_API te_RenderTarget* tea_render_target(int w, int h, int format);
-TE_API void tea_set_render_target(te_RenderTarget *target);
-
-TE_API te_Texture* tea_render_target_texture(te_RenderTarget *target);
-
-// Canvas
-
-TE_API te_Canvas tea_canvas(int width, int height);
-TE_API te_RenderTarget* tea_canvas_render_target(te_Canvas canvas);
-TE_API te_Texture* tea_canvas_texture(te_Canvas canvas);
-TE_API void tea_canvas_destroy(te_Canvas *canvas);
-
-// Font
-
-TE_API te_Font* tea_font(const void *data, size_t buf_size, int font_size);
-TE_API te_Font* tea_font_load(const char *filename, int font_size);
-TE_API int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_size);
-
-TE_API void tea_font_destroy(te_Font *font);
-
-TE_API void tea_font_get_rect(te_Font* font, const int c, TEA_VALUE *x, TEA_VALUE *y, te_Point *out_pos, te_Rect *r, TEA_VALUE width);
-TE_API void tea_font_char_rect(te_Font* font, const unsigned int c, te_Rect *r);
-
-TE_API int tea_font_get_text_width(te_Font *font, const char *text, int len);
-TE_API int tea_font_get_text_height(te_Font *font, const char *text, int len);
-
-// TE_API void tea_canvas_draw(te_Canvas *canvas)
-
+TEA_API int tea_font_char_rect(te_Font *font, const unsigned int c, te_Rect *out);
 
 /*******************
  *      Input      *
  *******************/
 
-TE_API int tea_update_input();
+TEA_API int tea_update_input();
 
-TE_API int tea_keyboard_is_down(int key);
-TE_API int tea_keyboard_is_up(int key);
-TE_API int tea_keyboard_was_pressed(int key);
-TE_API int tea_keyboard_was_released(int key);
+TEA_API int tea_keyboard_is_down(int key);
+TEA_API int tea_keyboard_is_up(int key);
+TEA_API int tea_keyboard_was_pressed(int key);
+TEA_API int tea_keyboard_was_released(int key);
 
-TE_API TEA_VALUE tea_mouse_x();
-TE_API TEA_VALUE tea_mouse_y();
-TE_API int tea_mouse_pos(TEA_VALUE *x, TEA_VALUE *y);
+TEA_API TEA_TNUM tea_mouse_x();
+TEA_API TEA_TNUM tea_mouse_y();
+TEA_API int tea_mouse_pos(TEA_TNUM *x, TEA_TNUM *y);
 
-TE_API TEA_VALUE tea_mouse_scroll_x();
-TE_API TEA_VALUE tea_mouse_scroll_y();
-TE_API int tea_mouse_scroll_pos(TEA_VALUE *x, TEA_VALUE *y);
+TEA_API TEA_TNUM tea_mouse_scroll_x();
+TEA_API TEA_TNUM tea_mouse_scroll_y();
+TEA_API int tea_mouse_scroll_pos(TEA_TNUM *x, TEA_TNUM *y);
 
-TE_API int tea_mouse_is_down(int button);
-TE_API int tea_mouse_is_up(int button);
-TE_API int tea_mouse_was_pressed(int button);
-TE_API int tea_mouse_was_released(int button);
+TEA_API int tea_mouse_is_down(int button);
+TEA_API int tea_mouse_is_up(int button);
+TEA_API int tea_mouse_was_pressed(int button);
+TEA_API int tea_mouse_was_released(int button);
 
-TE_API int tea_joystick_axis(int jid, int axis);
-TE_API int tea_joystick_is_down(int jid, int button);
-TE_API int tea_joystick_is_up(int jid, int button);
-TE_API int tea_joystick_was_pressed(int jid, int button);
-TE_API int tea_joystick_was_released(int jid, int button);
+TEA_API int tea_joystick_axis(int jid, int axis);
+TEA_API int tea_joystick_is_down(int jid, int button);
+TEA_API int tea_joystick_is_up(int jid, int button);
+TEA_API int tea_joystick_was_pressed(int jid, int button);
+TEA_API int tea_joystick_was_released(int jid, int button);
 
-/* Debug */
+/****** GL Backend only *******/
 
-TE_API void tea_error(const char *msg);
+/* Shader */
+TEA_API te_Shader tea_create_shader(int vert, int frag);
+TEA_API te_Shader tea_load_shader(const char *filename, int type);
+TEA_API int tea_compile_shader(const char *source, int type);
+
+TEA_API int tea_destroy_shader(te_Shader *shader);
+
+TEA_API int tea_shader_send(te_Shader shader, const char *name, void *value, int type);
+TEA_API int tea_shader_send_count(te_Shader shader, const char *name, int count, void *value, int type);
+TEA_API int tea_shader_send_world();
+
+TEA_API int tea_set_shader(te_Shader shader);
+
+/* Vertex */
+TEA_API int tea_vertex_begin();
+TEA_API int tea_vertex_end();
+
+TEA_API int tea_vertex();
+TEA_API int tea_vertex_pos(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_vertex_color(te_Color color);
+TEA_API int tea_vertex_texcoord(TEA_TNUM x, TEA_TNUM y);
+
 
 #endif /* TEA_H */

@@ -1,0 +1,78 @@
+#include "tea_api.h"
+
+/*******************
+ *      Input      *
+ *******************/
+
+int tea_update_input() {
+  // memcpy(tea()->input.old_key, tea()->input.key_array, TEA_KEY_COUNT);
+  memcpy(tea()->input.keyboard.old_state, tea()->input.keyboard.state, TEA_KEY_COUNT);
+  int mx, my;
+  Uint8 mouse_state = SDL_GetMouseState(&mx, &my);
+  tea()->input.mouse.x = mx;
+  tea()->input.mouse.y = my;
+  for (int i = 0; i < TEA_BUTTON_COUNT; i++) {
+    tea()->input.mouse.old_state[i] = tea()->input.mouse.state[i];
+    tea()->input.mouse.state[i] = mouse_state & SDL_BUTTON(i+1);
+  }
+  SDL_PollEvent(&tea()->event);
+
+  return 1;
+}
+
+int tea_keyboard_is_down(int key) {
+  return tea()->input.keyboard.state[key];
+}
+
+int tea_keyboard_is_up(int key) {
+  return !tea_keyboard_is_down(key);
+}
+
+int tea_keyboard_was_pressed(int key) {
+  return !tea()->input.keyboard.old_state[key] && tea_keyboard_is_down(key);
+}
+int tea_keyboard_was_released(int key) {
+  return tea()->input.keyboard.old_state[key] && tea_keyboard_is_up(key);
+}
+
+/* Mouse */
+
+TEA_VALUE tea_mouse_x() {
+    return tea()->input.mouse.x;
+}
+
+TEA_VALUE tea_mouse_y() {
+    return tea()->input.mouse.y;
+}
+
+int tea_mouse_pos(TEA_VALUE *x, TEA_VALUE *y) {
+    if (x) *x = tea()->input.mouse.x;
+    if (y) *y = tea()->input.mouse.y;
+
+    return 1;
+}
+
+int tea_mouse_is_down(int button) {
+  return tea()->input.mouse.state[button];
+}
+int tea_mouse_is_up(int button) {
+  return !tea_mouse_is_down(button);
+}
+
+int tea_mouse_was_pressed(int button) {
+  return !tea()->input.mouse.old_state[button] && tea_mouse_is_down(button);
+}
+int tea_mouse_was_released(int button) {
+  return tea()->input.mouse.old_state[button] && tea_mouse_is_up(button);
+}
+
+int tea_joystick_axis(int jid, int axis);
+int tea_joystick_is_down(int jid, int button);
+int tea_joystick_is_up(int jid, int button);
+int tea_joystick_was_pressed(int jid, int button);
+int tea_joystick_was_released(int jid, int button);
+
+#ifndef CAFE_ENGINE
+    #define CSTAR_IMPLEMENTATION
+    #include "cstar.h"
+#endif

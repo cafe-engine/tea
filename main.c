@@ -1,38 +1,49 @@
 #include "include/tea.h"
+#include <stdio.h>
 
 int main(int argc, char ** argv) {
     te_Config conf = {0};
-    tea_config_init(&conf, "Game", 640, 380);
-    tea_init(&conf);
+    tea_config_init(&conf, "Game", 160, 95);
+    conf.window_flags = TEA_WINDOW_RESIZABLE;
+    if (!tea_init(&conf)) {
+        printf("failed to init Tea\n");
+        return 0;
+    }
 
-    int scale = 1;
-    int x, y;
-    x = y = 0;
+    te_Texture *tex = tea_load_texture("goblin.png", 0);
+    te_Font *font = tea_load_font("extrude.ttf", 16);
 
-    te_Texture *tex = tea_texture_load("goblin.png");
-    te_RenderTarget *target = tea_render_target(160, 95, TEA_RGBA);
+    float time = 0;
+    int frame = 0;
 
     while (!tea_should_close()) {
         tea_begin();
 
-        if (tea_keyboard_was_pressed(TEA_KEY_ESCAPE)) break;
+        tea_draw_mode(TEA_LINE);
 
-        if (tea_keyboard_is_down(TEA_KEY_LEFT)) x -= 10;
-        else if (tea_keyboard_is_down(TEA_KEY_RIGHT)) x += 10;
-        
-        tea_set_render_target(target);
-        tea_clear();
-        tea_draw_texture(tex, &tea_rect(x, y, 16*scale, 16*scale), &tea_rect(0, 0, 16, 16));
+        tea_draw_mode(TEA_FILL);
+        tea_circle(TEA_POINT(16, 16), 8);
 
-        tea_draw_circle(tea_point(x+8, y+8), 8);
-        tea_set_render_target(NULL);
+        time += tea_delta()*8;
+        if (time > 1) {
+            frame += 1;
+            if (frame > 4) frame = 0;
+            time = 0;
+        }
+        te_Rect r = TEA_RECT(frame*16, 0, 16, 16);
+        tea_texture(tex, &TEA_RECT(0, 0, 16, 16), &r);
+        tea_texture(tex, &TEA_RECT(0, 16, 16, 16), &TEA_RECT(32, 0, 16, 16));
 
-        tea_draw_texture((te_Texture*)target, &tea_rect(0, 0, 160*4, 95*4), NULL);
+        te_Point mpos;
+        tea_mouse_pos(&mpos.x, &mpos.y);
+
+        tea_line(TEA_POINT(0, 0), mpos);
+        tea_print(font, "ok", mpos.x, mpos.y);
 
         tea_end();
     }
 
-    tea_terminate();
+    tea_quit();
 
     return 0;
 }
