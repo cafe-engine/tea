@@ -31,6 +31,8 @@
 #include "tea_api.h"
 #include <SDL_opengl.h>
 
+#include "stb_image.h"
+#include "stb_truetype.h"
 #include "linmath.h"
 
 typedef unsigned int GLSL_Shader;
@@ -345,27 +347,29 @@ int tea_line(te_Point p0, te_Point p1) {
 
 // Draw Rects
 
-int _draw_fill_rect(te_Rect *rect) {
-    for (int yy = rect->y; yy < rect->h; yy++) {
-        tea_line(TEA_POINT(rect->x, yy), TEA_POINT(rect->x+rect->w, yy));
+int _draw_fill_rect(te_Rect rect) {
+    for (int yy = rect.y; yy < (rect.y+rect.h); yy++) {
+        tea_line(TEA_POINT(rect.x, yy), TEA_POINT(rect.x+rect.w, yy));
     }
     return 1;
 }
-int _draw_line_rect(te_Rect *rect) {
-  tea_line(TEA_POINT(rect->x, rect->y), TEA_POINT(rect->x+rect->w,rect->y));
-  tea_line(TEA_POINT(rect->x+rect->w, rect->y), TEA_POINT(rect->x+rect->w,rect->y+rect->h));
-  tea_line(TEA_POINT(rect->x+rect->w, rect->y+rect->h), TEA_POINT(rect->x,rect->y+rect->h));
-  tea_line(TEA_POINT(rect->x, rect->y+rect->h), TEA_POINT(rect->x,rect->y));
+int _draw_line_rect(te_Rect rect) {
+  tea_line(TEA_POINT(rect.x, rect.y), TEA_POINT(rect.x+rect.w,rect.y));
+  tea_line(TEA_POINT(rect.x+rect.w, rect.y), TEA_POINT(rect.x+rect.w,rect.y+rect.h));
+  tea_line(TEA_POINT(rect.x+rect.w, rect.y+rect.h), TEA_POINT(rect.x,rect.y+rect.h));
+  tea_line(TEA_POINT(rect.x, rect.y+rect.h), TEA_POINT(rect.x,rect.y));
   return 1;
 }
 
-typedef int(*RenderRectFn)(te_Rect*);
+typedef int(*RenderRectFn)(te_Rect);
 static RenderRectFn rect_fn[2] = {_draw_line_rect, _draw_fill_rect};
 
 int tea_rect(te_Rect *r) {
   // tea()->draw.rect[render_stat()->_draw_mode](TEA_RECT(r.x+t->translate.x, r.y+t->translate.y, r.w*t->scale.x, r.h*t->scale.y));
-  rect_fn[render()->stat.draw_mode](&TEA_RECT(r->x, r->y, r->w, r->h));
-  return 1;
+    te_Rect rect = {0, 0, window()->width, window()->height};
+    if (r) memcpy(&rect, r, sizeof(*r));
+    rect_fn[render()->stat.draw_mode](rect);
+    return 1;
 }
 
 // Draw Circles
@@ -513,7 +517,7 @@ static te_Point calc_vec_scale(te_Point p0, te_Point p1, te_Point scale) {
   return TEA_POINT(p0.x + vec.x, p0.y + vec.y);
 }
 
-int tea_draw_triangle(te_Point p0, te_Point p1, te_Point p2) {
+int tea_triangle(te_Point p0, te_Point p1, te_Point p2) {
   te_Transform *t = &render()->stat.transform;
   te_Point tpoints[3];
   
@@ -533,17 +537,10 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     te_Point sz;
     sz.x = tex->width;
     sz.y = tex->height;
-    te_Rect d;
-    d.x = dest ? dest->x : 0;
-    d.y = dest ? dest->y : 0;
-    d.w = dest ? dest->w : sz.x;
-    d.h = dest ? dest->h : sz.y;
-
-    te_Rect s;
-    s.x = src ? src->x : 0;
-    s.y = src ? src->y : 0;
-    s.w = src ? src->w : sz.x;
-    s.h = src ? src->h : sz.y;
+    te_Rect d = {0, 0, sz.x, sz.y};
+    te_Rect s = {0, 0, sz.x, sz.y};
+    if (dest) memcpy(&d, dest, sizeof(*dest));
+    if (src) memcpy(&s, src, sizeof(*src));
 
     te_Color *c = &render()->stat.draw_color;
     struct Render *render = render()->handle;
@@ -569,14 +566,25 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     norm.y = s.y / height;
     norm.w = s.w / width;
     norm.h = s.h / height;
+
+    float tex_coords[4] = {0, 0, 1, 1};
+    tex_coords[0] = s.x / width;
+    tex_coords[1] = s.y / height;
+    tex_coords[2] = tex_coords[0] + (s.w / width);
+    tex_coords[3] = tex_coords[1] + (s.h / height);
+    if (tex->usage == TEA_TEXTURE_TARGET) {
+        float aux = tex_coords[1];
+        tex_coords[1] = tex_coords[3];
+        tex_coords[3] = aux;
+    }
     vert[0].x = d.x;
     vert[0].y = d.y;
     vert[0].r = r;
     vert[0].g = g;
     vert[0].b = b;
     vert[0].a = a;
-    vert[0].s = norm.x;
-    vert[0].t = norm.y;
+    vert[0].s = tex_coords[0];
+    vert[0].t = tex_coords[1];
 
     vert[1].x = d.x+d.w;
     vert[1].y = d.y;
@@ -584,8 +592,8 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     vert[1].g = g;
     vert[1].b = b;
     vert[1].a = a;
-    vert[1].s = norm.x + norm.w;
-    vert[1].t = norm.y;
+    vert[1].s = tex_coords[2];
+    vert[1].t = tex_coords[1];
 
     vert[2].x = d.x+d.w;
     vert[2].y = d.y+d.h;
@@ -593,8 +601,8 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     vert[2].g = g;
     vert[2].b = b;
     vert[2].a = a;
-    vert[2].s = norm.x + norm.w;
-    vert[2].t = norm.y + norm.h;
+    vert[2].s = tex_coords[2];
+    vert[2].t = tex_coords[3];
 
     vert[3].x = d.x+d.w;
     vert[3].y = d.y+d.h;
@@ -602,8 +610,8 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     vert[3].g = g;
     vert[3].b = b;
     vert[3].a = a;
-    vert[3].s = norm.x + norm.w;
-    vert[3].t = norm.y + norm.h;
+    vert[3].s = tex_coords[2];
+    vert[3].t = tex_coords[3];
 
     vert[4].x = d.x;
     vert[4].y = d.y+d.h;
@@ -611,8 +619,8 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     vert[4].g = g;
     vert[4].b = b;
     vert[4].a = a;
-    vert[4].s = norm.x;
-    vert[4].t = norm.y + norm.h;
+    vert[4].s = tex_coords[0];
+    vert[4].t = tex_coords[3];
 
     vert[5].x = d.x;
     vert[5].y = d.y;
@@ -620,8 +628,8 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
     vert[5].g = g;
     vert[5].b = b;
     vert[5].a = a;
-    vert[5].s = norm.x;
-    vert[5].t = norm.y;
+    vert[5].s = tex_coords[0];
+    vert[5].t = tex_coords[1];
 
     glBindVertexArray(render->vao);
     glBindBuffer(GL_ARRAY_BUFFER, render->vbo);
@@ -642,20 +650,20 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
 }
 
 int tea_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_TNUM angle, te_Point origin, int flip) {
+    return tea_texture(tex, dest, src);
     te_Point size;
     size.x = tex->width;
     size.y = tex->height;
     te_Rect d, s;
-  te_Transform *t = &render()->stat.transform;
-  d.x = (dest ? (dest->x - t->origin.x + t->translate.x) : 0) - origin.x;
-  d.y = (dest ? (dest->y - t->origin.x + t->translate.y) : 0) - origin.y;
-  d.w = dest ? (dest->w*t->scale.x) : size.x - origin.x;
-  d.h = dest ? (dest->h*t->scale.y) : size.y - origin.y;
+    d.x = (dest ? (dest->x) : 0);
+    d.y = (dest ? (dest->y) : 0);
+    d.w = dest ? (dest->w) : size.x;
+    d.h = dest ? (dest->h) : size.y;
 
-  s.x = src ? src->x : 0;
-  s.y = src ? src->y : 0;
-  s.w = src ? src->w : size.x;
-  s.h = src ? src->h : size.y;
+    s.x = (src ? src->x : 0)-origin.x;
+    s.y = (src ? src->y : 0)-origin.y;
+    s.w = (src ? src->w : size.x)-origin.x;
+    s.h = (src ? src->h : size.y)-origin.y;
 
 #if 0
   SDL_Point sdl_origin = {origin.x, origin.y};
@@ -668,20 +676,13 @@ int tea_print(te_Font *font, const char *text, TEA_TNUM x, TEA_TNUM y) {
   if (!text) return 0;
   char *p = (char*)text;
 
-#if 0
-  SDL_SetTextureColorMod(font->tex->tex, tea->_color.r, tea->_color.g, tea->_color.b);
-  SDL_SetTextureAlphaMod(font->tex->tex, tea->_color.a);
-#endif
-
-  tea_texture(font->tex, NULL, NULL);
-  return 1;
   while(*p) {
     te_Rect r;
     tea_font_char_rect(font, *p, &r);
 
     int index = (int)*p;
     tea_texture(font->tex, &TEA_RECT(x, y, r.w, r.h), &r);
-    // tea_draw_texture(font->tex, &r, pos);
+    // tea_texture(font->tex, &TEA_RECT(x, y, r.w, r.h), &r);
     x += font->c[index].ax;
 
     p++;
@@ -757,12 +758,32 @@ void* tea_alloc_texture() {
     return malloc(sizeof(struct te_Texture));
 }
 
+int tea_texture_info(te_Texture *tex, te_TextureInfo *out) {
+    if (!tex) return 0;
+    if (!out) return 0;
+
+    out->size.w = tex->width;
+    out->size.h = tex->height;
+    out->format = tex->channels;
+    out->usage = tex->usage;
+
+
+    return 1;
+}
+
 int tea_init_texture(te_Texture *tex, void *data, int w, int h, int format, int access) {
     if (!tex) { cst_traceerror("te_Texture cannot be NULL"); return 0; }
 
     if (format < 0 || format >= TEA_PIXELFORMAT_COUNT) {
         cst_traceerror("invalid pixel format: %d", format);
         return 0;
+    }
+    unsigned int fbo = 0;
+    unsigned int tex_id = 0;
+
+    if (access == TEA_TEXTURE_TARGET) {
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     }
 
     int depth, pitch;
@@ -774,8 +795,8 @@ int tea_init_texture(te_Texture *tex, void *data, int w, int h, int format, int 
     pitch = tex->channels * w;
     _format = pixel_format(format);
 
-    glGenTextures(1, (GLuint*)&tex->id);
-    glBindTexture(GL_TEXTURE_2D, tex->id);
+    glGenTextures(1, &tex_id);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
     tex->filter[0] = GL_NEAREST;
     tex->filter[1] = GL_NEAREST;
     tex->wrap[0] = GL_CLAMP_TO_BORDER;
@@ -791,6 +812,14 @@ int tea_init_texture(te_Texture *tex, void *data, int w, int h, int format, int 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, _format, w, h, GL_FALSE, _format, GL_UNSIGNED_BYTE, data);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    if (access == TEA_TEXTURE_TARGET) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    tex->id = (fbo << 8) | tex_id;
     tex->width = w;
     tex->height = h;
     return 1;
@@ -862,7 +891,7 @@ int tea_font_init(te_Font *font, const void *data, size_t buf_size, int font_siz
         stbtt_FreeBitmap(bitmap, font->info.userdata);
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, ww, hh, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        font->c[i].tx = (float)x / tw;
+        font->c[i].tx = (float)x;
         x += font->c[i].bw;
     }
     glBindTexture(GL_TEXTURE_2D, 0);

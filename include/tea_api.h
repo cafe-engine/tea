@@ -4,11 +4,9 @@
 #include "tea.h"
 #include <SDL.h>
 
-#include "stb_image.h"
-#include "stb_truetype.h"
 #include "cstar.h"
 
-#define tea() (&_tex_ctx)
+#define tea() (&_tea_ctx)
 #define render() (&tea()->render)
 #define window() (&tea()->window)
 #define event() (&tea()->event)
@@ -85,7 +83,7 @@ struct Tea {
     struct te_Timer timer;
 };
 
-Tea _tex_ctx;
+extern Tea _tea_ctx;
 
 /* Render Mode */
 TEA_API int tea_init_render_mode(te_RenderMode *mode);

@@ -27,6 +27,9 @@
 #include "SDL_render.h"
 #include "tea_api.h"
 
+#include "stb_image.h"
+#include "stb_truetype.h"
+
 struct te_Texture {
     int usage;
     void *data;
@@ -213,6 +216,18 @@ int tea_render_mode(te_Render *r, int mode) {
 }
 
 /* Texture */
+
+int tea_texture_info(te_Texture *tex, te_TextureInfo *out) {
+    if (!tex) return 0;
+    if (!out) return 0;
+
+    out->size.w = tex->width;
+    out->size.h = tex->height;
+    out->format = tex->channels;
+    out->usage = tex->usage;
+    return 1;
+}
+
 int tea_init_texture(te_Texture *tex, void *data, int w, int h, int format, int usage) {
     tex->width = w;
     tex->height = h;

@@ -14,6 +14,9 @@
     #define TEA_TNUM float
 #endif
 
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+#define MIN(a,b) ((a) > (b) ? (b) : (a))
+
 #define TEA_POINT(x, y) ((te_Point){(x),(y)})
 #define TEA_RECT(x, y, w, h) ((te_Rect){(x),(y),(w),(h)})
 #define TEA_COLOR(r,g,b,a) ((te_Color){(r),(g),(b),(a)})
@@ -433,10 +436,13 @@ enum {
 
 enum {
     TEA_PIXELFORMAT_UNKNOWN = 0,
+    TEA_GREY,
+    TEA_GREY_A,
     TEA_RGB,
+    TEA_RGBA,
+
     TEA_BGR,
 
-    TEA_RGBA,
     TEA_ARGB,
     TEA_BGRA,
     TEA_ABGR,
@@ -487,7 +493,9 @@ typedef struct Tea Tea;
 typedef struct te_Config te_Config;
 
 typedef struct {
-    int width, height;
+    struct {
+        int w, h;
+    } size;
     int format, usage;
     int filter[2];
     int wrap[2];
@@ -498,6 +506,31 @@ typedef unsigned int te_Shader;
 typedef struct te_Font te_Font;
 
 typedef unsigned char te_Byte;
+
+typedef unsigned int te_color_t;
+typedef struct { TEA_TNUM x, y, w, h; } te_rect_t;
+typedef struct { TEA_TNUM x, y; } te_point;
+
+// te_point p = TEA_POINT(0, 0);
+// te_color_t col = TEA_RGB(255, 0, 255);
+// te_rect r = TEA_RECT(0, 0, 32, 32);
+// te_texture_t *tex = tea_create_texture(NULL, 2, 2, TEA_RGBA, TEA_TEXTURE_STATIC);
+// tea_texture(tex, &r, &r);
+// tea_color(WHITE);
+// tea_clear(0xffffffff);
+// tea_color(1);
+// tea_rect(0, 0, 32, 32)
+// tea_circle(0, 0, 16)
+// tea_triangle(16, 0, 0, 16, 32, 16);
+// tea_line(0, 0, 32, 32);
+// tea_point(0, 0);
+// tea_begin(NULL);
+// tea_end();
+
+typedef struct te_texture_s te_texture_t;
+typedef struct te_font_s te_font_t;
+typedef unsigned int te_shader_t;
+
 
 typedef struct { unsigned char r, g, b, a; } te_Color;
 typedef struct { TEA_TNUM x, y, w, h; } te_Rect;
@@ -534,7 +567,9 @@ TEA_API int tea_should_close();
 TEA_API int tea_clear_color(te_Color color);
 TEA_API int tea_clear();
 
+TEA_API te_Color tea_get_draw_color();
 TEA_API int tea_draw_color(te_Color color);
+TEA_API int tea_get_draw_mode();
 TEA_API int tea_draw_mode(int mode);
 
 TEA_API int tea_set_transform(te_Transform *t);
@@ -605,6 +640,8 @@ TEA_API int tea_joystick_is_down(int jid, int button);
 TEA_API int tea_joystick_is_up(int jid, int button);
 TEA_API int tea_joystick_was_pressed(int jid, int button);
 TEA_API int tea_joystick_was_released(int jid, int button);
+
+TEA_API const char* tea_geterror();
 
 /****** GL Backend only *******/
 

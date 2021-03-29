@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
-#define MIN(a,b) ((a) > (b) ? (b) : (a))
+#include "stb_image.h"
+
+Tea _tea_ctx = {0};
 
 int tea_config_init(te_Config *conf, const char *title, int width, int height) {
     if (!conf) return 0;
@@ -60,8 +61,6 @@ int tea_should_close() {
 
 int tea_begin() {
     tea_update_input();
-    tea_clear_color(BLACK);
-    tea_clear();
 
     tea()->timer.current_time = SDL_GetTicks();
     tea()->timer.delta = tea()->timer.current_time - tea()->timer.prev_time;
@@ -95,6 +94,14 @@ int tea_clear_color(te_Color color) {
 
 int tea_clear() {
     return tea_render_clear(render());
+}
+
+int tea_get_draw_mode() {
+  return render()->stat.draw_mode;
+}
+
+te_Color tea_get_draw_color() {
+  return render()->stat.draw_color;
 }
 
 int tea_draw_color(te_Color col) {
@@ -153,7 +160,7 @@ te_Texture* tea_create_texture(void *data, int w, int h, int format, int usage) 
 te_Texture *tea_load_texture(const char *filename, int usage) {
     te_Texture *tex = tea_alloc_texture();
     if (!tex) { tea_error("failed to alloc texture"); return NULL; }
-    int req_format = STBI_rgb_alpha;
+    int req_format = TEA_RGBA;
     int w, h, format;
 
     unsigned char *data = stbi_load(filename, &w, &h, &format, req_format);
@@ -162,8 +169,7 @@ te_Texture *tea_load_texture(const char *filename, int usage) {
         return NULL;
     }
 
-    int tformat = format == STBI_rgb ? TEA_RGB : TEA_RGBA;
-    if (!tea_init_texture(tex, data, w, h, tformat, usage)) return NULL;
+    if (!tea_init_texture(tex, data, w, h, format, usage)) return NULL;
 
     return tex;
 }
@@ -406,15 +412,29 @@ int tea_mouse_was_released(int button) {
   return tea()->input.mouse.old_state[button] && tea_mouse_is_up(button);
 }
 
-int tea_joystick_axis(int jid, int axis);
-int tea_joystick_is_down(int jid, int button);
-int tea_joystick_is_up(int jid, int button);
-int tea_joystick_was_pressed(int jid, int button);
-int tea_joystick_was_released(int jid, int button);
+int tea_joystick_axis(int jid, int axis) {
+    return 1;
+}
+int tea_joystick_is_down(int jid, int button) {
+    return 1;
+}
+int tea_joystick_is_up(int jid, int button) {
+    return 1;
+}
+int tea_joystick_was_pressed(int jid, int button) {
+    return 1;
+}
+int tea_joystick_was_released(int jid, int button) {
+    return 1;
+}
 
 /* Debug */
 
 #include <stdarg.h>
+
+const char* tea_geterror() {
+    return tea()->error_buf;
+}
 
 int tea_error(const char *fmt, ...) {
     va_list args;

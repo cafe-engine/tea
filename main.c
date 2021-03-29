@@ -3,7 +3,7 @@
 
 int main(int argc, char ** argv) {
     te_Config conf = {0};
-    tea_config_init(&conf, "Game", 160, 95);
+    tea_config_init(&conf, NULL, 160, 95);
     conf.window_flags = TEA_WINDOW_RESIZABLE;
     if (!tea_init(&conf)) {
         printf("failed to init Tea\n");
@@ -12,6 +12,7 @@ int main(int argc, char ** argv) {
 
     te_Texture *tex = tea_load_texture("goblin.png", 0);
     te_Font *font = tea_load_font("extrude.ttf", 16);
+    te_Texture *canvas = tea_create_texture(NULL, 160, 95, TEA_RGBA, TEA_TEXTURE_TARGET);
 
     float time = 0;
     int frame = 0;
@@ -19,6 +20,8 @@ int main(int argc, char ** argv) {
     while (!tea_should_close()) {
         tea_begin();
 
+        tea_set_target(canvas);
+        tea_clear();
         tea_draw_mode(TEA_LINE);
 
         tea_draw_mode(TEA_FILL);
@@ -39,6 +42,9 @@ int main(int argc, char ** argv) {
 
         tea_line(TEA_POINT(0, 0), mpos);
         tea_print(font, "ok", mpos.x, mpos.y);
+        tea_set_target(NULL);
+
+        tea_texture(canvas, NULL, NULL);
 
         tea_end();
     }
