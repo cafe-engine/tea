@@ -174,6 +174,24 @@ te_Texture *tea_load_texture(const char *filename, int usage) {
     return tex;
 }
 
+te_Texture *tea_load_texture_from_memory(void *data, unsigned int size, int usage) {
+    te_Texture *tex = tea_alloc_texture();
+    if (!tex) { tea_error("failed to alloc texture"); return NULL; }
+
+    int req_format = TEA_RGBA;
+    int w, h, format;
+
+    unsigned char *dt = stbi_load_from_memory(data, size, &w, &h, &format, req_format);
+    if (!dt) {
+        tea_error("failed to load image");
+        return NULL;
+    }
+
+    if (!tea_init_texture(tex, dt, w, h, format, usage)) return NULL;
+
+    return tex;
+}
+
 int tea_set_target(te_Texture *tex) {
     return tea_set_render_target(render(), tex);
 }

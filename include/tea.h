@@ -597,6 +597,7 @@ TEA_API int tea_printf(te_Font *font, const char *text, TEA_TNUM x, TEA_TNUM y, 
 TEA_API int tea_texture_info(te_Texture *tex, te_TextureInfo *out);
 TEA_API te_Texture* tea_create_texture(void *data, int w, int h, int format, int usage);
 TEA_API te_Texture* tea_load_texture(const char *filename, int usage);
+TEA_API te_Texture* tea_load_texture_from_memory(void *data, unsigned int size, int usage);
 
 TEA_API int tea_texture_set_filter(int type, int filter);
 TEA_API int tea_texture_set_wrap(int type, int filter);
