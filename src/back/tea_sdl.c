@@ -128,6 +128,7 @@ int tea_render_init(te_Render *r, te_Window *window, int flags) {
     r->stat.draw_color = WHITE;
     r->stat.draw_mode = TEA_LINE;
     r->stat.tex = NULL;
+    r->stat.transform.scale = TEA_POINT(1, 1);
     return 1;
 }
 
@@ -258,7 +259,8 @@ int tea_point(TEA_TNUM x, TEA_TNUM y) {
 }
 
 int tea_line(te_Point p0, te_Point p1) {
-    SDL_RenderDrawLine(render()->handle, p0.x, p0.y, p1.x, p1.y);
+    te_Transform *t = &render()->stat.transform;
+    SDL_RenderDrawLine(render()->handle, t->translate.x + p0.x, t->translate.y + p0.y, t->translate.x + p1.x, t->translate.y + p1.y);
     return 1;
 }
 
@@ -266,8 +268,9 @@ int tea_line(te_Point p0, te_Point p1) {
 
 int _draw_fill_rect(te_Rect rect) {
     SDL_Rect r;
-    r.x = rect.x;
-    r.y = rect.y;
+    te_Transform *t = &render()->stat.transform;
+    r.x = rect.x + t->translate.x;
+    r.y = rect.y + t->translate.y;
     r.w = rect.w;
     r.h = rect.h;
     SDL_RenderFillRect(render()->handle, &r);
@@ -275,8 +278,9 @@ int _draw_fill_rect(te_Rect rect) {
 }
 int _draw_line_rect(te_Rect rect) {
     SDL_Rect r;
-    r.x = rect.x;
-    r.y = rect.y;
+    te_Transform *t = &render()->stat.transform;
+    r.x = rect.x + t->translate.x;
+    r.y = rect.y + t->translate.y;
     r.w = rect.w;
     r.h = rect.h;
     SDL_RenderDrawRect(render()->handle, &r);
@@ -355,8 +359,8 @@ static int tea_triangle_line(te_Point p0, te_Point p1, te_Point p2) {
 }
 static void fill_bottom_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
   int dy = (p2.y - p0.y);
-  float invslope0 = (p1.x - p0.x) / dy;
-  float invslope1 = (p2.x - p0.x) / dy;
+  float invslope0 = (float)(p1.x - p0.x) / dy;
+  float invslope1 = (float)(p2.x - p0.x) / dy;
 
   float curx1 = p0.x;
   float curx2 = p0.x;
@@ -371,8 +375,8 @@ static void fill_bottom_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
 
 static void fill_top_flat_triangle(te_Point p0, te_Point p1, te_Point p2) {
   int dy = (p2.y - p0.y);
-  float invslope0 = (p2.x - p0.x) / dy;
-  float invslope1 = (p2.x - p1.x) / dy;
+  float invslope0 = (float)(p2.x - p0.x) / dy;
+  float invslope1 = (float)(p2.x - p1.x) / dy;
 
   float curx1 = p2.x;
   float curx2 = p2.x;
@@ -454,35 +458,52 @@ int tea_texture(te_Texture *tex, te_Rect *dest, te_Rect *src) {
         s.w = src->w;
         s.h = src->h;
     }
+    te_Transform *t = &render()->stat.transform;
+    d.x += t->translate.x;
+    d.y += t->translate.y;
 
     SDL_RenderCopy(render()->handle, tex->handle, &s, &d);
     return 1;
 }
 
 int tea_texture_ex(te_Texture *tex, te_Rect *dest, te_Rect *src, TEA_TNUM angle, te_Point origin, int flip) {
-  te_Point size;
-  size.x = tex->width;
-  size.y = tex->height;
-  SDL_Rect d = {0, 0, size.x, size.y};
-  SDL_Rect s = {0, 0, size.x, size.y};
-  te_Transform *t = &render()->stat.transform;
-  if (dest) {
-    d.x = dest->x;
-    d.y = dest->y;
-    d.w = dest->w;
-    d.h = dest->h;
-  }
-  if (src) {
-    s.x = src->x;
-    s.y = src->y;
-    s.w = src->w;
-    s.h = src->h;
-  }
+    if (!tex) {
+        tea_error("texture cannot be NULL");
+        return 0;
+    }
+    SDL_Point sdl_origin = {origin.x, origin.y};
+    te_Point size;
+    size.x = tex->width;
+    size.y = tex->height;
+    SDL_Rect d = {0, 0, size.x, size.y};
+    SDL_Rect s = {0, 0, size.x, size.y};
+    te_Transform *t = &render()->stat.transform;
+    if (dest) {
+        d.x = dest->x;
+        d.y = dest->y;
+        d.w = dest->w;
+        d.h = dest->h;
+    }
+    if (src) {
+        s.x = src->x;
+        s.y = src->y;
+        s.w = src->w;
+        s.h = src->h;
+    }
+    if (flip & TEA_FLIP_H) {
+        origin.x = -origin.x;
+        d.x -= d.w;
+    }
+    if (flip & TEA_FLIP_V) {
+        origin.y = -origin.y;
+        d.y -= d.w;
+    }
+    d.x += t->translate.x - origin.x;
+    d.y += t->translate.y - origin.y;
 
-  SDL_Point sdl_origin = {origin.x, origin.y};
 
-  SDL_RenderCopyEx(render()->handle, tex->handle, &s, &d, angle, &sdl_origin, (SDL_RendererFlip)flip);
-  return 1;
+    SDL_RenderCopyEx(render()->handle, tex->handle, &s, &d, angle, &sdl_origin, (SDL_RendererFlip)flip);
+    return 1;
 }
 
 int tea_print(te_Font *font, const char *text, TEA_TNUM x, TEA_TNUM y) {

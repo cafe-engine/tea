@@ -493,9 +493,7 @@ typedef struct Tea Tea;
 typedef struct te_Config te_Config;
 
 typedef struct {
-    struct {
-        int w, h;
-    } size;
+    struct { unsigned int w, h; } size;
     int format, usage;
     int filter[2];
     int wrap[2];
@@ -617,6 +615,8 @@ TEA_API int tea_font_char_rect(te_Font *font, const unsigned int c, te_Rect *out
  *******************/
 
 TEA_API int tea_update_input();
+
+TEA_API int tea_key_from_name(const char *name);
 
 TEA_API int tea_keyboard_is_down(int key);
 TEA_API int tea_keyboard_is_up(int key);

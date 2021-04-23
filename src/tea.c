@@ -384,6 +384,10 @@ int tea_update_input() {
   return 1;
 }
 
+int tea_key_from_name(const char *name) {
+  return SDL_GetScancodeFromName(name);
+}
+
 int tea_keyboard_is_down(int key) {
   return tea()->input.keyboard.state[key];
 }
