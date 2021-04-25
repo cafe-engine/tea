@@ -520,7 +520,7 @@ int tea_print(te_Font *font, const char *text, TEA_TNUM x, TEA_TNUM y) {
         te_Rect r;
         tea_font_char_rect(font, *p, &r);
         int index = (int)*p;
-        tea_texture(font->tex, &TEA_RECT(x, y, r.w, r.h), &r);
+        tea_texture(font->tex, &TEA_RECT(x, y+font->c[index].bt, r.w, r.h), &r);
         x += font->c[index].ax;
 
         p++;
