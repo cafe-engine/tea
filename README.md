@@ -1,8 +1,32 @@
-# Tea
+# tea
 
-a tiny c lib that wraps SDL2 (and possibly GLFW in the future) for handle input, render and window.
+Tea is a tiny C lib that handle graphics, window and input (uses SDL)
 
-The idea is to create a modular render, that can be compiled with different renders. 
+```c
+#include "tea.h"
+
+int main(int argc, char ** argv) {
+    te_config_t c = tea_config_init("example", 640, 380);
+    tea_init(&c);
+
+    while (!tea_should_close()) {
+        tea_update_input();
+        tea_begin();
+        
+        tea_clear(TEA_BLACK);
+        tea_color(TEA_COLOR(255, 0, 0, 255));
+
+        tea_mode(TEA_LINE);
+        tea_rect(32, 32, 32, 32);
+        tea_circle(32, 32, 8);
+
+        tea_end();
+    }
+
+    tea_deinit();
+    return 0;
+}
+```
 
 ## TODOS:
 
@@ -11,7 +35,7 @@ The idea is to create a modular render, that can be compiled with different rend
 - [ ] Window
 	- [ ] wrap SDL get and set functions (title, width, height, fullscreen, resizable, ...)
 - [ ] Input
-	- [ ] mouse input
+	- [x] mouse input
 	- [x] keyboard input
 	- [ ] joystick input
 - [ ] Software Renderer
@@ -25,7 +49,7 @@ The idea is to create a modular render, that can be compiled with different rend
 	- [ ] textures
  	- [ ] render texture
  	- [ ] render text
-- [ ] SDL Renderer
+- [ ] SDL Renderer (Hardware Accelerated)
 	- [ ] primitives
 		- [x] circle
 		- [x] triangle
