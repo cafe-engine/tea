@@ -133,12 +133,27 @@ te_config_t tea_config_init(const char *title, int w, int h) {
     return c;
 }
 
+int tea_render_mode() {
+    
+    tea()->mode.pixel_format[TEA_PIXELFORMAT_UNKNOWN] = 0;
+    tea()->mode.pixel_format[TEA_RGB] = SDL_PIXELFORMAT_RGB888;
+    tea()->mode.pixel_format[TEA_RGBA] = SDL_PIXELFORMAT_BGR888;
+
+    tea()->mode.pixel_format[TEA_RGBA] = SDL_PIXELFORMAT_RGBA32;
+    tea()->mode.pixel_format[TEA_ARGB] = SDL_PIXELFORMAT_ARGB32;
+    tea()->mode.pixel_format[TEA_BGRA] = SDL_PIXELFORMAT_BGRA32;
+    tea()->mode.pixel_format[TEA_ABGR] = SDL_PIXELFORMAT_ABGR32;
+
+    return 1;
+    }
+
 int tea_init(te_config_t *c) {
     if (c == NULL) {
         tea_error("config cannot be NULL");
         return 0;
     }
     memset(tea(), 0, sizeof(struct Tea));
+    tea_render_mode();
 
     if (SDL_Init(c->flags)) {
         tea_error("failed to init SDL");
@@ -172,7 +187,7 @@ int tea_init(te_config_t *c) {
     te_render_t *r = render();
 
     r->stat.clear_color = 0;
-    r->stat.draw_color = 0xffffffff;
+    r->stat.draw_color = TEA_WHITE;
     r->stat.draw_mode = TEA_LINE;
     r->stat.tex = NULL;
     r->stat.transform.scale = TEA_POINT(1, 1);
@@ -467,6 +482,7 @@ int tea_texture_info(te_texture_t *tex, te_texinfo_t *out) {
 
 te_texture_t* tea_texture(void *data, int w, int h, int format, int usage) {
     te_texture_t *tex = (te_texture_t*)malloc(sizeof(*tex)); 
+    TEA_ASSERT(tex != NULL, "Failed to alloc mem for texture");
     memset(tex, 0, sizeof(*tex));
 
     if (format < 0 || format > TEA_PIXELFORMAT_COUNT) {

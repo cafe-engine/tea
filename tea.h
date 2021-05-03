@@ -5,17 +5,17 @@
 #define TEA_API
 
 #define TEA_ASSERT(expr, msg...) \
-    if (!(expr)) { \
-        tea_error(msg); \
-        tea_log(__LINE__, __PRETTY_FUNCTION__, "Assertion %s failed: %s", #expr, tea_geterror()); \
-        exit(0); \
-    }
+        if (!(expr)) { \
+            tea_error(msg); \
+            tea_log(__LINE__, __PRETTY_FUNCTION__, "Assertion %s failed: %s", #expr, tea_geterror()); \
+            exit(0); \
+        }
 
 #define TEA_FPS 30
 #define MAX_JID 4
 
 #ifndef TEA_TNUM
-  #define TEA_TNUM float
+      #define TEA_TNUM float
 #endif
 
 #define TEA_POINT(x, y) ((te_point_t){(x),(y)})
@@ -25,115 +25,115 @@
 #define TEA_WHITE TEA_COLOR(255, 255, 255, 255)
 #define TEA_BLACK TEA_COLOR(0, 0, 0, 255)
 
-enum {
-  TEA_MOUSE_LEFT = 0,
-  TEA_MOUSE_MIDDLE,
-  TEA_MOUSE_RIGHT,
+    enum {
+      TEA_MOUSE_LEFT = 0,
+      TEA_MOUSE_MIDDLE,
+      TEA_MOUSE_RIGHT,
 
-  TEA_MOUSE_COUNT
-};
+      TEA_MOUSE_COUNT
+    };
 
-enum {
-    TEA_KEY_UNKNOWN = 0,
+    enum {
+        TEA_KEY_UNKNOWN = 0,
 
-    /**
-     *  \name Usage page 0x07
-     *
-     *  These values are from usage page 0x07 (USB keyboard page).
-     */
-    /* @{ */
+        /**
+         *  \name Usage page 0x07
+         *
+         *  These values are from usage page 0x07 (USB keyboard page).
+         */
+        /* @{ */
 
-    TEA_KEY_A = 4,
-    TEA_KEY_B = 5,
-    TEA_KEY_C = 6,
-    TEA_KEY_D = 7,
-    TEA_KEY_E = 8,
-    TEA_KEY_F = 9,
-    TEA_KEY_G = 10,
-    TEA_KEY_H = 11,
-    TEA_KEY_I = 12,
-    TEA_KEY_J = 13,
-    TEA_KEY_K = 14,
-    TEA_KEY_L = 15,
-    TEA_KEY_M = 16,
-    TEA_KEY_N = 17,
-    TEA_KEY_O = 18,
-    TEA_KEY_P = 19,
-    TEA_KEY_Q = 20,
-    TEA_KEY_R = 21,
-    TEA_KEY_S = 22,
-    TEA_KEY_T = 23,
-    TEA_KEY_U = 24,
-    TEA_KEY_V = 25,
-    TEA_KEY_W = 26,
-    TEA_KEY_X = 27,
-    TEA_KEY_Y = 28,
-    TEA_KEY_Z = 29,
+        TEA_KEY_A = 4,
+        TEA_KEY_B = 5,
+        TEA_KEY_C = 6,
+        TEA_KEY_D = 7,
+        TEA_KEY_E = 8,
+        TEA_KEY_F = 9,
+        TEA_KEY_G = 10,
+        TEA_KEY_H = 11,
+        TEA_KEY_I = 12,
+        TEA_KEY_J = 13,
+        TEA_KEY_K = 14,
+        TEA_KEY_L = 15,
+        TEA_KEY_M = 16,
+        TEA_KEY_N = 17,
+        TEA_KEY_O = 18,
+        TEA_KEY_P = 19,
+        TEA_KEY_Q = 20,
+        TEA_KEY_R = 21,
+        TEA_KEY_S = 22,
+        TEA_KEY_T = 23,
+        TEA_KEY_U = 24,
+        TEA_KEY_V = 25,
+        TEA_KEY_W = 26,
+        TEA_KEY_X = 27,
+        TEA_KEY_Y = 28,
+        TEA_KEY_Z = 29,
 
-    TEA_KEY_1 = 30,
-    TEA_KEY_2 = 31,
-    TEA_KEY_3 = 32,
-    TEA_KEY_4 = 33,
-    TEA_KEY_5 = 34,
-    TEA_KEY_6 = 35,
-    TEA_KEY_7 = 36,
-    TEA_KEY_8 = 37,
-    TEA_KEY_9 = 38,
-    TEA_KEY_0 = 39,
+        TEA_KEY_1 = 30,
+        TEA_KEY_2 = 31,
+        TEA_KEY_3 = 32,
+        TEA_KEY_4 = 33,
+        TEA_KEY_5 = 34,
+        TEA_KEY_6 = 35,
+        TEA_KEY_7 = 36,
+        TEA_KEY_8 = 37,
+        TEA_KEY_9 = 38,
+        TEA_KEY_0 = 39,
 
-    TEA_KEY_RETURN = 40,
-    TEA_KEY_ESCAPE = 41,
-    TEA_KEY_BACKSPACE = 42,
-    TEA_KEY_TAB = 43,
-    TEA_KEY_SPACE = 44,
+        TEA_KEY_RETURN = 40,
+        TEA_KEY_ESCAPE = 41,
+        TEA_KEY_BACKSPACE = 42,
+        TEA_KEY_TAB = 43,
+        TEA_KEY_SPACE = 44,
 
-    TEA_KEY_MINUS = 45,
-    TEA_KEY_EQUALS = 46,
-    TEA_KEY_LEFTBRACKET = 47,
-    TEA_KEY_RIGHTBRACKET = 48,
-    TEA_KEY_BACKSLASH = 49, /**< Located at the lower left of the return
-                                  *   key on ISO keyboards and at the right end
-                                  *   of the QWERTY row on ANSI keyboards.
-                                  *   Produces REVERSE SOLIDUS (backslash) and
-                                  *   VERTICAL LINE in a US layout, REVERSE
-                                  *   SOLIDUS and VERTICAL LINE in a UK Mac
-                                  *   layout, NUMBER SIGN and TILDE in a UK
-                                  *   Windows layout, DOLLAR SIGN and POUND SIGN
-                                  *   in a Swiss German layout, NUMBER SIGN and
-                                  *   APOSTROPHE in a German layout, GRAVE
-                                  *   ACCENT and POUND SIGN in a French Mac
-                                  *   layout, and ASTERISK and MICRO SIGN in a
-                                  *   French Windows layout.
-                                  */
-    TEA_KEY_NONUSHASH = 50, /**< ISO USB keyboards actually use this code
-                                  *   instead of 49 for the same key, but all
-                                  *   OSes I've seen treat the two codes
-                                  *   identically. So, as an implementor, unless
-                                  *   your keyboard generates both of those
-                                  *   codes and your OS treats them differently,
-                                  *   you should generate TEA_KEY_BACKSLASH
-                                  *   instead of this code. As a user, you
-                                  *   should not rely on this code because SDL
-                                  *   will never generate it with most (all?)
-                                  *   keyboards.
-                                  */
-    TEA_KEY_SEMICOLON = 51,
-    TEA_KEY_APOSTROPHE = 52,
-    TEA_KEY_GRAVE = 53, /**< Located in the top left corner (on both ANSI
-                              *   and ISO keyboards). Produces GRAVE ACCENT and
-                              *   TILDE in a US Windows layout and in US and UK
-                              *   Mac layouts on ANSI keyboards, GRAVE ACCENT
-                              *   and NOT SIGN in a UK Windows layout, SECTION
-                              *   SIGN and PLUS-MINUS SIGN in US and UK Mac
-                              *   layouts on ISO keyboards, SECTION SIGN and
-                              *   DEGREE SIGN in a Swiss German layout (Mac:
-                              *   only on ISO keyboards), CIRCUMFLEX ACCENT and
-                              *   DEGREE SIGN in a German layout (Mac: only on
-                              *   ISO keyboards), SUPERSCRIPT TWO and TILDE in a
-                              *   French Windows layout, COMMERCIAL AT and
-                              *   NUMBER SIGN in a French Mac layout on ISO
-                              *   keyboards, and LESS-THAN SIGN and GREATER-THAN
-                              *   SIGN in a Swiss German, German, or French Mac
+        TEA_KEY_MINUS = 45,
+        TEA_KEY_EQUALS = 46,
+        TEA_KEY_LEFTBRACKET = 47,
+        TEA_KEY_RIGHTBRACKET = 48,
+        TEA_KEY_BACKSLASH = 49, /**< Located at the lower left of the return
+                                      *   key on ISO keyboards and at the right end
+                                      *   of the QWERTY row on ANSI keyboards.
+                                      *   Produces REVERSE SOLIDUS (backslash) and
+                                      *   VERTICAL LINE in a US layout, REVERSE
+                                      *   SOLIDUS and VERTICAL LINE in a UK Mac
+                                      *   layout, NUMBER SIGN and TILDE in a UK
+                                      *   Windows layout, DOLLAR SIGN and POUND SIGN
+                                      *   in a Swiss German layout, NUMBER SIGN and
+                                      *   APOSTROPHE in a German layout, GRAVE
+                                      *   ACCENT and POUND SIGN in a French Mac
+                                      *   layout, and ASTERISK and MICRO SIGN in a
+                                      *   French Windows layout.
+                                      */
+        TEA_KEY_NONUSHASH = 50, /**< ISO USB keyboards actually use this code
+                                      *   instead of 49 for the same key, but all
+                                      *   OSes I've seen treat the two codes
+                                      *   identically. So, as an implementor, unless
+                                      *   your keyboard generates both of those
+                                      *   codes and your OS treats them differently,
+                                      *   you should generate TEA_KEY_BACKSLASH
+                                      *   instead of this code. As a user, you
+                                      *   should not rely on this code because SDL
+                                      *   will never generate it with most (all?)
+                                      *   keyboards.
+                                      */
+        TEA_KEY_SEMICOLON = 51,
+        TEA_KEY_APOSTROPHE = 52,
+        TEA_KEY_GRAVE = 53, /**< Located in the top left corner (on both ANSI
+                                  *   and ISO keyboards). Produces GRAVE ACCENT and
+                                  *   TILDE in a US Windows layout and in US and UK
+                                  *   Mac layouts on ANSI keyboards, GRAVE ACCENT
+                                  *   and NOT SIGN in a UK Windows layout, SECTION
+                                  *   SIGN and PLUS-MINUS SIGN in US and UK Mac
+                                  *   layouts on ISO keyboards, SECTION SIGN and
+                                  *   DEGREE SIGN in a Swiss German layout (Mac:
+                                  *   only on ISO keyboards), CIRCUMFLEX ACCENT and
+                                  *   DEGREE SIGN in a German layout (Mac: only on
+                                  *   ISO keyboards), SUPERSCRIPT TWO and TILDE in a
+                                  *   French Windows layout, COMMERCIAL AT and
+                                  *   NUMBER SIGN in a French Mac layout on ISO
+                                  *   keyboards, and LESS-THAN SIGN and GREATER-THAN
+                                  *   SIGN in a Swiss German, German, or French Mac
                               *   layout on ANSI keyboards.
                               */
     TEA_KEY_COMMA = 54,
