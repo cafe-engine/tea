@@ -841,6 +841,7 @@ te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
     te_font_t *font = (te_font_t*)malloc(sizeof(*font));
     memset(font, 0, sizeof(*font));
     font->tex = tex;
+    SDL_SetTextureBlendMode(font->tex->handle, SDL_BLENDMODE_BLEND);
 
     for (int i = 0; i < MAX_FONT_CHAR; i++) {
         font->c[i].ax = size;
@@ -848,6 +849,7 @@ te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
         font->c[i].bh = size;
         font->c[i].bw = size;
         font->c[i].tx = i*size;
+        font->c[i].bt = top;
     }
 
     return font;
@@ -881,7 +883,7 @@ int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y) {
 
     SDL_SetTextureColorMod(font->tex->handle, c[0], c[1], c[2]);
     SDL_SetTextureAlphaMod(font->tex->handle, c[3]);
-    
+
     while (*p) {
         te_rect_t r;
         tea_font_char_rect(font, *p, &r);
