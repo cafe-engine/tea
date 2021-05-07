@@ -843,7 +843,7 @@ te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
         font->c[i].tx = i*size;
     }
 
-    return 1;
+    return font;
 }
 
 int tea_font_char_rect(te_font_t *font, unsigned int c, te_rect_t *r) {
