@@ -825,7 +825,7 @@ te_font_t* tea_font_load(const char *filename, int size) {
     return font;
 }
 
-int tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
+te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
     if (!tex) {
         tea_error("Texture cannot be NULL");
         return 0;

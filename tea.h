@@ -564,7 +564,7 @@ TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src)
 TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
 
 /* Font */
-TEA_API te_font_t* tea_font(te_texture_t *tex, int size, int font_size);
+TEA_API te_font_t* tea_font(void *data, int size, int font_size);
 TEA_API te_font_t* tea_font_ttf(void *data, int size, int font_size);
 TEA_API te_font_t* tea_font_load(const char *path, int usage);
 TEA_API te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right);
