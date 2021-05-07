@@ -921,10 +921,10 @@ int tea_key_up(int key) {
   return !tea_key_down(key);
 }
 
-int tea_key_was_pressed(int key) {
+int tea_key_pressed(int key) {
   return !tea()->input.key.old_state[key] && tea_key_down(key);
 }
-int tea_key_was_released(int key) {
+int tea_key_released(int key) {
   return tea()->input.key.old_state[key] && tea_key_up(key);
 }
 
@@ -952,10 +952,10 @@ int tea_mouse_up(int button) {
   return !tea_mouse_down(button);
 }
 
-int tea_mouse_was_pressed(int button) {
+int tea_mouse_pressed(int button) {
   return !tea()->input.mouse.old_state[button] && tea_mouse_down(button);
 }
-int tea_mouse_was_released(int button) {
+int tea_mouse_released(int button) {
   return tea()->input.mouse.old_state[button] && tea_mouse_up(button);
 }
 
@@ -968,10 +968,10 @@ int tea_jpad_down(int jid, int button) {
 int tea_jpad_up(int jid, int button) {
     return 1;
 }
-int tea_jpad_was_pressed(int jid, int button) {
+int tea_jpad_pressed(int jid, int button) {
     return 1;
 }
-int tea_jpad_was_released(int jid, int button) {
+int tea_jpad_released(int jid, int button) {
     return 1;
 }
 
