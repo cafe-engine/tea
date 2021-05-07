@@ -521,6 +521,8 @@ TEA_API te_config_t tea_config_init(const char *title, int w, int h);
 TEA_API int tea_init(te_config_t *conf);
 TEA_API int tea_deinit();
 
+TEA_API int tea_quit();
+
 TEA_API int tea_begin();
 TEA_API int tea_end();
 
@@ -562,8 +564,10 @@ TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src)
 TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
 
 /* Font */
-TEA_API te_font_t* tea_font(void *data, int size, int font_size);
+TEA_API te_font_t* tea_font(te_texture_t *tex, int size, int font_size);
+TEA_API te_font_t* tea_font_ttf(void *data, int size, int font_size);
 TEA_API te_font_t* tea_font_load(const char *path, int usage);
+TEA_API te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right);
 TEA_API int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y);
 TEA_API int tea_font_printf(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_point_t *scale);
 
@@ -574,6 +578,18 @@ TEA_API int tea_shader_send(te_shader_t *shader, int type, const char *name, voi
 TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char *name, void *data, int count);
 
 TEA_API int tea_compile_shader(const char *source, int type);
+
+/*******************************
+ * Window
+ *******************************/
+
+TEA_API int tea_window_prop(int prop, int *val);
+
+TEA_API int tea_window_pos();
+
+TEA_API int tea_window_width();
+TEA_API int tea_window_height();
+TEA_API int tea_window_size();
 
 
 /*******************************
@@ -593,6 +609,7 @@ TEA_API int tea_mouse_up(int btn);
 TEA_API int tea_mouse_pressed(int btn);
 TEA_API int tea_mouse_released(int btn);
 
+TEA_API float tea_jpad_axis(int jid, int axis);
 TEA_API int tea_jpad_down(int jid, int btn);
 TEA_API int tea_jpad_up(int jid, int btn);
 TEA_API int tea_jpad_pressed(int jid, int btn);

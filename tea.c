@@ -708,6 +708,100 @@ te_font_t* tea_font(void *data, int size, int font_size) {
     return font;
 }
 
+te_font_t* tea_font_ttf(void *data, int size, int font_size) {
+    TEA_ASSERT(font_size > 0, "Invalid font size");
+    TEA_ASSERT(data != NULL, "Font data cannot be null");
+
+    te_font_t *font = NULL;
+    stbtt_fontinfo info;
+    if (!stbtt_InitFont(&info, (const unsigned char*)data, 0)) {
+        tea_error("Invalid font data");
+        return NULL;
+    }
+
+    font = (te_font_t*)malloc(sizeof(*font));
+    font->data = data;
+    memcpy(&font->info, &info, sizeof(stbtt_fontinfo));
+
+    int ascent, descent, line_gap;
+    font->size = font_size;
+    float fsize = font_size;
+
+    font->scale = stbtt_ScaleForMappingEmToPixels(&font->info, fsize);
+    stbtt_GetFontVMetrics(&font->info, &ascent, &descent, &line_gap);
+    font->baseline = ascent * font->scale;
+
+    int tw, th;
+    tw = th = 0;
+
+    int i;
+    for (i = 0; i < MAX_FONT_CHAR; i++) {
+        int ax, bl;
+        int x0, y0, x1, y1;
+        int w, h;
+
+        stbtt_GetCodepointHMetrics(&font->info, i, &ax, &bl);
+        stbtt_GetCodepointBitmapBox(&font->info, i, font->scale, font->scale, &x0, &y0, &x1, &y1);
+        w = x1 - x0;
+        h = y1 - y0;
+
+
+        font->c[i].ax = ax * font->scale;
+        font->c[i].ay = 0;
+        font->c[i].bl = bl * font->scale;
+        font->c[i].bw = w;
+        font->c[i].bh = h;
+        font->c[i].bt = font->baseline + y0;
+
+        tw += w;
+        th = MAX(th, h);
+    }
+
+    font->tex = tea_texture(NULL, tw, th, TEA_RGBA, TEA_TEXTURE_STREAM);
+
+    SDL_SetTextureBlendMode(font->tex->handle, SDL_BLENDMODE_BLEND);
+
+    int x = 0;
+    for (i = 0; i < MAX_FONT_CHAR; i++) {
+        int ww = font->c[i].bw;
+        int hh = font->c[i].bh;
+        int ssize = ww * hh;
+        int ox, oy;
+
+        unsigned char *bitmap = stbtt_GetCodepointBitmap(&font->info, 0, font->scale, i, NULL, NULL, &ox, &oy);
+        Uint32 *pixels = NULL;
+        int pitch;
+
+        SDL_Rect r;
+        r.x = x;
+        r.y = 0;
+        r.w = ww;
+        r.h = hh;
+    
+
+        if (SDL_LockTexture(font->tex->handle, &r, (void**)&pixels, &pitch) != 0) {
+            fprintf(stderr, "Failed to lock SDL_Texture: %s\n", SDL_GetError());
+            exit(0);
+        }
+
+        int yy = 0;
+        for (int j = 0; j < ssize; j++) {
+            int xx = j % ww;
+            if (j != 0 && xx == 0) yy++;
+            int index = xx + (yy * (pitch / 4));
+
+            Uint32 pp = bitmap[j];
+            pp <<= 24;
+            pp |= 0xffffff;
+            pixels[index] = pp;
+        }
+        SDL_UnlockTexture(font->tex->handle);
+        font->c[i].tx = x;
+
+        x += font->c[i].bw;
+    }
+    return font;
+}
 te_font_t* tea_font_load(const char *filename, int size) {
     te_font_t *font = NULL; 
     TEA_ASSERT(filename != NULL, "Font filename cannot be null");
@@ -729,6 +823,27 @@ te_font_t* tea_font_load(const char *filename, int size) {
     fclose(fp);
 
     return font;
+}
+
+int tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
+    if (!tex) {
+        tea_error("Texture cannot be NULL");
+        return 0;
+    }
+
+    te_font_t *font = (te_font_t*)malloc(sizeof(*font));
+    memset(font, 0, sizeof(*font));
+    font->tex = tex;
+
+    for (int i = 0; i < MAX_FONT_CHAR; i++) {
+        font->c[i].ax = size;
+        font->c[i].ay = 0;
+        font->c[i].bh = size;
+        font->c[i].bw = size;
+        font->c[i].tx = i*size;
+    }
+
+    return 1;
 }
 
 int tea_font_char_rect(te_font_t *font, unsigned int c, te_rect_t *r) {
