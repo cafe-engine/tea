@@ -481,25 +481,28 @@ int tea_texture_info(te_texture_t *tex, te_texinfo_t *out) {
 }
 
 te_texture_t* tea_texture(void *data, int w, int h, int format, int usage) {
-    te_texture_t *tex = (te_texture_t*)malloc(sizeof(*tex)); 
-    TEA_ASSERT(tex != NULL, "Failed to alloc mem for texture");
-    memset(tex, 0, sizeof(*tex));
-
     if (format < 0 || format > TEA_PIXELFORMAT_COUNT) {
         tea_error("Invalid pixel format");    
         return NULL;
     }
+
+    te_texture_t *tex = (te_texture_t*)malloc(sizeof(*tex)); 
+    TEA_ASSERT(tex != NULL, "Failed to alloc mem for texture");
+    memset(tex, 0, sizeof(*tex));
 
     tex->channels = format;
     tex->width = w;
     tex->height = h;
     tex->usage = usage;
 
+#if 0
     if (!data) {
         tex->handle = SDL_CreateTexture(render()->handle, pixel_format(format), usage, w, h);
         TEA_ASSERT(tex->handle != NULL, "Failed to create SDL_Texture: %s", SDL_GetError());
         return tex;
     }
+#endif
+    tex->handle = SDL_CreateTexture(render()->handle, pixel_format(format), usage, w, h);
 
     int depth, pitch;
     Uint32 _format;
@@ -508,6 +511,9 @@ te_texture_t* tea_texture(void *data, int w, int h, int format, int usage) {
     pitch = tex->channels*w;
     _format = pixel_format(format);
 
+    SDL_UpdateTexture(tex->handle, NULL, data, pitch);
+
+#if 0
     SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormatFrom(data, w, h, depth, pitch, _format);
     if (!surf) {
         tea_error("Failed to create SDL_Surface: %s", SDL_GetError());
@@ -519,6 +525,7 @@ te_texture_t* tea_texture(void *data, int w, int h, int format, int usage) {
         tea_error("Failed to create SDL_Texture: %s", SDL_GetError());
         return 0;
     }
+#endif
 
     return tex;
 }
