@@ -959,7 +959,7 @@ int tea_mouse_released(int button) {
   return tea()->input.mouse.old_state[button] && tea_mouse_up(button);
 }
 
-int tea_jpad_axis(int jid, int axis) {
+float tea_jpad_axis(int jid, int axis) {
     return 1;
 }
 int tea_jpad_down(int jid, int button) {
