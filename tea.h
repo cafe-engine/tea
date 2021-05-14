@@ -557,9 +557,13 @@ TEA_API int tea_origin(TEA_TNUM x, TEA_TNUM y);
 TEA_API int tea_texture_info(te_texture_t *tex, te_texinfo_t *info);
 TEA_API te_texture_t* tea_texture(void *data, int w, int h, int format, int usage);
 TEA_API te_texture_t* tea_texture_load(const char *path, int usage);
+
+TEA_API int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data);
+
 TEA_API int tea_texture_width(te_texture_t *tex);
 TEA_API int tea_texture_height(te_texture_t *tex);
 TEA_API int tea_texture_size(te_texture_t *tex, int *w_out, int *h_out);
+
 TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src);
 TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
 

@@ -3,6 +3,8 @@
 #include "stb_image.h"
 #include "stb_truetype.h"
 
+#include "SDL_render.h"
+
 #include <SDL.h>
 
 #if defined(TEA_GL)
@@ -137,7 +139,6 @@ int tea_render_mode() {
     
     tea()->mode.pixel_format[TEA_PIXELFORMAT_UNKNOWN] = 0;
     tea()->mode.pixel_format[TEA_RGB] = SDL_PIXELFORMAT_RGB888;
-    tea()->mode.pixel_format[TEA_RGBA] = SDL_PIXELFORMAT_BGR888;
 
     tea()->mode.pixel_format[TEA_RGBA] = SDL_PIXELFORMAT_RGBA32;
     tea()->mode.pixel_format[TEA_ARGB] = SDL_PIXELFORMAT_ARGB32;
@@ -193,7 +194,6 @@ int tea_init(te_config_t *c) {
     r->stat.transform.scale = TEA_POINT(1, 1);
 
     tea()->input.key.state = SDL_GetKeyboardState(NULL);
-
     return 1;
 }
 
@@ -215,8 +215,6 @@ int tea_begin() {
     tea()->timer.frame++;
 
     SDL_Delay(TEA_FPS);
-    
-
     return 1;
 }
 
@@ -503,16 +501,9 @@ te_texture_t* tea_texture(void *data, int w, int h, int format, int usage) {
     }
 #endif
     tex->handle = SDL_CreateTexture(render()->handle, pixel_format(format), usage, w, h);
+    SDL_SetTextureBlendMode(tex->handle, SDL_BLENDMODE_BLEND);
 
-    int depth, pitch;
-    Uint32 _format;
-
-    depth = 8*tex->channels;
-    pitch = tex->channels*w;
-    _format = pixel_format(format);
-
-    SDL_UpdateTexture(tex->handle, NULL, data, pitch);
-
+    if (data) tea_texture_update(tex, NULL, data);
 #if 0
     SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormatFrom(data, w, h, depth, pitch, _format);
     if (!surf) {
@@ -549,6 +540,15 @@ te_texture_t* tea_texture_load(const char *path, int usage) {
     tex = tea_texture(pixels, w, h, format, usage);
 
     return tex;
+}
+
+int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data) {
+    TEA_ASSERT(tex != NULL, "Texture cannot be null");
+    printf("qqqq; %d\n", tex->channels);
+
+    int pitch = tex->channels * tex->width;
+
+    return SDL_UpdateTexture(tex->handle, NULL, data, pitch);
 }
 
 int tea_texture_width(te_texture_t *tex) {
