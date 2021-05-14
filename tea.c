@@ -544,8 +544,6 @@ te_texture_t* tea_texture_load(const char *path, int usage) {
 
 int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data) {
     TEA_ASSERT(tex != NULL, "Texture cannot be null");
-    printf("qqqq; %d\n", tex->channels);
-
     int pitch = tex->channels * tex->width;
 
     return SDL_UpdateTexture(tex->handle, NULL, data, pitch);
