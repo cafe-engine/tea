@@ -622,7 +622,7 @@ int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_
     }
     SDL_Point o = {0, 0};
     if (origin) o = (SDL_Point){origin->x, origin->y};
-    SDL_RenderCopyEx(render()->handle, tex->handle, &d, &s, angle, &o, 0);
+    SDL_RenderCopyEx(render()->handle, tex->handle, &s, &d, angle, &o, 0);
     return 1;
 }
 
