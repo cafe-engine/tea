@@ -3,6 +3,8 @@
 #include "stb_image.h"
 #include "stb_truetype.h"
 
+#include "font8x8_basic.h"
+
 #include "SDL_render.h"
 
 #include <SDL.h>
@@ -116,6 +118,8 @@ struct Tea {
     char error_buf[256];
     struct te_input_t input;
     struct te_timer_t timer;
+
+    te_font_t *default_font;
 };
 
 Tea _tea_ctx;
@@ -194,6 +198,9 @@ int tea_init(te_config_t *c) {
     r->stat.transform.scale = TEA_POINT(1, 1);
 
     tea()->input.key.state = SDL_GetKeyboardState(NULL);
+    tea()->default_font = NULL;
+    tea()->default_font = tea_default_font(NULL);
+
     return 1;
 }
 
@@ -441,6 +448,11 @@ int tea_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2
     return tria_fn[mode](x0, y0, x1, y1, x2, y2);
 }
 
+int tea_print(const char *text, TEA_TNUM x, TEA_TNUM y) {
+    // tea_texture_draw(tea()->default_font->tex, NULL, NULL);
+    return tea_font_print(tea()->default_font, text, x, y);
+}
+
 int tea_set_target(te_texture_t *target) {
     SDL_Texture *tex = NULL;
     if (target) {
@@ -617,6 +629,43 @@ int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_
 /*********************************
  * Font
  *********************************/
+
+te_font_t* tea_default_font(te_font_t *def) {
+    if (def) tea()->default_font = def;
+    if (tea()->default_font) return tea()->default_font;
+    te_font_t *font = NULL;
+
+    te_texture_t *tex = NULL; 
+    int texw, texh;
+    texw = 128*8;
+    texh = 8;
+    Uint32 pixels[texw*texh];
+    memset(pixels, 0, texw*texh*4);
+    
+    int i;
+    for (i = 0; i < 128; i++) {
+        char *letter = font8x8_basic[i];
+        for (int yy = 0; yy < 8; yy++) {
+            char line = letter[yy];    
+            int offset = (i*8)+(yy*texw);
+            for (int xx = 0; xx < 8; xx++) {
+                char a = ((line >> xx) & 0x1) * 255;
+                int o = offset+xx;
+
+                pixels[o] = (a << 24) | 0xffffff;
+            }
+        }
+    }
+
+    tex = tea_texture(pixels, texw, texh, TEA_RGBA, TEA_TEXTURE_STATIC);
+    if (!tex) {
+        fprintf(stderr, "Failed to create default font texture: %s\n", tea_geterror());
+        exit(0);
+    }
+
+    font = tea_font_bitmap(tex, 8, 1, 0);
+    return font;
+}
 
 te_font_t* tea_font(void *data, int size, int font_size) {
     TEA_ASSERT(font_size > 0, "Invalid font size");
@@ -807,6 +856,7 @@ te_font_t* tea_font_ttf(void *data, int size, int font_size) {
     }
     return font;
 }
+
 te_font_t* tea_font_load(const char *filename, int size) {
     te_font_t *font = NULL; 
     TEA_ASSERT(filename != NULL, "Font filename cannot be null");
@@ -833,7 +883,7 @@ te_font_t* tea_font_load(const char *filename, int size) {
 te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
     if (!tex) {
         tea_error("Texture cannot be NULL");
-        return 0;
+        return NULL;
     }
 
     te_font_t *font = (te_font_t*)malloc(sizeof(*font));

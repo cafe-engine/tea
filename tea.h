@@ -542,6 +542,8 @@ TEA_API int tea_rect(TEA_TNUM x, TEA_TNUM y, TEA_TNUM w, TEA_TNUM h);
 TEA_API int tea_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius);
 TEA_API int tea_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2);
 
+TEA_API int tea_print(const char *text, TEA_TNUM x, TEA_TNUM y);
+
 TEA_API int tea_set_target(te_texture_t *tex);
 TEA_API int tea_set_shader(te_shader_t *shader);
 TEA_API int tea_set_font(te_font_t *font);
@@ -568,6 +570,8 @@ TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src)
 TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
 
 /* Font */
+TEA_API te_font_t* tea_default_font();
+
 TEA_API te_font_t* tea_font(void *data, int size, int font_size);
 TEA_API te_font_t* tea_font_ttf(void *data, int size, int font_size);
 TEA_API te_font_t* tea_font_load(const char *path, int usage);
