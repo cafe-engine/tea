@@ -971,6 +971,11 @@ int tea_window_pos(te_point_t *out, int x, int y) {
     return 1;
 }
 
+int tea_window_resizable(int resizable) {
+    SDL_SetWindowResizable(window(), resizable);
+    return 1;
+}
+
 int tea_window_width(int *out, int width) {
     SDL_Window *w = window();
     int ww, hh;
