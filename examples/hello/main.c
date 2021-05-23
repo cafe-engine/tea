@@ -9,6 +9,9 @@ int main(int argc, char ** argv) {
     float x;
     x = 0;
 
+    tea_window_title("testando", NULL);
+    tea_window_width(NULL, 128);
+
     while (!tea_should_close()) {
         tea_update_input();
         tea_begin();

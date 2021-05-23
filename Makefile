@@ -14,8 +14,8 @@ LIBNAME = libtea.a
 
 build: $(LIBNAME)
 
-hello: $(LIBNAME)
-	$(CC) examples/hello/main.c -o hello $(INCLUDE) $(CFLAGS) $(LFLAGS)
+hello: $(LIBNAME) examples/hello/main.o
+	$(CC) examples/hello/main.o -o hello $(INCLUDE) $(CFLAGS) $(LFLAGS)
 
 %.a: $(OBJ)
 	$(AR) rcs $@ $(OBJ)

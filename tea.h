@@ -25,13 +25,13 @@
 #define TEA_WHITE TEA_COLOR(255, 255, 255, 255)
 #define TEA_BLACK TEA_COLOR(0, 0, 0, 255)
 
-    enum {
-      TEA_MOUSE_LEFT = 0,
-      TEA_MOUSE_MIDDLE,
-      TEA_MOUSE_RIGHT,
+enum {
+    TEA_MOUSE_LEFT = 0,
+    TEA_MOUSE_MIDDLE,
+    TEA_MOUSE_RIGHT,
 
-      TEA_MOUSE_COUNT
-    };
+    TEA_MOUSE_COUNT
+};
 
     enum {
         TEA_KEY_UNKNOWN = 0,
@@ -402,11 +402,36 @@
                                  for array bounds */
 };
 
+
 enum {
-  TEA_WINDOW_RESIZABLE  = (1 << 0),
-  TEA_WINDOW_FULLSCREEN = (1 << 1),
-  TEA_WINDOW_VSYNC      = (1 << 2)
+    /* !!! FIXME: change this to name = (1<<x). */
+    TEA_WINDOW_FULLSCREEN = 0x00000001,         /**< fullscreen window */
+    TEA_WINDOW_OPENGL = 0x00000002,             /**< window usable with OpenGL context */
+    TEA_WINDOW_SHOWN = 0x00000004,              /**< window is visible */
+    TEA_WINDOW_HIDDEN = 0x00000008,             /**< window is not visible */
+    TEA_WINDOW_BORDERLESS = 0x00000010,         /**< no window decoration */
+    TEA_WINDOW_RESIZABLE = 0x00000020,          /**< window can be resized */
+    TEA_WINDOW_MINIMIZED = 0x00000040,          /**< window is minimized */
+    TEA_WINDOW_MAXIMIZED = 0x00000080,          /**< window is maximized */
+    TEA_WINDOW_INPUT_GRABBED = 0x00000100,      /**< window has grabbed input focus */
+    TEA_WINDOW_INPUT_FOCUS = 0x00000200,        /**< window has input focus */
+    TEA_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
+    TEA_WINDOW_FULLSCREEN_DESKTOP = ( TEA_WINDOW_FULLSCREEN | 0x00001000 ),
+#if 0
+    TEA_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
+    TEA_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported.
+                                                     On macOS NSHighResolutionCapable must be set true in the
+                                                     application's Info.plist for this to have any effect. */
+    TEA_WINDOW_MOUSE_CAPTURE = 0x00004000,      /**< window has mouse captured (unrelated to INPUT_GRABBED) */
+    TEA_WINDOW_ALWAYS_ON_TOP = 0x00008000,      /**< window should always be above others */
+    TEA_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
+    TEA_WINDOW_UTILITY       = 0x00020000,      /**< window should be treated as a utility window */
+    TEA_WINDOW_TOOLTIP       = 0x00040000,      /**< window should be treated as a tooltip */
+    TEA_WINDOW_POPUP_MENU    = 0x00080000,      /**< window should be treated as a popup menu */
+    TEA_WINDOW_VULKAN        = 0x10000000       /**< window usable for Vulkan surface */
+#endif
 };
+
 
 enum {
   TEA_TEXTURE_STATIC = 0,
@@ -591,13 +616,23 @@ TEA_API int tea_compile_shader(const char *source, int type);
  * Window
  *******************************/
 
-TEA_API int tea_window_prop(int prop, int *val);
+TEA_API int tea_window_flags();
 
-TEA_API int tea_window_pos();
+TEA_API int tea_window_title(const char *title, char *out);
 
-TEA_API int tea_window_width();
-TEA_API int tea_window_height();
-TEA_API int tea_window_size();
+TEA_API int tea_window_pos(te_point_t *out, int x, int y);
+
+TEA_API int tea_window_width(int *out, int width);
+TEA_API int tea_window_height(int *out, int height);
+TEA_API int tea_window_size(te_point_t *out, int width, int height);
+TEA_API int tea_window_minsize(te_point_t *out, int width, int height);
+TEA_API int tea_window_maxsize(te_point_t *out, int width, int height);
+
+TEA_API int tea_window_minimize();
+TEA_API int tea_window_maximize();
+TEA_API int tea_window_restore();
+TEA_API int tea_window_fullscreen(int mode);
+TEA_API int tea_window_bordered(int bordered);
 
 
 /*******************************

@@ -15,7 +15,7 @@
 
 #define tea() (&_tea_ctx)
 #define render() (&(tea()->render))
-#define window() (&(tea()->window))
+#define window() ((tea()->window))
 #define event() (&(tea()->event))
 
 #define MAX_FONT_CHAR 256
@@ -25,7 +25,7 @@
 #define pixel_format(id) (tea()->mode.pixel_format[id])
 
 typedef struct te_render_t te_render_t;
-typedef struct te_window_t te_window_t;
+typedef SDL_Window te_window_t;
 typedef SDL_Event te_event_t;
 
 struct color_t { unsigned char r, g, b, a; };
@@ -45,7 +45,7 @@ struct te_font_t {
         int ay; // advance.y
 
         int bw; // bitmap.width
-        int bh; // bitmap.rows
+        int bh; // bitmap.height
 
         int bl; // bitmap.left
         int bt; // bitmap.top
@@ -75,7 +75,7 @@ struct te_renderstat_t {
     te_transform_t transform;
 };
 
-struct te_window_t {
+struct te_window_s {
     int flags;
     void *handle;
     unsigned int width, height;
@@ -112,7 +112,7 @@ struct Tea {
     struct te_rendermode_t mode;
 
     te_render_t render;
-    te_window_t window;
+    te_window_t *window;
     te_event_t event;
 
     char error_buf[256];
@@ -164,9 +164,7 @@ int tea_init(te_config_t *c) {
         tea_error("failed to init SDL");
         return 0;
     }
-    int window_flags = SDL_WINDOW_SHOWN;
-    if (c->window_flags & TEA_WINDOW_RESIZABLE) window_flags |= SDL_WINDOW_RESIZABLE;
-    if (c->window_flags & TEA_WINDOW_FULLSCREEN) window_flags |= SDL_WINDOW_FULLSCREEN;
+    int window_flags = c->window_flags;
 
 #if defined(TEA_GL)
     window |= SDL_WINDOW_OPENGL;
@@ -175,14 +173,13 @@ int tea_init(te_config_t *c) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #endif
 
+    window() = SDL_CreateWindow((const char*)c->title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, c->width, c->height, window_flags);
     te_window_t *window = window();
-    window->handle = SDL_CreateWindow((const char*)c->title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, c->width, c->height, window_flags);
-    window->width = c->width;
-    window->height = c->height;
 
+   
 #if !defined(TEA_GL)
     int render_flags = c->render_flags;
-    render()->handle = SDL_CreateRenderer(window->handle, -1, render_flags);
+    render()->handle = SDL_CreateRenderer(window, -1, render_flags);
     if (!render()->handle) {
         tea_error("failed to create SDL_Renderer: %s", SDL_GetError());
         return 1;
@@ -208,7 +205,7 @@ int tea_deinit() {
 #ifndef TEA_GL
     SDL_DestroyRenderer(render()->handle);
 #endif
-    SDL_DestroyWindow(window()->handle);
+    SDL_DestroyWindow(window());
     SDL_Quit();
     return 1;
 }
@@ -944,6 +941,114 @@ int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y) {
 
     return 0;
 }
+
+/*******************************
+ * Window
+ *******************************/
+
+int tea_window_title(const char *title, char *out) {
+    if (title) SDL_SetWindowTitle(window(), title);
+    if (out) strcpy(out, SDL_GetWindowTitle(window()));
+    
+    return 1;
+}
+
+int tea_window_flags() {
+    int flags = SDL_GetWindowFlags(window());
+    return flags;
+}
+
+int tea_window_pos(te_point_t *out, int x, int y) {
+    if (out) {
+        int xx, yy;
+        SDL_GetWindowPosition(window(), &xx, &yy);
+        out->x = xx;
+        out->y = yy;
+    } else {
+        SDL_SetWindowPosition(window(), x, y);
+    }
+
+    return 1;
+}
+
+int tea_window_width(int *out, int width) {
+    SDL_Window *w = window();
+    int ww, hh;
+    SDL_GetWindowSize(w, &ww, &hh);
+    if (!out) SDL_SetWindowSize(w, width, hh);
+    else *out = ww;
+    
+    return 1;
+}
+
+int tea_window_height(int *out, int height) {
+    SDL_Window *w = window();
+    int ww, hh;
+    SDL_GetWindowSize(w, &ww, &hh);
+    if (!out) SDL_SetWindowSize(w, ww, height);
+    else *out = hh;
+    
+    return 1;
+}
+
+int tea_window_size(te_point_t *out, int width, int height) {
+    if (out) {
+        int xx, yy;
+        SDL_GetWindowSize(window(), &xx, &yy);
+        out->x = xx;
+        out->y = yy;
+    } else {
+        SDL_SetWindowSize(window(), width, height);
+    }
+
+    return 1;
+}
+
+int tea_window_minsize(te_point_t *out, int width, int height) {
+    if (out) {
+        int ww, hh;
+        SDL_GetWindowMinimumSize(window(), &ww, &hh);
+        out->x = ww;
+        out->y = hh;
+    } else SDL_SetWindowMinimumSize(window(), width, height);
+    return 1;
+}
+
+int tea_window_maxsize(te_point_t *out, int width, int height) {
+    if (out) {
+        int ww, hh;
+        SDL_GetWindowMaximumSize(window(), &ww, &hh);
+        out->x = ww;
+        out->y = hh;
+    } else SDL_SetWindowMaximumSize(window(), width, height);
+    return 1;
+}
+
+int tea_window_minimize() {
+    SDL_MinimizeWindow(window());
+    return 1;
+}
+
+int tea_window_maximize() {
+    SDL_MaximizeWindow(window());
+    return 1;
+}
+
+int tea_window_restore() {
+    SDL_RestoreWindow(window());
+    return 1;
+}
+
+int tea_window_fullscreen(int mode) {
+    SDL_SetWindowFullscreen(window(), mode);
+    return 1;
+}
+
+int tea_window_bordered(int bordered) {
+    SDL_SetWindowBordered(window(), bordered);
+    return 1;
+}
+
 
 /*********************************
  * Input

@@ -1,9 +1,6 @@
 .vscode
 tea
-src/*.o
-obj/
-lib/
-bin/
+*.o
 *.a
 *.so
 *.sublime-*
