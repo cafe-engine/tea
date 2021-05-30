@@ -9,11 +9,7 @@ int main(int argc, char ** argv) {
     float x;
     x = 0;
 
-    tea_window_title("testando", NULL);
-    tea_window_width(NULL, 128);
-
     while (!tea_should_close()) {
-        tea_update_input();
         tea_begin();
         tea_clear(0xff0000ff);
         tea_color(TEA_WHITE);
@@ -23,7 +19,6 @@ int main(int argc, char ** argv) {
         tea_rect(x, 0, 32, 32);
         tea_circle(x+16, 16, 8);
         tea_print("olar", 0, 0);
-
 
         tea_end();
     }

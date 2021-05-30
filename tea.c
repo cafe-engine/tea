@@ -124,6 +124,11 @@ struct Tea {
 
 Tea _tea_ctx;
 
+// Make sure that r is not NULL
+static SDL_Rect _to_sdl_rect(te_rect_t *r) {
+    return (SDL_Rect){r->x, r->y, r->w, r->h};
+}
+
 te_config_t tea_config_init(const char *title, int w, int h) {
     te_config_t c = (te_config_t){{0}};
     title = title ? title : ("tea "TEA_VER);
@@ -580,19 +585,8 @@ int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src) {
     SDL_Rect d, s;
     d = (SDL_Rect){0, 0, tex->width, tex->height};
     s = (SDL_Rect){0, 0, tex->width, tex->height};
-    if (dest) {
-        d.x = dest->x;
-        d.y = dest->y;
-        d.w = dest->w;
-        d.h = dest->h;
-    }
-
-    if (src) {
-        s.x = src->x;
-        s.y = src->y;
-        s.w = src->w;
-        s.h = src->h;
-    }
+    if (dest) d = _to_sdl_rect(dest);
+    if (src) s = _to_sdl_rect(src);
 
     SDL_RenderCopy(render()->handle, tex->handle, &s, &d);
 
@@ -604,22 +598,14 @@ int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_
     SDL_Rect d, s;
     d = (SDL_Rect){0, 0, tex->width, tex->height};
     s = (SDL_Rect){0, 0, tex->width, tex->height};
-    if (dest) {
-        d.x = dest->x;
-        d.y = dest->y;
-        d.w = dest->w;
-        d.y = dest->h;
-    }
 
-    if (src) {
-        s.x = src->x;
-        s.y = src->y;
-        s.w = src->w;
-        s.h = src->h;
-    }
+    if (dest) d = _to_sdl_rect(dest);
+    if (src) d = _to_sdl_rect(src);
+
     SDL_Point o = {0, 0};
     if (origin) o = (SDL_Point){origin->x, origin->y};
-    SDL_RenderCopyEx(render()->handle, tex->handle, &s, &d, angle, &o, 0);
+    SDL_RenderCopyEx(render()->handle, tex->handle, &s, &d, (int)angle, &o, flip);
+
     return 1;
 }
 
@@ -1066,6 +1052,7 @@ int tea_update_input() {
         tea()->input.mouse.old_state[i] = tea()->input.mouse.state[i];
         tea()->input.mouse.state[i] = mouse_state & SDL_BUTTON(i+1);
     }
+
     SDL_PollEvent(event());
 
     return 1;

@@ -10,7 +10,6 @@ int main(int argc, char ** argv) {
     tea_init(&c);
 
     while (!tea_should_close()) {
-        tea_update_input();
         tea_begin();
         
         tea_clear(TEA_BLACK);
