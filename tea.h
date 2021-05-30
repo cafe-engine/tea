@@ -622,6 +622,8 @@ TEA_API int tea_window_title(const char *title, char *out);
 
 TEA_API int tea_window_pos(te_point_t *out, int x, int y);
 
+TEA_API int tea_window_resizable(int resizable);
+
 TEA_API int tea_window_width(int *out, int width);
 TEA_API int tea_window_height(int *out, int height);
 TEA_API int tea_window_size(te_point_t *out, int width, int height);
