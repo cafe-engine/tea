@@ -26,7 +26,6 @@
 
 typedef struct te_render_t te_render_t;
 typedef SDL_Window te_window_t;
-typedef SDL_Event te_event_t;
 
 struct color_t { unsigned char r, g, b, a; };
 
@@ -120,6 +119,18 @@ struct Tea {
     struct te_timer_t timer;
 
     te_font_t *default_font;
+    struct {
+        teaKeyboardEv key;
+        teaControllerEv ctrl;
+        struct {
+            teaWindowMoveEv move;
+            teaWindowResizeEv resize;
+            teaWindowVisibleEv visible;
+            teaWindowFocusEv focus;
+            teaWindowMouseEv mouse;
+            teaWindowCloseEv close;
+        } window;
+    } callback;
 };
 
 Tea _tea_ctx;
@@ -216,7 +227,7 @@ int tea_deinit() {
 }
 
 int tea_begin() {
-    tea_update_input();
+    tea_poll_event(event());
     tea()->timer.current_time = SDL_GetTicks();
     tea()->timer.delta = tea()->timer.current_time - tea()->timer.prev_time;
     tea()->timer.prev_time = tea()->timer.current_time;
@@ -929,6 +940,184 @@ int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y) {
 }
 
 /*******************************
+ * Event
+ *******************************/
+
+typedef int(*teaCallback)(te_event_t*);
+
+static int _keyboard_callback(te_event_t *ev);
+static int _controller_callback(te_event_t *ev);
+
+static int _window_callback(te_event_t *ev);
+static int _window_move_callback(te_event_t *ev);
+static int _window_resize_callback(te_event_t *ev);
+static int _window_visible_callback(te_event_t *ev);
+static int _window_mouse_callback(te_event_t *ev);
+static int _window_close_callback(te_event_t *ev);
+
+static int _drop_callback(te_event_t *ev);
+static int _drop_file_callback(te_event_t *ev);
+static int _drop_text_callback(te_event_t *ev);
+
+static int _text_input_callback(te_event_t *ev);
+static int _text_edit_callback(te_event_t *ev);
+
+
+const teaCallback _callbacks[] = {
+    [SDL_WINDOWEVENT] = _window_callback, 
+    [SDL_CONTROLLERDEVICEADDED] = _controller_callback,
+    [SDL_CONTROLLERDEVICEREMOVED] = _controller_callback,
+    [SDL_CONTROLLERDEVICEREMAPPED] = _controller_callback,
+    [SDL_KEYDOWN] = _keyboard_callback,
+    [SDL_KEYUP] = _keyboard_callback,
+    [SDL_DROPBEGIN] = _drop_callback,
+    [SDL_DROPCOMPLETE] = _drop_callback,
+    [SDL_DROPFILE] = _drop_file_callback,
+    [SDL_DROPTEXT] = _drop_text_callback,
+    [SDL_TEXTINPUT] = _text_input_callback,
+    [SDL_TEXTEDITING] = _text_edit_callback,
+    [SDL_LASTEVENT] = NULL
+};
+
+const teaCallback _window_callbacks[] = {
+    [SDL_WINDOWEVENT_NONE] = NULL,
+    [SDL_WINDOWEVENT_MOVED] = _window_move_callback,
+    [SDL_WINDOWEVENT_RESIZED] = _window_resize_callback,
+    [SDL_WINDOWEVENT_CLOSE] = _window_close_callback,
+    [SDL_WINDOWEVENT_SHOWN] = _window_visible_callback,
+    [SDL_WINDOWEVENT_HIDDEN] = _window_visible_callback,
+    [SDL_WINDOWEVENT_ENTER] = _window_mouse_callback,
+    [SDL_WINDOWEVENT_LEAVE] = _window_mouse_callback,
+    [SDL_WINDOWEVENT_HIT_TEST] = NULL
+};
+
+int tea_poll_event(te_event_t *out) {
+    memcpy(tea()->input.key.old_state, tea()->input.key.state, TEA_KEY_COUNT);
+    int mx, my;
+    int mouse_state = SDL_GetMouseState(&mx, &my);
+
+    tea()->input.mouse.x = mx;
+    tea()->input.mouse.y = my;
+
+    for (int i = 0; i < TEA_MOUSE_COUNT; i++) {
+        tea()->input.mouse.old_state[i] = tea()->input.mouse.state[i];
+        tea()->input.mouse.state[i] = mouse_state & SDL_BUTTON(i+1);
+    }
+
+    while (SDL_PollEvent(out)) {
+        teaCallback fn = _callbacks[out->type];
+        if (fn) fn(out); 
+    }
+
+    return 1;
+}
+
+int tea_event_key(teaKeyboardEv fn) {
+    tea()->callback.key = fn;
+    return 0;
+}
+
+int tea_event_window_move(teaWindowMoveEv fn) {
+    tea()->callback.window.move = fn;
+    return 0;
+}
+
+int tea_event_window_resize(teaWindowResizeEv fn) {
+    tea()->callback.window.resize = fn;
+    return 0;
+}
+
+int tea_event_window_visible(teaWindowVisibleEv fn) {
+    tea()->callback.window.visible = fn;
+    return 0;
+}
+
+int tea_event_window_mouse(teaWindowMouseEv fn) {
+    tea()->callback.window.mouse = fn;
+    return 0;
+}
+
+int tea_event_window_close(teaWindowCloseEv fn) {
+    tea()->callback.window.close = fn;
+    return 0;
+}
+
+/******* Internal Callbacks ********/
+
+int _keyboard_callback(te_event_t *ev) {
+    teaKeyboardEv fn = tea()->callback.key;
+    struct te_keysym_t sym = {0};
+    SDL_KeyboardEvent kev = ev->key;
+    sym.scancode = kev.keysym.scancode;
+    sym.keycode = kev.keysym.sym;
+    sym.mod = kev.keysym.mod;
+    if (fn) fn(ev->key.windowID, (ev->key.type - 0x301)*-1, ev->key.repeat, sym);
+    return 0;
+}
+int _controller_callback(te_event_t *ev) { return 0; }
+
+int _window_callback(te_event_t *ev) {
+    teaCallback fn = _window_callbacks[ev->window.event];
+    if (fn) return fn(ev);
+    return 0;
+}
+
+int _window_resize_callback(te_event_t *ev) {
+    teaWindowResizeEv fn = tea()->callback.window.resize;
+    if (fn) fn(ev->window.windowID, ev->window.data1, ev->window.data2);
+    return 0;
+}
+
+int _window_move_callback(te_event_t *ev) {
+    teaWindowMoveEv fn = tea()->callback.window.move;
+    if (fn) fn(ev->window.windowID, ev->window.data1, ev->window.data2);
+    return 0;
+}
+
+int _window_visible_callback(te_event_t *ev) {
+    teaWindowVisibleEv fn = tea()->callback.window.visible;
+    int visible = 1;
+    switch (ev->window.event) {
+        case SDL_WINDOWEVENT_SHOWN: visible = 1; break;
+        case SDL_WINDOWEVENT_HIDDEN: visible = 0; break;
+    }
+
+    if (fn) fn(ev->window.windowID, visible);
+    return 0;
+}
+
+int _window_focus_callback(te_event_t *ev) {
+    teaWindowFocusEv fn = tea()->callback.window.focus;
+    int focused = (ev->window.event - 13) * -1;
+    if (fn) fn(ev->window.windowID, focused);
+    return 0;
+}
+
+int _window_mouse_callback(te_event_t *ev) {
+    teaWindowMouseEv fn = tea()->callback.window.mouse;
+    int enter = 0;
+    switch (ev->window.event) {
+        case SDL_WINDOWEVENT_ENTER: enter = 1; break;
+        case SDL_WINDOWEVENT_LEAVE: enter = 0; break;
+    }
+    if (fn) fn(ev->window.windowID, enter);
+    return 0;
+}
+
+int _window_close_callback(te_event_t *ev) {
+    teaWindowCloseEv fn = tea()->callback.window.close;
+    if (fn) return fn(ev->window.windowID);
+    return 0;
+}
+
+int _drop_callback(te_event_t *ev) { return 0; }
+int _drop_file_callback(te_event_t *ev) { return 0; }
+int _drop_text_callback(te_event_t *ev) { return 0; }
+
+int _text_input_callback(te_event_t *ev) { return 0; }
+int _text_edit_callback(te_event_t *ev) { return 0; }
+
+/*******************************
  * Window
  *******************************/
 
@@ -953,6 +1142,7 @@ int tea_window_pos(te_point_t *out, int x, int y) {
     } else {
         SDL_SetWindowPosition(window(), x, y);
     }
+
 
     return 1;
 }
@@ -1045,23 +1235,6 @@ int tea_window_bordered(int bordered) {
  * Input
  *********************************/
 
-int tea_update_input() {
-    memcpy(tea()->input.key.old_state, tea()->input.key.state, TEA_KEY_COUNT);
-    int mx, my;
-    int mouse_state = SDL_GetMouseState(&mx, &my);
-
-    tea()->input.mouse.x = mx;
-    tea()->input.mouse.y = my;
-
-    for (int i = 0; i < TEA_MOUSE_COUNT; i++) {
-        tea()->input.mouse.old_state[i] = tea()->input.mouse.state[i];
-        tea()->input.mouse.state[i] = mouse_state & SDL_BUTTON(i+1);
-    }
-
-    SDL_PollEvent(event());
-
-    return 1;
-}
 
 int tea_key_from_name(const char *name) {
   return SDL_GetScancodeFromName(name);
@@ -1084,18 +1257,15 @@ int tea_key_released(int key) {
 
 /* Mouse */
 
-TEA_TNUM tea_mouse_x() {
-    return tea()->input.mouse.x;
-}
-
-TEA_TNUM tea_mouse_y() {
-    return tea()->input.mouse.y;
-}
-
-int tea_mouse_pos(TEA_TNUM *x, TEA_TNUM *y) {
+int tea_mouse_pos(int *x, int *y) {
     if (x) *x = tea()->input.mouse.x;
     if (y) *y = tea()->input.mouse.y;
+    return 1;
+}
 
+int tea_mouse_scroll(int *x, int *y) {
+    if (x) *x = tea()->input.mouse.scrollx;
+    if (y) *y = tea()->input.mouse.scrolly;
     return 1;
 }
 
