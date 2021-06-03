@@ -130,6 +130,11 @@ struct Tea {
             teaWindowMouseEv mouse;
             teaWindowCloseEv close;
         } window;
+        teaDropEv drop;
+        teaDropFileEv drop_file;
+        teaDropTextEv drop_text;
+        teaTextInputEv text_input;
+        teaTextEditEv text_edit;
     } callback;
 };
 
@@ -1012,8 +1017,21 @@ int tea_poll_event(te_event_t *out) {
     return 1;
 }
 
+typedef void(*_SDLTextInput)(void);
+
+int tea_textinput(int mode) {
+   _SDLTextInput md[2] = { SDL_StopTextInput, SDL_StartTextInput };
+   md[mode]();
+   return 0;
+}
+
 int tea_event_key(teaKeyboardEv fn) {
     tea()->callback.key = fn;
+    return 0;
+}
+
+int tea_event_controller(teaControllerEv fn) {
+    tea()->callback.ctrl = fn;
     return 0;
 }
 
@@ -1042,6 +1060,31 @@ int tea_event_window_close(teaWindowCloseEv fn) {
     return 0;
 }
 
+int tea_event_drop(teaDropEv fn) {
+    tea()->callback.drop = fn;
+    return 0;
+}
+
+int tea_event_drop_file(teaDropFileEv fn) {
+    tea()->callback.drop_file = fn;  
+    return 0;
+}
+
+int tea_event_drop_text(teaDropTextEv fn) {
+    tea()->callback.drop_text = fn;
+    return 0;
+}
+
+int tea_event_text_input(teaTextInputEv fn) {
+    tea()->callback.text_input = fn;
+    return 0;
+}
+
+int tea_event_text_edit(teaTextEditEv fn) {
+    tea()->callback.text_edit = fn;
+    return 0;
+}
+
 /******* Internal Callbacks ********/
 
 int _keyboard_callback(te_event_t *ev) {
@@ -1054,7 +1097,10 @@ int _keyboard_callback(te_event_t *ev) {
     if (fn) fn(ev->key.windowID, (ev->key.type - 0x301)*-1, ev->key.repeat, sym);
     return 0;
 }
-int _controller_callback(te_event_t *ev) { return 0; }
+int _controller_callback(te_event_t *ev) {
+    teaControllerEv fn = tea()->callback.ctrl;
+    if (fn) fn(ev->cdevice.type, ev->cdevice.which);
+    return 0; }
 
 int _window_callback(te_event_t *ev) {
     teaCallback fn = _window_callbacks[ev->window.event];
@@ -1110,12 +1156,34 @@ int _window_close_callback(te_event_t *ev) {
     return 0;
 }
 
-int _drop_callback(te_event_t *ev) { return 0; }
-int _drop_file_callback(te_event_t *ev) { return 0; }
-int _drop_text_callback(te_event_t *ev) { return 0; }
+int _drop_callback(te_event_t *ev) {
+    teaDropEv fn = tea()->callback.drop;
+    if (fn) fn(ev->drop.windowID, ev->drop.type);
+    return 0;
+}
 
-int _text_input_callback(te_event_t *ev) { return 0; }
-int _text_edit_callback(te_event_t *ev) { return 0; }
+int _drop_file_callback(te_event_t *ev) {
+    teaDropFileEv fn = tea()->callback.drop_file;
+    if (fn) fn(ev->drop.windowID, ev->drop.file);
+    return 0;
+}
+int _drop_text_callback(te_event_t *ev) {
+    teaDropTextEv fn = tea()->callback.drop_text;
+    if (fn) fn(ev->drop.windowID, ev->drop.file);
+    return 0;
+}
+
+int _text_input_callback(te_event_t *ev) {
+    teaTextInputEv fn = tea()->callback.text_input;
+    if (fn) fn(ev->text.windowID, ev->text.text);
+    return 0;
+}
+
+int _text_edit_callback(te_event_t *ev) {
+    teaTextEditEv fn = tea()->callback.text_edit;
+    if (fn) fn(ev->edit.windowID, ev->edit.text, ev->edit.start, ev->edit.length);
+    return 0;
+}
 
 /*******************************
  * Window
@@ -1299,6 +1367,31 @@ int tea_jpad_released(int jid, int button) {
     return 1;
 }
 
+/* Joystick */
+
+te_joystick_t *tea_joystick(int index) {
+    te_joystick_t *j = SDL_JoystickOpen(index);
+    return j;
+}
+
+int tea_joystick_close(te_joystick_t *j) { SDL_JoystickClose(j); return 0; }
+
+int tea_joysticks(void) { return SDL_NumJoysticks(); }
+
+const char* tea_joystick_name(te_joystick_t *j) { return SDL_JoystickName(j); }
+
+int tea_joystick_axes(te_joystick_t *j) { return SDL_JoystickNumAxes(j); }
+int tea_joystick_buttons(te_joystick_t *j) { return SDL_JoystickNumButtons(j); }
+int tea_joystick_hats(te_joystick_t *j) { return SDL_JoystickNumHats(j); }
+int tea_joystick_balls(te_joystick_t *j) { return SDL_JoystickNumBalls(j); }
+
+int tea_joystick_powerlevel(te_joystick_t *j) { return SDL_JoystickCurrentPowerLevel(j); }
+
+int tea_joystick_axis(te_joystick_t *j, int axis) { return SDL_JoystickGetAxis(j, axis); }
+int tea_joystick_button(te_joystick_t *j, int button) { return SDL_JoystickGetButton(j, button); }
+
+int tea_joystick_hat(te_joystick_t *j, int hat) { return SDL_JoystickGetHat(j, hat); }
+int tea_joystick_ball(te_joystick_t *j, int ball, int *dx, int *dy) { return SDL_JoystickGetBall(j, ball, dx, dy); }
 
 /* Debug */
 

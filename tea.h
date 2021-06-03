@@ -512,111 +512,116 @@ enum {
       TEA_FLIP_VERT = 2
     };
 
-    typedef struct Tea Tea;
-    typedef struct te_config_t te_config_t;
+typedef struct Tea Tea;
+typedef struct te_config_t te_config_t;
 
-    typedef union SDL_Event te_event_t;
+typedef union SDL_Event te_event_t;
 
-    typedef struct te_texinfo_t te_texinfo_t;
-    typedef struct te_texture_t te_texture_t;
-    typedef struct te_shader_t te_shader_t;
-    typedef struct te_font_t te_font_t;
+typedef struct te_texinfo_t te_texinfo_t;
+typedef struct te_texture_t te_texture_t;
+typedef struct te_shader_t te_shader_t;
+typedef struct te_font_t te_font_t;
 
-    typedef unsigned int te_color_t;
-    typedef struct { TEA_TNUM x, y; } te_point_t;
-    typedef struct { TEA_TNUM x, y, w, h; } te_rect_t;
-    typedef struct {te_point_t translate; TEA_TNUM angle; te_point_t scale; te_point_t origin;} te_transform_t;
+typedef struct _SDL_Joystick te_joystick_t;
+typedef struct _SDL_GameController te_gamecontroller_t;
 
-    struct te_texinfo_t {
-      struct { unsigned int w, h; } size;
-      int format, usage;
-      int filter[2];
-      int wrap[2];
-    };
+typedef unsigned int te_color_t;
+typedef struct { TEA_TNUM x, y; } te_point_t;
+typedef struct { TEA_TNUM x, y, w, h; } te_rect_t;
+typedef struct {te_point_t translate; TEA_TNUM angle; te_point_t scale; te_point_t origin;} te_transform_t;
 
-    struct te_config_t {
-      unsigned char title[100];
-      int width, height;
+struct te_texinfo_t {
+    struct { unsigned int w, h; } size;
+    int format, usage;
+    int filter[2];
+    int wrap[2];
+};
 
-      int flags;
-      int render_flags;
-      int window_flags;
-    };
+struct te_config_t {
+    unsigned char title[100];
+    int width, height;
+
+    int flags;
+    int render_flags;
+    int window_flags;
+};
 
 
-    TEA_API te_config_t tea_config_init(const char *title, int w, int h);
-    TEA_API int tea_init(te_config_t *conf);
-    TEA_API int tea_deinit();
+TEA_API te_config_t tea_config_init(const char *title, int w, int h);
+TEA_API int tea_init(te_config_t *conf);
+TEA_API int tea_deinit();
 
-    TEA_API int tea_quit();
+TEA_API int tea_quit();
 
-    TEA_API int tea_begin();
-    TEA_API int tea_end();
+TEA_API int tea_begin();
+TEA_API int tea_end();
 
-    TEA_API int tea_should_close();
+TEA_API int tea_should_close();
 
-    TEA_API float tea_delta();
-    TEA_API int tea_fps();
+TEA_API float tea_delta();
+TEA_API int tea_fps();
 
-    /* Render */
-    TEA_API int tea_clear(te_color_t col);
-    TEA_API int tea_mode(int mode);
-    TEA_API te_color_t tea_color(te_color_t col);
+/* Render */
+TEA_API int tea_clear(te_color_t col);
+TEA_API int tea_mode(int mode);
+TEA_API te_color_t tea_color(te_color_t col);
 
-    TEA_API int tea_point(TEA_TNUM x, TEA_TNUM y);
-    TEA_API int tea_line(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1);
-    TEA_API int tea_rect(TEA_TNUM x, TEA_TNUM y, TEA_TNUM w, TEA_TNUM h);
-    TEA_API int tea_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius);
-    TEA_API int tea_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2);
+TEA_API int tea_point(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_line(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1);
+TEA_API int tea_rect(TEA_TNUM x, TEA_TNUM y, TEA_TNUM w, TEA_TNUM h);
+TEA_API int tea_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius);
+TEA_API int tea_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2);
 
-    TEA_API int tea_print(const char *text, TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_print(const char *text, TEA_TNUM x, TEA_TNUM y);
 
-    TEA_API int tea_set_target(te_texture_t *tex);
-    TEA_API int tea_set_shader(te_shader_t *shader);
-    TEA_API int tea_set_font(te_font_t *font);
-    TEA_API int tea_set_transform(te_transform_t *t);
+TEA_API int tea_set_target(te_texture_t *tex);
+TEA_API int tea_set_shader(te_shader_t *shader);
+TEA_API int tea_set_font(te_font_t *font);
+TEA_API int tea_set_transform(te_transform_t *t);
 
-    TEA_API int tea_clip(te_rect_t *clip);
-    TEA_API int tea_translate(TEA_TNUM x, TEA_TNUM y);
-    TEA_API int tea_rotate(TEA_TNUM angle);
-    TEA_API int tea_scale(TEA_TNUM x, TEA_TNUM y);
-    TEA_API int tea_origin(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_set_blendmode(int mode);
 
-    /* Texture */
-    TEA_API int tea_texture_info(te_texture_t *tex, te_texinfo_t *info);
-    TEA_API te_texture_t* tea_texture(void *data, int w, int h, int format, int usage);
-    TEA_API te_texture_t* tea_texture_load(const char *path, int usage);
+TEA_API int tea_clip(te_rect_t *clip);
+TEA_API int tea_translate(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_rotate(TEA_TNUM angle);
+TEA_API int tea_scale(TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_origin(TEA_TNUM x, TEA_TNUM y);
 
-    TEA_API int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data);
+/* Texture */
+TEA_API int tea_texture_info(te_texture_t *tex, te_texinfo_t *info);
+TEA_API te_texture_t* tea_texture(void *data, int w, int h, int format, int usage);
+TEA_API te_texture_t* tea_texture_load(const char *path, int usage);
 
-    TEA_API int tea_texture_width(te_texture_t *tex);
-    TEA_API int tea_texture_height(te_texture_t *tex);
-    TEA_API int tea_texture_size(te_texture_t *tex, int *w_out, int *h_out);
+TEA_API int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data);
 
-    TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src);
-    TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
+TEA_API int tea_texture_width(te_texture_t *tex);
+TEA_API int tea_texture_height(te_texture_t *tex);
+TEA_API int tea_texture_size(te_texture_t *tex, int *w_out, int *h_out);
 
-    /* Font */
-    TEA_API te_font_t* tea_default_font();
+TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src);
+TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
 
-    TEA_API te_font_t* tea_font(void *data, int size, int font_size);
-    TEA_API te_font_t* tea_font_ttf(void *data, int size, int font_size);
-    TEA_API te_font_t* tea_font_load(const char *path, int usage);
-    TEA_API te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right);
-    TEA_API int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y);
-    TEA_API int tea_font_printf(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_point_t *scale);
+/* Font */
+TEA_API te_font_t* tea_default_font();
 
-    /* Shader */
-    TEA_API te_shader_t* tea_shader(const char *frag, const char *vert);
-    TEA_API te_shader_t* tea_shader_load(const char *glsl);
-    TEA_API int tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
-    TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char *name, void *data, int count);
+TEA_API te_font_t* tea_font(void *data, int size, int font_size);
+TEA_API te_font_t* tea_font_ttf(void *data, int size, int font_size);
+TEA_API te_font_t* tea_font_load(const char *path, int usage);
+TEA_API te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right);
+TEA_API int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y);
+TEA_API int tea_font_printf(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_point_t *scale);
 
-    TEA_API int tea_compile_shader(const char *source, int type);
+/* Shader */
+TEA_API te_shader_t* tea_shader(const char *frag, const char *vert);
+TEA_API te_shader_t* tea_shader_load(const char *glsl);
+TEA_API int tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
+TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char *name, void *data, int count);
 
-    /*******************************
-     * Event
-     *******************************/
+TEA_API int tea_compile_shader(const char *source, int type);
+
+/*******************************
+* Event
+*******************************/
 
 typedef union te_callback_s te_callback_t;
 
@@ -624,6 +629,11 @@ struct te_keysym_t {
     int scancode;
     int keycode;
     int mod;
+};
+
+enum {
+    TEA_TEXTINPUT_STOP = 0,
+    TEA_TEXTINPUT_START
 };
 
 enum {
@@ -639,6 +649,8 @@ enum {
 };
 
 TEA_API int tea_poll_event(te_event_t *out);
+
+TEA_API int tea_textinput(int state);
 
 /* Keyboard */
 
@@ -695,7 +707,6 @@ TEA_API int tea_window_flags();
 TEA_API int tea_window_title(const char *title, char *out);
 
 TEA_API int tea_window_pos(te_point_t *out, int x, int y);
-
 TEA_API int tea_window_resizable(int resizable);
 
 TEA_API int tea_window_width(int *out, int width);
@@ -718,11 +729,13 @@ TEA_API int tea_window_bordered(int bordered);
 TEA_API int tea_update_input();
 TEA_API int tea_key_from_name(const char *name);
 
+/* Keyboard */
 TEA_API int tea_key_down(int key);
 TEA_API int tea_key_up(int key);
 TEA_API int tea_key_pressed(int key);
 TEA_API int tea_key_released(int key);
 
+/* Mouse */
 TEA_API int tea_mouse_pos(int *x, int *y);
 TEA_API int tea_mouse_scroll(int *x, int *y);
 
@@ -730,6 +743,33 @@ TEA_API int tea_mouse_down(int btn);
 TEA_API int tea_mouse_up(int btn);
 TEA_API int tea_mouse_pressed(int btn);
 TEA_API int tea_mouse_released(int btn);
+
+/* Joystick */
+TEA_API te_joystick_t* tea_joystick(int index);
+TEA_API int tea_joystick_close(te_joystick_t *j);
+
+TEA_API int tea_joysticks(void);
+
+TEA_API const char* tea_joystick_name(te_joystick_t *j);
+TEA_API int tea_joystick_isopen(te_joystick_t *j);
+
+TEA_API int tea_joystick_axes(te_joystick_t *j);
+TEA_API int tea_joystick_buttons(te_joystick_t *j);
+TEA_API int tea_joystick_hats(te_joystick_t *j);
+TEA_API int tea_joystick_balls(te_joystick_t *j);
+
+TEA_API int tea_joystick_powerlevel(te_joystick_t *j);
+
+TEA_API int tea_joystick_axis(te_joystick_t *j, int axis);
+TEA_API int tea_joystick_button(te_joystick_t *j, int button);
+TEA_API int tea_joystick_hat(te_joystick_t *j, int hat);
+TEA_API int tea_joystick_ball(te_joystick_t *j, int ball, int *dx, int *dy);
+
+/* Game Controller */
+TEA_API te_gamecontroller_t* tea_gamecontroller(int index);
+TEA_API int tea_gamecontroller_close(te_gamecontroller_t *gc);
+
+TEA_API int tea_is_gamecontroller(int index);
 
 TEA_API float tea_jpad_axis(int jid, int axis);
 TEA_API int tea_jpad_down(int jid, int btn);
