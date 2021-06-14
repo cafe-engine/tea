@@ -1,29 +1,42 @@
+NAME = tea
 CC = cc
-SRC = tea.c
+SRC = $(NAME).c external/GL/gl3w.c
 OBJ = $(SRC:%.c=%.o)
 
 INCLUDE = -I. -Iexternal
 
 CFLAGS = -Wall -std=c99 `sdl2-config --cflags`
-LFLAGS = -L. -ltea -lm `sdl2-config --libs`
+LFLAGS = -L. -ltea -lm `sdl2-config --libs` -lGL
 
-LIBNAME = libtea.a
+LIBNAME = lib$(NAME)
+SLIBNAME = $(LIBNAME).a
+DLIBNAME = $(LIBNAME).so
 
 .PHONY: build clean
-.SECONDARY: $(OBJ) $(LIBNAME)
+.SECONDARY: $(OBJ) $(SLIBNAME)
 
-build: $(LIBNAME)
+build: $(SLIBNAME)
 
-hello: $(LIBNAME) examples/hello/main.o
+hello: $(SLIBNAME) examples/hello/main.o
+	@echo "*******************************************************"
+	@echo "** COMPILING $@"
+	@echo "*******************************************************"
 	$(CC) examples/hello/main.o -o hello $(INCLUDE) $(CFLAGS) $(LFLAGS)
 
 %.a: $(OBJ)
+	@echo "*******************************************************"
+	@echo " ** CREATING $@"
+	@echo "*******************************************************"
 	$(AR) rcs $@ $(OBJ)
 
 %.o: %.c
+	@echo "*******************************************************"
+	@echo "** COMPILING SOURCE $<"
+	@echo "*******************************************************"
 	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS)
 
 clean:
 	rm -f $(OBJ)
-	rm -f $(LIBNAME)
+	rm -f $(SLIBNAME)
+	rm -f $(DLIBNAME)
 	rm -f hello

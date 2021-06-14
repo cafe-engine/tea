@@ -1,5 +1,7 @@
 #include "tea.h"
 
+#define SDL_JOYSTICK_VIRTUAL
+
 #include "stb_image.h"
 #include "stb_truetype.h"
 
@@ -11,6 +13,7 @@
 
 #if defined(TEA_GL)
     #include <SDL_opengl.h>
+    #include "GL/gl3w.h"
 #endif
 
 #define tea() (&_tea_ctx)
@@ -487,7 +490,16 @@ int tea_set_shader(te_shader_t *shader) { return 1; }
 int tea_set_font(te_font_t *font) { return 1; }
 int tea_set_transform(te_transform_t *transform) { return 1; }
 
-int tea_clip(te_rect_t *clip) { return 1; }
+int tea_set_blendmode(int mode) {
+    SDL_SetRenderDrawBlendMode(render()->handle, mode);
+    return 0;
+}
+
+int tea_clip(te_rect_t *clip) { 
+    if (!clip) return SDL_RenderSetClipRect(render()->handle, NULL);
+    SDL_Rect r = (SDL_Rect){clip->x, clip->y, clip->w, clip->h};
+    return SDL_RenderSetClipRect(render()->handle, &r);
+}
 int tea_translate(TEA_TNUM x, TEA_TNUM y) { return 1; }
 int tea_rotate(TEA_TNUM angle) { return 1; }
 int tea_scale(TEA_TNUM x, TEA_TNUM y) { return 1; }
@@ -1050,6 +1062,11 @@ int tea_event_window_visible(teaWindowVisibleEv fn) {
     return 0;
 }
 
+int tea_event_window_focus(teaWindowFocusEv fn) {
+    tea()->callback.window.focus = fn;
+    return 0;
+}
+
 int tea_event_window_mouse(teaWindowMouseEv fn) {
     tea()->callback.window.mouse = fn;
     return 0;
@@ -1369,29 +1386,61 @@ int tea_jpad_released(int jid, int button) {
 
 /* Joystick */
 
-te_joystick_t *tea_joystick(int index) {
-    te_joystick_t *j = SDL_JoystickOpen(index);
-    return j;
+int tea_joystick_info(te_joystick_t *j, te_joyinfo_t *out) {
+    if (!out) return -1;
+    out->vendor_id = SDL_JoystickGetVendor(j);
+    out->product_id = SDL_JoystickGetProduct(j);
+    out->product_ver = SDL_JoystickGetProductVersion(j);
+    return 0;
 }
-
+te_joystick_t *tea_joystick(int index) { return SDL_JoystickOpen(index); }
 int tea_joystick_close(te_joystick_t *j) { SDL_JoystickClose(j); return 0; }
 
-int tea_joysticks(void) { return SDL_NumJoysticks(); }
-
-const char* tea_joystick_name(te_joystick_t *j) { return SDL_JoystickName(j); }
-
-int tea_joystick_axes(te_joystick_t *j) { return SDL_JoystickNumAxes(j); }
-int tea_joystick_buttons(te_joystick_t *j) { return SDL_JoystickNumButtons(j); }
-int tea_joystick_hats(te_joystick_t *j) { return SDL_JoystickNumHats(j); }
-int tea_joystick_balls(te_joystick_t *j) { return SDL_JoystickNumBalls(j); }
+int tea_joystick_count(void) { return SDL_NumJoysticks(); }
+int tea_joystick_isopen(te_joystick_t *j) { return SDL_JoystickGetAttached(j); }
 
 int tea_joystick_powerlevel(te_joystick_t *j) { return SDL_JoystickCurrentPowerLevel(j); }
+int tea_joystick_vibration(te_joystick_t *j, int lfreq, int hfreq, int ms) { return SDL_JoystickRumble(j, lfreq, hfreq, ms); }
+
+const char* tea_joystick_name(te_joystick_t *j) { return SDL_JoystickName(j); }
+int tea_joystick_connected_index(te_joystick_t *j) { return SDL_JoystickGetPlayerIndex(j); }
+te_joyID_t tea_joystick_instance_id(te_joystick_t *j) { return SDL_JoystickInstanceID(j); }
+te_joyGUID_t tea_joystick_GUID(te_joystick_t *j) {
+    te_joyGUID_t guid;
+    SDL_JoystickGUID sguid = SDL_JoystickGetGUID(j);
+    memcpy(&guid, &sguid, sizeof(guid));
+    return guid;
+}
+int tea_joystick_is_gamepad(te_joystick_t *j) {
+    return tea_joystick_gamepad(j) != NULL;
+}
+
+void *tea_joystick_gamepad(te_joystick_t *j) {
+    te_joyID_t id = tea_joystick_instance_id(j);
+    return SDL_GameControllerFromInstanceID(id);
+}
+
+int tea_joystick_axis_count(te_joystick_t *j) { return SDL_JoystickNumAxes(j); }
+int tea_joystick_button_count(te_joystick_t *j) { return SDL_JoystickNumButtons(j); }
+int tea_joystick_hat_count(te_joystick_t *j) { return SDL_JoystickNumHats(j); }
+int tea_joystick_ball_count(te_joystick_t *j) { return SDL_JoystickNumBalls(j); }
 
 int tea_joystick_axis(te_joystick_t *j, int axis) { return SDL_JoystickGetAxis(j, axis); }
 int tea_joystick_button(te_joystick_t *j, int button) { return SDL_JoystickGetButton(j, button); }
-
 int tea_joystick_hat(te_joystick_t *j, int hat) { return SDL_JoystickGetHat(j, hat); }
 int tea_joystick_ball(te_joystick_t *j, int ball, int *dx, int *dy) { return SDL_JoystickGetBall(j, ball, dx, dy); }
+
+#if 0
+int tea_joystick_virtua(int type, int axes, int buttons, int hats) {
+    return SDL_JoystickAttachVirtual(type, axes, buttons, hats);
+}
+int tea_joystick_destroy_virtual(int index) { return SDL_JoystickDetachVirtual(index); }
+int tea_joystick_is_virtual(int index) { return SDL_JoystickIsVirtual(index); }
+
+int tea_joystick_virtual_axis(te_joystick_t *j, int axis, short value) { return SDL_JoystickVirtualAxis(j, axis, value); }
+int tea_joystick_virtual_button(te_joystick_t *j, int button, int state) { return SDL_JoystickVirtualButton(j, button, state); }
+int tea_joystick_virtual_hat(te_joystick_t *j, int hat, int state) { return SDL_JoystickVirtualHat(j, hat, state); }
+#endif
 
 /* Debug */
 
