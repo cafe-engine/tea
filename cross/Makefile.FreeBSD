@@ -1,0 +1,2 @@
+CFLAGS = -Wall -std=c99 `sdl2-config --cflags`
+LFLAGS = -lm -lpthread `sdl2-config --libs`

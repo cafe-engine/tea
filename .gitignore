@@ -7,3 +7,4 @@ tea
 external/SDL*
 .clangd
 compile_commands.json
+build/
