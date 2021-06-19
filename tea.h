@@ -5,17 +5,16 @@
 #define TEA_API
 
 #define TEA_ASSERT(expr, msg...) \
-        if (!(expr)) { \
-            tea_error(msg); \
-            tea_log(__LINE__, __PRETTY_FUNCTION__, "Assertion %s failed: %s", #expr, tea_geterror()); \
-            exit(0); \
-        }
+    if (!(expr)) { \
+        tea_error(msg); \
+        tea_log(__LINE__, __PRETTY_FUNCTION__, "Assertion %s failed: %s", #expr, tea_geterror()); \
+        exit(0); \
+    }
 
 #define TEA_FPS 30
-#define MAX_JID 4
 
 #ifndef TEA_TNUM
-      #define TEA_TNUM float
+#define TEA_TNUM float
 #endif
 
 #define TEA_POINT(x, y) ((te_point_t){(x),(y)})
@@ -36,12 +35,12 @@ enum {
 enum {
     TEA_KEY_UNKNOWN = 0,
 
-        /**
-         *  \name Usage page 0x07
-         *
-         *  These values are from usage page 0x07 (USB keyboard page).
-         */
-        /* @{ */
+    /**
+     *  \name Usage page 0x07
+     *
+     *  These values are from usage page 0x07 (USB keyboard page).
+     */
+    /* @{ */
 
     TEA_KEY_A = 4,
     TEA_KEY_B = 5,
@@ -159,7 +158,7 @@ enum {
     TEA_KEY_SCROLLLOCK = 71,
     TEA_KEY_PAUSE = 72,
     TEA_KEY_INSERT = 73, /**< insert on PC, help on some Mac keyboards (but
-                              does send code 73, not 117) */
+                           does send code 73, not 117) */
     TEA_KEY_HOME = 74,
     TEA_KEY_PAGEUP = 75,
     TEA_KEY_DELETE = 76,
@@ -171,7 +170,7 @@ enum {
     TEA_KEY_UP = 82,
 
     TEA_KEY_NUMLOCKCLEAR = 83, /**< num lock on PC, clear on Mac keyboards
-                                */
+    */
     TEA_KEY_KP_DIVIDE = 84,
     TEA_KEY_KP_MULTIPLY = 85,
     TEA_KEY_KP_MINUS = 86,
@@ -238,7 +237,7 @@ enum {
     TEA_KEY_KP_EQUALSAS400 = 134,
 
     TEA_KEY_INTERNATIONAL1 = 135, /**< used on Asian keyboards, see
-                                           footnotes in USB doc */
+                                    footnotes in USB doc */
     TEA_KEY_INTERNATIONAL2 = 136,
     TEA_KEY_INTERNATIONAL3 = 137, /**< Yen */
     TEA_KEY_INTERNATIONAL4 = 138,
@@ -334,10 +333,10 @@ enum {
     /* @} *//* Usage page 0x07 */
 
     /**
-    *  \name Usage page 0x0C
-    *
-    *  These values are mapped from usage page 0x0C (USB consumer page).
-    */
+     *  \name Usage page 0x0C
+     *
+     *  These values are mapped from usage page 0x0C (USB consumer page).
+     */
     /* @{ */
 
     TEA_KEY_AUDIONEXT = 258,
@@ -361,16 +360,16 @@ enum {
     /* @} *//* Usage page 0x0C */
 
     /**
-    *  \name Walther keys
-    *
-    *  These are values that Christian Walther added (for mac keyboard?).
-    */
+     *  \name Walther keys
+     *
+     *  These are values that Christian Walther added (for mac keyboard?).
+     */
     /* @{ */
 
     TEA_KEY_BRIGHTNESSDOWN = 275,
     TEA_KEY_BRIGHTNESSUP = 276,
     TEA_KEY_DISPLAYSWITCH = 277, /**< display mirroring/dual display
-                                      switch, video mode switch */
+                                   switch, video mode switch */
     TEA_KEY_KBDILLUMTOGGLE = 278,
     TEA_KEY_KBDILLUMDOWN = 279,
     TEA_KEY_KBDILLUMUP = 280,
@@ -383,23 +382,23 @@ enum {
     /* @} *//* Walther keys */
 
     /**
-    *  \name Usage page 0x0C (additional media keys)
-    *
-    *  These values are mapped from usage page 0x0C (USB consumer page).
-    */
+     *  \name Usage page 0x0C (additional media keys)
+     *
+     *  These values are mapped from usage page 0x0C (USB consumer page).
+     */
     /* @{ */
 
     TEA_KEY_AUDIOREWIND = 285,
     TEA_KEY_AUDIOFASTFORWARD = 286,
-        
-        
-        
+
+
+
     /* @} *//* Usage page 0x0C (additional media keys) */
 
     /* Add any other keys here. */
 
     TEA_KEY_COUNT = 512 /**< not a key, just marks the number of scancodes
-                                     for array bounds */
+                          for array bounds */
 };
 
 enum {
@@ -438,8 +437,8 @@ enum {
 #if 0
     TEA_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
     TEA_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported.
-                                                         On macOS NSHighResolutionCapable must be set true in the
-                                                         application's Info.plist for this to have any effect. */
+                                                  On macOS NSHighResolutionCapable must be set true in the
+                                                  application's Info.plist for this to have any effect. */
     TEA_WINDOW_MOUSE_CAPTURE = 0x00004000,      /**< window has mouse captured (unrelated to INPUT_GRABBED) */
     TEA_WINDOW_ALWAYS_ON_TOP = 0x00008000,      /**< window should always be above others */
     TEA_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
@@ -488,7 +487,7 @@ enum {
     TEA_ABGR,
 
     TEA_PIXELFORMAT_COUNT
-    };
+};
 
 enum {
     TEA_WRAP_S = 1,
@@ -621,6 +620,7 @@ TEA_API int tea_origin(TEA_TNUM x, TEA_TNUM y);
 TEA_API int tea_texture_info(te_texture_t *tex, te_texinfo_t *info);
 TEA_API te_texture_t* tea_texture(void *data, int w, int h, int format, int usage);
 TEA_API te_texture_t* tea_texture_load(const char *path, int usage);
+TEA_API te_texture_t* tea_texture_from_memory(void *data, int data_size, int usage);
 
 TEA_API int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data);
 
@@ -642,16 +642,17 @@ TEA_API int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TN
 TEA_API int tea_font_printf(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_point_t *scale);
 
 /* Shader */
-TEA_API te_shader_t* tea_shader(const char *frag, const char *vert);
-TEA_API te_shader_t* tea_shader_load(const char *glsl);
-TEA_API int tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
-TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char *name, void *data, int count);
+TEA_API te_shader_t* tea_shader(const char *frag, const char *vert); TEA_API
+te_shader_t* tea_shader_load(const char *glsl); TEA_API int
+tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
+TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char
+        *name, void *data, int count);
 
 TEA_API int tea_compile_shader(const char *source, int type);
 
 /*******************************
-* Event
-*******************************/
+ * Event
+ *******************************/
 
 typedef union te_callback_s te_callback_t;
 

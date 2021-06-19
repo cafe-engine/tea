@@ -16,8 +16,8 @@
 #include <SDL.h>
 
 #if defined(TEA_GL)
-    #include <SDL_opengl.h>
-    #include "GL/gl3w.h"
+#include <SDL_opengl.h>
+#include "GL/gl3w.h"
 #endif
 
 #define tea() (&_tea_ctx)
@@ -88,9 +88,9 @@ struct te_window_s {
 };
 
 struct te_render_t {
-   int flags;
-   struct te_renderstat_t stat;
-   void *handle;
+    int flags;
+    struct te_renderstat_t stat;
+    void *handle;
 };
 
 struct te_input_t {
@@ -101,10 +101,6 @@ struct te_input_t {
         TEA_TNUM x, y;
         TEA_TNUM scrollx, scrolly;
     } mouse;
-    struct {
-        float laxis[2], raxis[2];
-        Uint8 button[16];
-    } jpad[MAX_JID];
 };
 
 struct te_timer_t {
@@ -168,7 +164,7 @@ te_config_t tea_config_init(const char *title, int w, int h) {
 }
 
 int tea_render_mode() {
-    
+
     tea()->mode.pixel_format[TEA_PIXELFORMAT_UNKNOWN] = 0;
     tea()->mode.pixel_format[TEA_RGB] = SDL_PIXELFORMAT_RGB888;
 
@@ -178,7 +174,7 @@ int tea_render_mode() {
     tea()->mode.pixel_format[TEA_ABGR] = SDL_PIXELFORMAT_ABGR32;
 
     return 1;
-    }
+}
 
 int tea_init(te_config_t *c) {
     if (c == NULL) {
@@ -204,7 +200,7 @@ int tea_init(te_config_t *c) {
     window() = SDL_CreateWindow((const char*)c->title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, c->width, c->height, window_flags);
     te_window_t *window = window();
 
-   
+
 #if !defined(TEA_GL)
     int render_flags = c->render_flags;
     render()->handle = SDL_CreateRenderer(window, -1, render_flags);
@@ -343,7 +339,7 @@ static int _draw_line_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius) {
     int yy = 0;
     int r = radius;
     int err = 2 - 2*r;
-    
+
     do {
         tea_point(x-xx, y+yy);
         tea_point(x-yy, y-xx);
@@ -359,7 +355,7 @@ static int _draw_line_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius) {
 static int _draw_fill_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius) {
     int xx = 0;
     int yy = radius;
-    
+
     int P = 1 - radius;
 
     if (radius > 0) tea_line(x+radius, y, x-radius, y);
@@ -399,48 +395,48 @@ static int _draw_line_triang(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1,
 }
 
 static int fill_bottom_flat_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2) {
-  int dy = (y2 - y0);
-  float invslope0 = (float)(x1 - x0) / dy;
-  float invslope1 = (float)(x2 - x0) / dy;
+    int dy = (y2 - y0);
+    float invslope0 = (float)(x1 - x0) / dy;
+    float invslope1 = (float)(x2 - x0) / dy;
 
-  float curx1 = x0;
-  float curx2 = x0;
+    float curx1 = x0;
+    float curx2 = x0;
 
-  int scanline_y;
-  for (scanline_y = y0; scanline_y <= y1; scanline_y++) {
-    tea_line(curx1, scanline_y, curx2, scanline_y);
-    curx1 += invslope0;
-    curx2 += invslope1;
-  }
-  return 1;
+    int scanline_y;
+    for (scanline_y = y0; scanline_y <= y1; scanline_y++) {
+        tea_line(curx1, scanline_y, curx2, scanline_y);
+        curx1 += invslope0;
+        curx2 += invslope1;
+    }
+    return 1;
 }
 
 static int fill_top_flat_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2) {
-  int dy = (y2 - y0);
-  float invslope0 = (float)(x2 - x0) / dy;
-  float invslope1 = (float)(x2 - x1) / dy;
+    int dy = (y2 - y0);
+    float invslope0 = (float)(x2 - x0) / dy;
+    float invslope1 = (float)(x2 - x1) / dy;
 
-  float curx1 = x2;
-  float curx2 = x2;
+    float curx1 = x2;
+    float curx2 = x2;
 
-  int scanline_y;
-  for (scanline_y = y2; scanline_y > y1; scanline_y--) {
-    tea_line(curx1, scanline_y, curx2, scanline_y);
-    curx1 -= invslope0;
-    curx2 -= invslope1;
-  }
-  return 1;
+    int scanline_y;
+    for (scanline_y = y2; scanline_y > y1; scanline_y--) {
+        tea_line(curx1, scanline_y, curx2, scanline_y);
+        curx1 -= invslope0;
+        curx2 -= invslope1;
+    }
+    return 1;
 }
 
 static void points_ord_y(te_point_t *points, int len) {
-  for (int i = 0; i < len; i++) {
-    for (int j = 0; j < len-1; j++) {
-      if (points[j].y < points[j+1].y) continue;
-      te_point_t aux = points[j];
-      points[j] = points[j+1];
-      points[j+1] = aux;
+    for (int i = 0; i < len; i++) {
+        for (int j = 0; j < len-1; j++) {
+            if (points[j].y < points[j+1].y) continue;
+            te_point_t aux = points[j];
+            points[j] = points[j+1];
+            points[j+1] = aux;
+        }
     }
-  }
 }
 
 static int _draw_fill_triang(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2) {
@@ -455,9 +451,9 @@ static int _draw_fill_triang(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1,
     else if (points[0].y == points[1].y) fill_bottom_flat_triangle(points[0].x, points[0].y, points[1].x, points[1].y, points[2].x, points[2].y);
     else {
         te_point_t p = TEA_POINT(
-        (points[0].x + ((points[1].y - points[0].y) / (points[2].y - points[0].y)) * (points[2].x - points[0].x)),
-        points[1].y
-        );
+                (points[0].x + ((points[1].y - points[0].y) / (points[2].y - points[0].y)) * (points[2].x - points[0].x)),
+                points[1].y
+                );
 
         fill_bottom_flat_triangle(points[0].x, points[0].y, points[1].x, points[1].y, p.x, p.y);
         fill_top_flat_triangle(points[1].x, points[1].y, p.x, p.y, points[2].x, points[2].y);
@@ -588,6 +584,26 @@ te_texture_t* tea_texture_load(const char *path, int usage) {
     return tex;
 }
 
+te_texture_t* tea_texture_from_memory(void *data, int data_size, int usage) {
+    te_texture_t *tex = NULL;
+    if (!data) {
+        tea_error("invalid path");
+        return tex;
+    }
+
+    int req_format = TEA_RGBA;
+    int w, h, format;
+    unsigned char *pixels = stbi_load_from_memory(data, data_size, &w, &h, &format, req_format);
+    if (!pixels) {
+        tea_error("Invalid image format");
+        return tex;
+    }
+    tex = tea_texture(pixels, w, h, format, usage);
+
+
+    return tex;
+}
+
 int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data) {
     TEA_ASSERT(tex != NULL, "Texture cannot be null");
     int pitch = tex->channels * tex->width;
@@ -656,7 +672,7 @@ te_font_t* tea_default_font(te_font_t *def) {
     texh = 8;
     Uint32 pixels[texw*texh];
     memset(pixels, 0, texw*texh*4);
-    
+
     int i;
     for (i = 0; i < 128; i++) {
         char *letter = font8x8_basic[i];
@@ -751,7 +767,7 @@ te_font_t* tea_font(void *data, int size, int font_size) {
         r.y = 0;
         r.w = ww;
         r.h = hh;
-    
+
 
         if (SDL_LockTexture(font->tex->handle, &r, (void**)&pixels, &pitch) != 0) {
             fprintf(stderr, "Failed to lock SDL_Texture: %s\n", SDL_GetError());
@@ -846,7 +862,7 @@ te_font_t* tea_font_ttf(void *data, int size, int font_size) {
         r.y = 0;
         r.w = ww;
         r.h = hh;
-    
+
 
         if (SDL_LockTexture(font->tex->handle, &r, (void**)&pixels, &pitch) != 0) {
             fprintf(stderr, "Failed to lock SDL_Texture: %s\n", SDL_GetError());
@@ -1036,9 +1052,9 @@ int tea_poll_event(te_event_t *out) {
 typedef void(*_SDLTextInput)(void);
 
 int tea_textinput(int mode) {
-   _SDLTextInput md[2] = { SDL_StopTextInput, SDL_StartTextInput };
-   md[mode]();
-   return 0;
+    _SDLTextInput md[2] = { SDL_StopTextInput, SDL_StartTextInput };
+    md[mode]();
+    return 0;
 }
 
 int tea_event_key(teaKeyboardEv fn) {
@@ -1123,11 +1139,11 @@ int _controller_callback(te_event_t *ev) {
     if (fn) fn(ev->cdevice.type, ev->cdevice.which);
     return 0; }
 
-int _window_callback(te_event_t *ev) {
-    teaCallback fn = _window_callbacks[ev->window.event];
-    if (fn) return fn(ev);
-    return 0;
-}
+    int _window_callback(te_event_t *ev) {
+        teaCallback fn = _window_callbacks[ev->window.event];
+        if (fn) return fn(ev);
+        return 0;
+    }
 
 int _window_resize_callback(te_event_t *ev) {
     teaWindowResizeEv fn = tea()->callback.window.resize;
@@ -1213,7 +1229,7 @@ int _text_edit_callback(te_event_t *ev) {
 int tea_window_title(const char *title, char *out) {
     if (title) SDL_SetWindowTitle(window(), title);
     if (out) strcpy(out, SDL_GetWindowTitle(window()));
-    
+
     return 1;
 }
 
@@ -1247,7 +1263,7 @@ int tea_window_width(int *out, int width) {
     SDL_GetWindowSize(w, &ww, &hh);
     if (!out) SDL_SetWindowSize(w, width, hh);
     else *out = ww;
-    
+
     return 1;
 }
 
@@ -1257,7 +1273,7 @@ int tea_window_height(int *out, int height) {
     SDL_GetWindowSize(w, &ww, &hh);
     if (!out) SDL_SetWindowSize(w, ww, height);
     else *out = hh;
-    
+
     return 1;
 }
 
@@ -1326,22 +1342,22 @@ int tea_window_bordered(int bordered) {
 
 
 int tea_key_from_name(const char *name) {
-  return SDL_GetScancodeFromName(name);
+    return SDL_GetScancodeFromName(name);
 }
 
 int tea_key_down(int key) {
-  return tea()->input.key.state[key];
+    return tea()->input.key.state[key];
 }
 
 int tea_key_up(int key) {
-  return !tea_key_down(key);
+    return !tea_key_down(key);
 }
 
 int tea_key_pressed(int key) {
-  return !tea()->input.key.old_state[key] && tea_key_down(key);
+    return !tea()->input.key.old_state[key] && tea_key_down(key);
 }
 int tea_key_released(int key) {
-  return tea()->input.key.old_state[key] && tea_key_up(key);
+    return tea()->input.key.old_state[key] && tea_key_up(key);
 }
 
 /* Mouse */
@@ -1359,17 +1375,17 @@ int tea_mouse_scroll(int *x, int *y) {
 }
 
 int tea_mouse_down(int button) {
-  return tea()->input.mouse.state[button];
+    return tea()->input.mouse.state[button];
 }
 int tea_mouse_up(int button) {
-  return !tea_mouse_down(button);
+    return !tea_mouse_down(button);
 }
 
 int tea_mouse_pressed(int button) {
-  return !tea()->input.mouse.old_state[button] && tea_mouse_down(button);
+    return !tea()->input.mouse.old_state[button] && tea_mouse_down(button);
 }
 int tea_mouse_released(int button) {
-  return tea()->input.mouse.old_state[button] && tea_mouse_up(button);
+    return tea()->input.mouse.old_state[button] && tea_mouse_up(button);
 }
 
 float tea_jpad_axis(int jid, int axis) {
