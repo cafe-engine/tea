@@ -759,6 +759,7 @@ TEA_API int tea_window_bordered(int bordered);
 
 TEA_API int tea_update_input();
 TEA_API int tea_key_from_name(const char *name);
+TEA_API const char* tea_key_name(int key);
 
 /* Keyboard */
 TEA_API int tea_key_down(int key);

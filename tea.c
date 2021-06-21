@@ -4,8 +4,6 @@
 
 #include "tea.h"
 
-#define SDL_JOYSTICK_VIRTUAL
-
 #include "stb_image.h"
 #include "stb_truetype.h"
 
@@ -283,6 +281,7 @@ int tea_mode(int mode) {
 
 te_color_t tea_color(te_color_t col) {
     if (col >= 0) render()->stat.draw_color = col;
+    else col = render()->stat.draw_color;
     unsigned char c[4];
     te_color_t clear_color = col;
     for (int i = 0; i < 4; i++) {
@@ -1345,19 +1344,25 @@ int tea_key_from_name(const char *name) {
     return SDL_GetScancodeFromName(name);
 }
 
+const char* tea_key_name(int key) {
+    return SDL_GetScancodeName(key);
+}
+
 int tea_key_down(int key) {
     return tea()->input.key.state[key];
 }
 
 int tea_key_up(int key) {
-    return !tea_key_down(key);
+    return !tea()->input.key.state[key];
 }
 
 int tea_key_pressed(int key) {
-    return !tea()->input.key.old_state[key] && tea_key_down(key);
+    int pressed = !tea()->input.key.old_state[key] && tea()->input.key.state[key];
+    return pressed;
 }
 int tea_key_released(int key) {
-    return tea()->input.key.old_state[key] && tea_key_up(key);
+    int released = tea()->input.key.old_state[key] && !tea()->input.key.state[key];
+    return released;
 }
 
 /* Mouse */
