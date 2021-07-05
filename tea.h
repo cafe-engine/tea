@@ -575,7 +575,9 @@ struct te_config_t {
     int window_flags;
 };
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 TEA_API te_config_t tea_config_init(const char *title, int w, int h);
 TEA_API int tea_init(te_config_t *conf);
 TEA_API int tea_deinit();
@@ -832,5 +834,8 @@ TEA_API int tea_gamepad_axis(te_gamepad_t *gp, int axis);
 TEA_API const char* tea_geterror();
 TEA_API int tea_error(const char *fmt, ...);
 TEA_API int tea_log(int line, const char *func, const char *fmt, ...);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TEA_H */
