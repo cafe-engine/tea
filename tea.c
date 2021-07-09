@@ -241,6 +241,7 @@ int tea_begin() {
     tea()->timer.frame++;
 
     SDL_Delay(TEA_FPS);
+    SDL_SetRenderDrawBlendMode(render()->handle, SDL_BLENDMODE_BLEND);
     return 1;
 }
 
