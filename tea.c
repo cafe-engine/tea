@@ -648,7 +648,7 @@ int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_
     s = (SDL_Rect){0, 0, tex->width, tex->height};
 
     if (dest) d = _to_sdl_rect(dest);
-    if (src) d = _to_sdl_rect(src);
+    if (src) s = _to_sdl_rect(src);
 
     SDL_Point o = {0, 0};
     if (origin) o = (SDL_Point){origin->x, origin->y};
