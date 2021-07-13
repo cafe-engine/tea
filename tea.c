@@ -15,7 +15,7 @@
 
 #if defined(TEA_GL)
 #include <SDL_opengl.h>
-#include "GL/gl3w.h"
+// #include "GL/gl3w.h"
 #endif
 
 #define tea() (&_tea_ctx)
@@ -36,7 +36,11 @@ struct color_t { unsigned char r, g, b, a; };
 
 struct te_texture_t {
     int usage;
+#if !defined(TEA_GL)
     void *handle;
+#else
+    int handle;
+#endif
     unsigned int width, height;
     unsigned int filter[2], wrap[2];
     int channels;
@@ -162,14 +166,18 @@ te_config_t tea_config_init(const char *title, int w, int h) {
 }
 
 int tea_render_mode() {
-
     tea()->mode.pixel_format[TEA_PIXELFORMAT_UNKNOWN] = 0;
+#if !defined(TEA_GL)
     tea()->mode.pixel_format[TEA_RGB] = SDL_PIXELFORMAT_RGB888;
 
     tea()->mode.pixel_format[TEA_RGBA] = SDL_PIXELFORMAT_RGBA32;
     tea()->mode.pixel_format[TEA_ARGB] = SDL_PIXELFORMAT_ARGB32;
     tea()->mode.pixel_format[TEA_BGRA] = SDL_PIXELFORMAT_BGRA32;
     tea()->mode.pixel_format[TEA_ABGR] = SDL_PIXELFORMAT_ABGR32;
+#else
+    tea()->mode.pixel_format[TEA_RGB] = GL_RGB;
+    tea()->mode.pixel_format[TEA_RGBA] = GL_RGBA;
+#endif
 
     return 1;
 }
@@ -189,10 +197,10 @@ int tea_init(te_config_t *c) {
     int window_flags = c->window_flags;
 
 #if defined(TEA_GL)
-    window |= SDL_WINDOW_OPENGL;
+    window_flags |= SDL_WINDOW_OPENGL;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 #endif
 
     window() = SDL_CreateWindow((const char*)c->title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, c->width, c->height, window_flags);
@@ -204,8 +212,14 @@ int tea_init(te_config_t *c) {
     render()->handle = SDL_CreateRenderer(window, -1, render_flags);
     if (!render()->handle) {
         tea_error("failed to create SDL_Renderer: %s", SDL_GetError());
-        return 1;
+        return 0;
     }
+#else
+    SDL_GLContext ctx = SDL_GL_CreateContext(window);
+    // if (gl3wInit()) {
+    //     tea_error("failed to init GL lib");
+    //     return 0;
+    // }
 #endif
 
     te_render_t *r = render();
@@ -224,7 +238,7 @@ int tea_init(te_config_t *c) {
 }
 
 int tea_deinit() {
-#ifndef TEA_GL
+#if !defined(TEA_GL)
     SDL_DestroyRenderer(render()->handle);
 #endif
     SDL_DestroyWindow(window());
@@ -242,11 +256,23 @@ int tea_begin() {
 
     SDL_Delay(TEA_FPS);
     SDL_SetRenderDrawBlendMode(render()->handle, SDL_BLENDMODE_BLEND);
+    te_point_t size;
+    tea_window_size(&size, 0, 0);
+#if defined(TEA_GL)
+    glViewport(0, 0, size.x, size.y);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.f, size.x, size.y, 0.f, 0.f, 1.f);
+#endif
     return 1;
 }
 
 int tea_end() { 
+#if !defined(TEA_GL)
     SDL_RenderPresent(render()->handle);
+#else
+    SDL_GL_SwapWindow(window());
+#endif
     return 1; 
 }
 
@@ -265,12 +291,27 @@ int tea_fps() {
 /*********************************
  * Render
  *********************************/
+
+static int _to_gl_color(te_color_t color, float *out) {
+    if (!out) return 0;
+    for (int i = 0; i < 4; i++) out[i] = (float)((color >> (8*i)) & 0xff) / 255.f;
+    return 1;
+}
+
 int tea_clear(te_color_t col) {
+#if !defined(TEA_GL)
     int draw_color = tea_color(-1);
 
     tea_color(col);
     SDL_RenderClear(render()->handle);
     tea_color(draw_color);
+#else
+    float c[4];
+    _to_gl_color(col, c);
+    glClearColor(c[0], c[1], c[2], c[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+#endif
+
 
     return 1;
 }
@@ -283,24 +324,53 @@ int tea_mode(int mode) {
 te_color_t tea_color(te_color_t col) {
     if (col >= 0) render()->stat.draw_color = col;
     else col = render()->stat.draw_color;
+#if !defined(TEA_GL)
     unsigned char c[4];
+#else
+    float c[4];
+#endif
     te_color_t clear_color = col;
     for (int i = 0; i < 4; i++) {
         c[i] = clear_color & 0xff;
+#if defined(TEA_GL)
+        c[i] /= 255.f;
+#endif
         clear_color >>= 8;
     }
+#if !defined(TEA_GL)
     SDL_SetRenderDrawColor(render()->handle, c[0], c[1], c[2], c[3]);
+#endif
 
     return render()->stat.draw_color;
 }
 
 int tea_point(TEA_TNUM x, TEA_TNUM y) {
+#if !defined(TEA_GL)
     SDL_RenderDrawPoint(render()->handle, x, y);
+#else
+    float c[4];
+    _to_gl_color(render()->stat.draw_color, c);
+    glBegin(GL_POINTS);
+    glVertex2f(x, y);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glEnd();
+#endif
     return 1;
 }
 
 int tea_line(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1) {
+#if !defined(TEA_GL)
     SDL_RenderDrawLine(render()->handle, x0, y0, x1, y1);
+#else
+    float c[4];
+    _to_gl_color(render()->stat.draw_color, c);
+    glBegin(GL_LINES);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x0, y0);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x1, y1);
+    glEnd();
+#endif
     return 1;
 }
 
@@ -311,7 +381,28 @@ static int _draw_fill_rect(TEA_TNUM x, TEA_TNUM y, TEA_TNUM w, TEA_TNUM h) {
     r.y = y + t->translate.y;
     r.w = w;
     r.h = h;
+
+#if !defined(TEA_GL)
     SDL_RenderFillRect(render()->handle, &r);
+#else
+    float c[4];
+    _to_gl_color(render()->stat.draw_color, c);
+    glBegin(GL_TRIANGLES);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x, y);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x+w, y);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x+w, y+h);
+
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x+w, y+h);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x, y+h);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x, y);
+    glEnd();
+#endif
     return 1;
 }
 
@@ -322,7 +413,22 @@ static int _draw_line_rect(TEA_TNUM x, TEA_TNUM y, TEA_TNUM w, TEA_TNUM h) {
     r.y = y + t->translate.y;
     r.w = w;
     r.h = h;
+#if !defined(TEA_GL)
     SDL_RenderDrawRect(render()->handle, &r);
+#else
+    float c[4];
+    _to_gl_color(render()->stat.draw_color, c);
+    glBegin(GL_LINES);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x, y);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x+w, y);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x+w, y+h);
+    glColor4f(c[0], c[1], c[2], c[3]);
+    glVertex2f(x, y+h);
+    glEnd();
+#endif
     return 1;
 }
 
@@ -339,7 +445,6 @@ static int _draw_line_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius) {
     int yy = 0;
     int r = radius;
     int err = 2 - 2*r;
-
     do {
         tea_point(x-xx, y+yy);
         tea_point(x-yy, y-xx);
@@ -475,6 +580,7 @@ int tea_print(const char *text, TEA_TNUM x, TEA_TNUM y) {
 }
 
 int tea_set_target(te_texture_t *target) {
+#if !defined(TEA_GL)
     SDL_Texture *tex = NULL;
     if (target) {
         TEA_ASSERT(target->usage & TEA_TEXTURE_TARGET, "Texture is not target");
@@ -482,6 +588,7 @@ int tea_set_target(te_texture_t *target) {
     }
 
     SDL_SetRenderTarget(render()->handle, tex);
+#endif
 
     return 1;
 }
@@ -542,10 +649,22 @@ te_texture_t* tea_texture(void *data, int w, int h, int format, int usage) {
         return tex;
     }
 #endif
+
+#if !defined(TEA_GL)
     tex->handle = SDL_CreateTexture(render()->handle, pixel_format(format), usage, w, h);
     SDL_SetTextureBlendMode(tex->handle, SDL_BLENDMODE_BLEND);
 
     if (data) tea_texture_update(tex, NULL, data);
+#else
+    glGenTextures(1, &tex->handle);
+    glBindTexture(GL_TEXTURE_2D, tex->handle);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    if (data) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+#endif
+
 #if 0
     SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormatFrom(data, w, h, depth, pitch, _format);
     if (!surf) {
@@ -606,9 +725,12 @@ te_texture_t* tea_texture_from_memory(void *data, int data_size, int usage) {
 
 int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data) {
     TEA_ASSERT(tex != NULL, "Texture cannot be null");
+#if !defined(TEA_GL)
     int pitch = tex->channels * tex->width;
-
     return SDL_UpdateTexture(tex->handle, NULL, data, pitch);
+#else
+    return 0;
+#endif
 }
 
 int tea_texture_width(te_texture_t *tex) {
@@ -630,6 +752,7 @@ int tex_texture_size(te_texture_t *tex, int *w_out, int *h_out) {
 
 int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src) {
     TEA_ASSERT(tex != NULL, "Texture cannot be NULL");
+#if !defined(TEA_GL)
     SDL_Rect d, s;
     d = (SDL_Rect){0, 0, tex->width, tex->height};
     s = (SDL_Rect){0, 0, tex->width, tex->height};
@@ -637,12 +760,36 @@ int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src) {
     if (src) s = _to_sdl_rect(src);
 
     SDL_RenderCopy(render()->handle, tex->handle, &s, &d);
+#else
+    te_rect_t d, s;
+    d = TEA_RECT(0, 0, tex->width, tex->height);
+    s = TEA_RECT(0, 0, tex->width, tex->height);
+    if (dest) memcpy(&d, dest, sizeof(*dest));
+    if (src) memcpy(&s, src, sizeof(*src));
+
+    float srcf[4];
+    srcf[0] = (float)(s.x / tex->width);
+    srcf[1] = (float)(s.y / tex->height);
+    srcf[2] = srcf[0] + (float)(s.w / tex->width);
+    srcf[3] = srcf[1] + (float)(s.h / tex->height);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, tex->handle);
+    glBegin(GL_QUADS);
+    glTexCoord2f(srcf[0], srcf[1]); glVertex2f(d.x, d.y);
+    glTexCoord2f(srcf[2], srcf[1]); glVertex2f(d.x+d.w, d.y);
+    glTexCoord2f(srcf[2], srcf[3]); glVertex2f(d.x+d.w, d.y+d.h);
+    glTexCoord2f(srcf[0], srcf[3]); glVertex2f(d.x, d.y+d.h);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+#endif
 
     return 1;
 }
 
 int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip) {
     TEA_ASSERT(tex != NULL, "Texture cannot be NULL");
+#if !defined(TEA_GL)
     SDL_Rect d, s;
     d = (SDL_Rect){0, 0, tex->width, tex->height};
     s = (SDL_Rect){0, 0, tex->width, tex->height};
@@ -653,6 +800,7 @@ int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_
     SDL_Point o = {0, 0};
     if (origin) o = (SDL_Point){origin->x, origin->y};
     SDL_RenderCopyEx(render()->handle, tex->handle, &s, &d, (int)angle, &o, flip);
+#endif
 
     return 1;
 }
@@ -749,7 +897,9 @@ te_font_t* tea_font(void *data, int size, int font_size) {
 
     font->tex = tea_texture(NULL, tw, th, TEA_RGBA, TEA_TEXTURE_STREAM);
 
+#if !defined(TEA_GL)
     SDL_SetTextureBlendMode(font->tex->handle, SDL_BLENDMODE_BLEND);
+#endif
 
     int x = 0;
     for (i = 0; i < MAX_FONT_CHAR; i++) {
@@ -759,7 +909,11 @@ te_font_t* tea_font(void *data, int size, int font_size) {
         int ox, oy;
 
         unsigned char *bitmap = stbtt_GetCodepointBitmap(&font->info, 0, font->scale, i, NULL, NULL, &ox, &oy);
+#if !defined(TEA_GL)
         Uint32 *pixels = NULL;
+#else
+        te_color_t pixels[ww*hh];
+#endif
         int pitch;
 
         SDL_Rect r;
@@ -769,6 +923,7 @@ te_font_t* tea_font(void *data, int size, int font_size) {
         r.h = hh;
 
 
+#if !defined(TEA_GL)
         if (SDL_LockTexture(font->tex->handle, &r, (void**)&pixels, &pitch) != 0) {
             fprintf(stderr, "Failed to lock SDL_Texture: %s\n", SDL_GetError());
             exit(0);
@@ -786,6 +941,19 @@ te_font_t* tea_font(void *data, int size, int font_size) {
             pixels[index] = pp;
         }
         SDL_UnlockTexture(font->tex->handle);
+#else
+    int yy = 0;
+    for (int j = 0; j < ssize; j++) {
+        int xx = j % ww;
+        if (j != 0 && xx == 0) yy++;
+        int index = xx + (yy * (pitch / 4));
+
+        Uint32 pp = 0xffffff00 | bitmap[j];
+        pixels[index] = pp;
+    }
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0, r.x, r.y, r.w, r.h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+#endif
         font->c[i].tx = x;
 
         x += font->c[i].bw;
@@ -793,6 +961,7 @@ te_font_t* tea_font(void *data, int size, int font_size) {
     return font;
 }
 
+#if 0
 te_font_t* tea_font_ttf(void *data, int size, int font_size) {
     TEA_ASSERT(font_size > 0, "Invalid font size");
     TEA_ASSERT(data != NULL, "Font data cannot be null");
@@ -887,7 +1056,7 @@ te_font_t* tea_font_ttf(void *data, int size, int font_size) {
     }
     return font;
 }
-
+#endif
 te_font_t* tea_font_load(const char *filename, int size) {
     te_font_t *font = NULL; 
     TEA_ASSERT(filename != NULL, "Font filename cannot be null");
@@ -920,7 +1089,9 @@ te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right) {
     te_font_t *font = (te_font_t*)malloc(sizeof(*font));
     memset(font, 0, sizeof(*font));
     font->tex = tex;
+#if !defined(TEA_GL)
     SDL_SetTextureBlendMode(font->tex->handle, SDL_BLENDMODE_BLEND);
+#endif
 
     for (int i = 0; i < MAX_FONT_CHAR; i++) {
         font->c[i].ax = size;
@@ -959,9 +1130,10 @@ int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y) {
         color >>= 8;
     }
 
-
+#if !defined(TEA_GL)
     SDL_SetTextureColorMod(font->tex->handle, c[0], c[1], c[2]);
     SDL_SetTextureAlphaMod(font->tex->handle, c[3]);
+#endif
 
     while (*p) {
         te_rect_t r;

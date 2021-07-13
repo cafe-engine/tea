@@ -643,15 +643,6 @@ TEA_API te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int rig
 TEA_API int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y);
 TEA_API int tea_font_printf(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_point_t *scale);
 
-/* Shader */
-TEA_API te_shader_t* tea_shader(const char *frag, const char *vert); TEA_API
-te_shader_t* tea_shader_load(const char *glsl); TEA_API int
-tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
-TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char
-        *name, void *data, int count);
-
-TEA_API int tea_compile_shader(const char *source, int type);
-
 /*******************************
  * Event
  *******************************/
@@ -827,6 +818,27 @@ TEA_API int tea_is_gamepad(int index);
 TEA_API int tea_gamepad_button_down(te_gamepad_t *gp, int button);
 TEA_API int tea_gamepad_axis(te_gamepad_t *gp, int axis);
 
+/********************************
+ * GL Functions
+ ********************************/
+
+TEA_API int tea_gl_begin(int mode);
+TEA_API int tea_vertex2f(float x, float y);
+TEA_API int tea_color4f(float r, float g, float b, float a);
+TEA_API int tea_tex2f(float s, float t);
+TEA_API int tea_gl_end();
+
+TEA_API te_shader_t* tea_shader(const char *vertex, const char *fragment);
+TEA_API te_shader_t* tea_shader_load(const char *path);
+TEA_API te_shader_t* tea_shader_single(const char *string);
+TEA_API te_shader_t* tea_shader_effect(const char *pixel, const char *position);
+TEA_API int tea_shader_destroy(te_shader_t *shader);
+
+TEA_API int tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
+TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char
+        *name, void *data, int count);
+
+TEA_API int tea_compile_shader(const char *source, int type);
 /********************************
  * Debug
  ********************************/

@@ -8,3 +8,5 @@ external/SDL*
 .clangd
 compile_commands.json
 build/
+hello
+.vscode/

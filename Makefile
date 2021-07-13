@@ -43,6 +43,10 @@ include cross/Makefile.$(TARGET)
 
 SLIBNAME = $(LIBNAME).a
 DLIBNAME = $(LIBNAME).$(LIB_EXT)
+ifdef ($(TEA_GL)
+CFLAGS += -DTEA_GL
+endif
+LFLAGS += -framework OpenGL
 
 .PHONY: all build clean
 .SECONDARY: $(OBJ) $(SLIBNAME)
