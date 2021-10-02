@@ -1,7 +1,0 @@
-CFLAGS := -Wall -s USE_SDL=2 --shell-file cross/index.html
-LFLAGS := -lpthread -lm -ldl -lSDL2
-OUT := $(NAME).html
-CLEAR_FILES := cafe.js cafe.wasm
-
-CC := emcc
-AR := emar

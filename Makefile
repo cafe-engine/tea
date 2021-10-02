@@ -1,93 +1,42 @@
-NAME = tea
 CC = cc
-SRC = $(NAME).c # external/GL/gl3w.c
-OBJ = $(SRC:%.c=%.o)
-DOBJ = $(SRC:%.c=%.do)
-
-LIBNAME = lib$(NAME)
-LIB_EXT = so
-
-CFLAGS = -Wall -std=c99
-LFLAGS =
-
-OUT = hello
-CLEAN_FILES = 
-
-ifeq ($(TARGET),Web)
-    CLEAN_FILES = $(NAME).wasm $(NAME).js
-endif
+AR = ar
+CFLAGS = -Wall -std=c99 -O2 -g
+LDFLAGS = -lm
 
 ifeq ($(OS),Windows_NT)
-    TARGET ?= Windows
-    LIB_EXT = dll
+	CFLAGS += -D_WIN32
+	LDFLAGS += -mwindows -lopengl32
 else
-    UNAME_S = $(shell uname -s)
-    ifeq ($(UNAME_S),Darwin)
-    TARGET ?= OSX
-    LIB_EXT = dylib
-    else
-    TARGET ?= $(UNAME_S)
-    endif
+	LDFLAGS += -ldl
+	UNAME_S = $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		LDFLAGS += -framework OpenGL
+	endif
+	ifeq ($(UNAME_S),Linux)
+		LDFLAGS += -lGL
+	endif
 endif
 
-ifeq ($(TARGET),Windows)
-LIB_EXT = dll
-endif
-ifeq ($(TARGET),Darwin)
-LIB_EXT = dylib
-endif
+SRCS = tea.c
+OBJS = $(SRCS:.c=.o)
 
-INCLUDE += -I. -Iexternal
-
-include cross/Makefile.$(TARGET)
-
+LIBNAME = libtea
 SLIBNAME = $(LIBNAME).a
-DLIBNAME = $(LIBNAME).$(LIB_EXT)
-ifdef ($(TEA_GL)
-CFLAGS += -DTEA_GL
-endif
-LFLAGS += -framework OpenGL
+DLIBNAME = $(LIBNAME).so
 
-.PHONY: all build clean
-.SECONDARY: $(OBJ) $(SLIBNAME)
+GFX_LIB = -lSDL2
 
-build: $(OUT)
+.PHONY: all build
+.SECONDARY: main.c tea.c
 
-all: $(OUT) $(SLIBNAME) $(DLIBNAME)
+build: main.c $(SLIBNAME)
+	$(CC) main.c -o tea -L. -ltea $(CFLAGS) $(LDFLAGS) $(GFX_LIB)
 
-$(OUT): $(SLIBNAME) examples/hello/main.o
-	@echo "*******************************************************"
-	@echo "** COMPILING $@"
-	@echo "*******************************************************"
-	$(CC) examples/hello/main.o -o $(OUT) $(INCLUDE) $(CFLAGS) -L. -ltea $(LFLAGS)
-
-$(SLIBNAME): $(OBJ)
-	@echo "*******************************************************"
-	@echo " ** CREATING $@"
-	@echo "*******************************************************"
-	$(AR) rcs $@ $(OBJ)
-
-$(DLIBNAME): $(DOBJ)
-	@echo "*******************************************************"
-	@echo " ** CREATING $@ $<"
-	@echo "*******************************************************"
-	$(CC) -shared -o $@ $(DOBJ) $(INCLUDE) $(CFLAGS) $(LFLAGS)
+$(SLIBNAME): $(OBJS)
+	$(AR) rcs $(SLIBNAME) $(OBJS)
 
 %.o: %.c
-	@echo "*******************************************************"
-	@echo "** COMPILING SOURCE $<"
-	@echo "*******************************************************"
-	$(CC) -c $< -o $@ $(INCLUDE) $(CFLAGS)
-
-%.do: %.c
-	@echo "*******************************************************"
-	@echo "** COMPILING SOURCE $<"
-	@echo "*******************************************************"
-	$(CC) -c $< -o $@ -fPIC $(INCLUDE) $(CFLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f $(OBJ) $(DOBJ)
-	rm -f $(SLIBNAME)
-	rm -f $(DLIBNAME)
-	rm -f $(OUT) $(CLEAN_FILES)
-	rm -f examples/hello/main.o
+	rm -f *.o tea $(SLIBNAME)

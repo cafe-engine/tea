@@ -1,853 +1,550 @@
-#ifndef TEA_H
-#define TEA_H
+#ifndef _TEA_H
+#define _TEA_H
 
+#define TEAPI extern
 #define TEA_VER "0.1.0"
-#define TEA_API
 
-#define TEA_ASSERT(expr, msg...) \
-    if (!(expr)) { \
-        tea_error(msg); \
-        tea_log(__LINE__, __PRETTY_FUNCTION__, "Assertion %s failed: %s", #expr, tea_geterror()); \
-        exit(0); \
+#define TEA_OK 0
+#define TEA_ERR -1
+
+#define TEA_ASSERT(expr, ...)\
+    if (!(expr)) {\
+	fprintf(stderr, "Assertion failed at '%s':%d in %s: ", __PRETTY_FUNCTION__, __LINE__, __FILE__);\
+	teaAbort(__VA_ARGS__);\
     }
 
-#define TEA_FPS 30
+#define TEA_PI 3.14159265
+#define TEA_DEG2RAD(a) ((a) * TEA_PI / 180.0)
+#define TEA_RAD2DEG(a) ((a) * 180.0 / TEA_PI)
+#define TEA_MAX(a, b) ((a) > (b) ? (a) : (b))
+#define TEA_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#ifndef TEA_TNUM
-#define TEA_TNUM float
-#endif
+/* Boolean */
+#define TEA_TRUE 1
+#define TEA_FALSE 0
 
-#define TEA_POINT(x, y) ((te_point_t){(x),(y)})
-#define TEA_RECT(x, y, w, h) ((te_rect_t){(x),(y),(w),(h)})
-#define TEA_COLOR(r, g, b, a) (((a) << 24) | ((b) << 16) | ((g) << 8) | (r))
+/* Data types */
+#define TEA_BYTE           0x1400
+#define TEA_UNSIGNED_BYTE  0x1401
+#define TEA_SHORT          0x1402
+#define TEA_UNSIGNED_SHORT 0x1403
+#define TEA_INT            0x1404
+#define TEA_UNSIGNED_INT   0x1405
+#define TEA_FLOAT          0x1406
+#define TEA_2_BYTES        0x1407
+#define TEA_3_BYTES        0x1408
+#define TEA_4_BYTES        0x1409
+#define TEA_DOUBLE         0x140A
 
-#define TEA_WHITE TEA_COLOR(255, 255, 255, 255)
-#define TEA_BLACK TEA_COLOR(0, 0, 0, 255)
+/* Primitives */
+#define TEA_POINTS         0x0000
+#define TEA_LINES          0x0001
+#define TEA_LINE_LOOP      0x0002
+#define TEA_LINE_STRIP     0x0003
+#define TEA_TRIANGLES      0x0004
+#define TEA_TRIANGLE_STRIP 0x0005
+#define TEA_TRIANGLE_FAN   0x0006
+#define TEA_QUADS          0x0007
+#define TEA_QUAD_STRIP     0x0008
+#define TEA_POLYGON        0x0009
 
-enum {
-    TEA_MOUSE_LEFT = 0,
-    TEA_MOUSE_MIDDLE,
-    TEA_MOUSE_RIGHT,
+/* Matrix mode */
+#define TEA_MATRIX_MODE 0x0BA0
+#define TEA_MODELVIEW   0x1700
+#define TEA_PROJECTION  0x1701
+#define TEA_TEXTURE     0x1702
 
-    TEA_MOUSE_COUNT
-};
+/* Polygon */
+#define TEA_POINT 0x1B00
+#define TEA_LINE  0x1B01
+#define TEA_FILL  0x1B02
+#define TEA_CW    0x0900
+#define TEA_CCW   0x0901
+#define TEA_FRONT 0x0404
+#define TEA_BACK  0x0405
+#define TEA_EDGE_FLAG      0x0B43
+#define TEA_CULL_FACE      0x0B44
+#define TEA_CULL_FACE_MODE 0x0B45
+#define TEA_FRONT_FACE     0x0B46
 
-enum {
-    TEA_KEY_UNKNOWN = 0,
+/* Depth buffer */
+#define TEA_NEVER         0x0200
+#define TEA_LESS          0x0201
+#define TEA_EQUAL         0x0202
+#define TEA_LEQUAL        0x0203
+#define TEA_GREATER       0x0204
+#define TEA_NOTEQUAL      0x0205
+#define TEA_GEQUAL        0x0206
+#define TEA_ALWAYS        0x0207
+#define TEA_DEPTH_TEST    0x0B71
 
-    /**
-     *  \name Usage page 0x07
-     *
-     *  These values are from usage page 0x07 (USB keyboard page).
-     */
-    /* @{ */
+/* Blending */
+#define TEA_BLEND         0x0BE2
+#define TEA_BLEND_SRC     0x0BE1
+#define TEA_BLEND_DST     0x0BE0
+#define TEA_ZERO          0x0
+#define TEA_ONE           0x1
+#define TEA_SRC_COLOR     0x0300
+#define TEA_ONE_MINUS_SRC_COLOR 0x0301
+#define TEA_SRC_ALPHA     0x0302
+#define TEA_ONE_MINUS_SRC_ALPHA 0x0303
+#define TEA_DST_ALPHA     0x0304
+#define TEA_ONE_MINUS_DST_ALPHA 0x0305
+#define TEA_DST_COLOR     0x0306
+#define TEA_ONE_MINUS_DST_COLOR 0x0307
+#define TEA_SRC_ALPHA_SATURATE 0x0308
 
-    TEA_KEY_A = 4,
-    TEA_KEY_B = 5,
-    TEA_KEY_C = 6,
-    TEA_KEY_D = 7,
-    TEA_KEY_E = 8,
-    TEA_KEY_F = 9,
-    TEA_KEY_G = 10,
-    TEA_KEY_H = 11,
-    TEA_KEY_I = 12,
-    TEA_KEY_J = 13,
-    TEA_KEY_K = 14,
-    TEA_KEY_L = 15,
-    TEA_KEY_M = 16,
-    TEA_KEY_N = 17,
-    TEA_KEY_O = 18,
-    TEA_KEY_P = 19,
-    TEA_KEY_Q = 20,
-    TEA_KEY_R = 21,
-    TEA_KEY_S = 22,
-    TEA_KEY_T = 23,
-    TEA_KEY_U = 24,
-    TEA_KEY_V = 25,
-    TEA_KEY_W = 26,
-    TEA_KEY_X = 27,
-    TEA_KEY_Y = 28,
-    TEA_KEY_Z = 29,
+/* Buffers, Pixels Drawing/Reading */
+#define TEA_NONE          0x0
+#define TEA_LEFT          0x0406
+#define TEA_RIGHT         0x0407
+#define TEA_FRONT_LEFT    0x0400
+#define TEA_FRONT_RIGHT   0x0401
+#define TEA_BACK_LEFT     0x0402
+#define TEA_BACK_RIGHT    0x0403
+#define TEA_RED          0x1903
+#define TEA_GREEN        0x1904
+#define TEA_BLUE         0x1905
+#define TEA_ALPHA        0x1906
+#define TEA_LUMINANCE    0x1909
+#define TEA_LUMINANCE_ALPHA 0x190A
 
-    TEA_KEY_1 = 30,
-    TEA_KEY_2 = 31,
-    TEA_KEY_3 = 32,
-    TEA_KEY_4 = 33,
-    TEA_KEY_5 = 34,
-    TEA_KEY_6 = 35,
-    TEA_KEY_7 = 36,
-    TEA_KEY_8 = 37,
-    TEA_KEY_9 = 38,
-    TEA_KEY_0 = 39,
+#define TEA_READ_BUFFER  0x0C02
+#define TEA_DRAW_BUFFER  0x0C01
+#define TEA_DOUBLEBUFFER 0x0C32
 
-    TEA_KEY_RETURN = 40,
-    TEA_KEY_ESCAPE = 41,
-    TEA_KEY_BACKSPACE = 42,
-    TEA_KEY_TAB = 43,
-    TEA_KEY_SPACE = 44,
+#define TEA_STEREO      0x0C33
+#define TEA_BITMAP      0x1A00
+#define TEA_COLOR       0x1800
+#define TEA_DEPTH       0x1801
+#define TEA_STENCIL     0x1802
+#define TEA_DITHER      0x0BD0
+#define TEA_RGB         0x1907
+#define TEA_RGBA        0x1908
 
-    TEA_KEY_MINUS = 45,
-    TEA_KEY_EQUALS = 46,
-    TEA_KEY_LEFTBRACKET = 47,
-    TEA_KEY_RIGHTBRACKET = 48,
-    TEA_KEY_BACKSLASH = 49, /**< Located at the lower left of the return
-                             *   key on ISO keyboards and at the right end
-                             *   of the QWERTY row on ANSI keyboards.
-                             *   Produces REVERSE SOLIDUS (backslash) and
-                             *   VERTICAL LINE in a US layout, REVERSE
-                             *   SOLIDUS and VERTICAL LINE in a UK Mac
-                             *   layout, NUMBER SIGN and TILDE in a UK
-                             *   Windows layout, DOLLAR SIGN and POUND SIGN
-                             *   in a Swiss German layout, NUMBER SIGN and
-                             *   APOSTROPHE in a German layout, GRAVE
-                             *   ACCENT and POUND SIGN in a French Mac
-                             *   layout, and ASTERISK and MICRO SIGN in a
-                             *   French Windows layout.
-                             */
-    TEA_KEY_NONUSHASH = 50, /**< ISO USB keyboards actually use this code
-                             *   instead of 49 for the same key, but all
-                             *   OSes I've seen treat the two codes
-                             *   identically. So, as an implementor, unless
-                             *   your keyboard generates both of those
-                             *   codes and your OS treats them differently,
-                             *   you should generate TEA_KEY_BACKSLASH
-                             *   instead of this code. As a user, you
-                             *   should not rely on this code because SDL
-                             *   will never generate it with most (all?)
-                             *   keyboards.
-                             */
-    TEA_KEY_SEMICOLON = 51,
-    TEA_KEY_APOSTROPHE = 52,
-    TEA_KEY_GRAVE = 53, /**< Located in the top left corner (on both ANSI
-                         *   and ISO keyboards). Produces GRAVE ACCENT and
-                         *   TILDE in a US Windows layout and in US and UK
-                         *   Mac layouts on ANSI keyboards, GRAVE ACCENT
-                         *   and NOT SIGN in a UK Windows layout, SECTION
-                         *   SIGN and PLUS-MINUS SIGN in US and UK Mac
-                         *   layouts on ISO keyboards, SECTION SIGN and
-                         *   DEGREE SIGN in a Swiss German layout (Mac:
-                         *   only on ISO keyboards), CIRCUMFLEX ACCENT and
-                         *   DEGREE SIGN in a German layout (Mac: only on
-                         *   ISO keyboards), SUPERSCRIPT TWO and TILDE in a
-                         *   French Windows layout, COMMERCIAL AT and
-                         *   NUMBER SIGN in a French Mac layout on ISO
-                         *   keyboards, and LESS-THAN SIGN and GREATER-THAN
-                         *   SIGN in a Swiss German, German, or French Mac
-                         *   layout on ANSI keyboards.
-                         */
-    TEA_KEY_COMMA = 54,
-    TEA_KEY_PERIOD = 55,
-    TEA_KEY_SLASH = 56,
+/* bgra */
+#define TEA_BGR  0x80E0
+#define TEA_BGRA 0x80E1
 
-    TEA_KEY_CAPSLOCK = 57,
+/* Clear buffer bits */
+#define TEA_DEPTH_BUFFER_BIT   0x00000100
+#define TEA_ACCUM_BUFFER_BIT   0x00000200
+#define TEA_STENCIL_BUFFER_BIT 0x00000400
+#define TEA_COLOR_BUFFER_BIT   0x00004000
 
-    TEA_KEY_F1 = 58,
-    TEA_KEY_F2 = 59,
-    TEA_KEY_F3 = 60,
-    TEA_KEY_F4 = 61,
-    TEA_KEY_F5 = 62,
-    TEA_KEY_F6 = 63,
-    TEA_KEY_F7 = 64,
-    TEA_KEY_F8 = 65,
-    TEA_KEY_F9 = 66,
-    TEA_KEY_F10 = 67,
-    TEA_KEY_F11 = 68,
-    TEA_KEY_F12 = 69,
+/* Texture mapping */
+#define TEA_TEXTURE_1D				0x0DE0
+#define TEA_TEXTURE_2D				0x0DE1
+#define TEA_TEXTURE_WRAP_S			0x2802
+#define TEA_TEXTURE_WRAP_T			0x2803
+#define TEA_TEXTURE_MAG_FILTER			0x2800
+#define TEA_TEXTURE_MIN_FILTER			0x2801
+#define TEA_TEXTURE_ENV_COLOR			0x2201
+#define TEA_TEXTURE_GEN_S			0x0C60
+#define TEA_TEXTURE_GEN_T			0x0C61
+#define TEA_TEXTURE_GEN_R			0x0C62
+#define TEA_TEXTURE_GEN_Q			0x0C63
+#define TEA_TEXTURE_GEN_MODE			0x2500
+#define TEA_TEXTURE_BORDER_COLOR			0x1004
+#define TEA_TEXTURE_WIDTH			0x1000
+#define TEA_TEXTURE_HEIGHT			0x1001
+#define TEA_TEXTURE_BORDER			0x1005
+#define TEA_TEXTURE_COMPONENTS			0x1003
+#define TEA_TEXTURE_RED_SIZE			0x805C
+#define TEA_TEXTURE_GREEN_SIZE			0x805D
+#define TEA_TEXTURE_BLUE_SIZE			0x805E
+#define TEA_TEXTURE_ALPHA_SIZE			0x805F
+#define TEA_TEXTURE_LUMINANCE_SIZE		0x8060
+#define TEA_TEXTURE_INTENSITY_SIZE		0x8061
+#define TEA_NEAREST_MIPMAP_NEAREST		0x2700
+#define TEA_NEAREST_MIPMAP_LINEAR		0x2702
+#define TEA_LINEAR_MIPMAP_NEAREST		0x2701
+#define TEA_LINEAR_MIPMAP_LINEAR			0x2703
+#define TEA_OBJECT_LINEAR			0x2401
+#define TEA_OBJECT_PLANE				0x2501
+#define TEA_EYE_LINEAR				0x2400
+#define TEA_EYE_PLANE				0x2502
+#define TEA_SPHERE_MAP				0x2402
+#define TEA_DECAL				0x2101
+#define TEA_MODULATE				0x2100
+#define TEA_NEAREST				0x2600
+#define TEA_REPEAT				0x2901
+#define TEA_CLAMP				0x2900
+#define TEA_S					0x2000
+#define TEA_T					0x2001
+#define TEA_R					0x2002
+#define TEA_Q					0x2003
 
-    TEA_KEY_PRINTSCREEN = 70,
-    TEA_KEY_SCROLLLOCK = 71,
-    TEA_KEY_PAUSE = 72,
-    TEA_KEY_INSERT = 73, /**< insert on PC, help on some Mac keyboards (but
-                           does send code 73, not 117) */
-    TEA_KEY_HOME = 74,
-    TEA_KEY_PAGEUP = 75,
-    TEA_KEY_DELETE = 76,
-    TEA_KEY_END = 77,
-    TEA_KEY_PAGEDOWN = 78,
-    TEA_KEY_RIGHT = 79,
-    TEA_KEY_LEFT = 80,
-    TEA_KEY_DOWN = 81,
-    TEA_KEY_UP = 82,
+#define TEA_CLAMP_TO_EDGE			0x812F /* 1.2 */
+#define TEA_CLAMP_TO_BORDER			0x812D /* 1.3 */
 
-    TEA_KEY_NUMLOCKCLEAR = 83, /**< num lock on PC, clear on Mac keyboards
-    */
-    TEA_KEY_KP_DIVIDE = 84,
-    TEA_KEY_KP_MULTIPLY = 85,
-    TEA_KEY_KP_MINUS = 86,
-    TEA_KEY_KP_PLUS = 87,
-    TEA_KEY_KP_ENTER = 88,
-    TEA_KEY_KP_1 = 89,
-    TEA_KEY_KP_2 = 90,
-    TEA_KEY_KP_3 = 91,
-    TEA_KEY_KP_4 = 92,
-    TEA_KEY_KP_5 = 93,
-    TEA_KEY_KP_6 = 94,
-    TEA_KEY_KP_7 = 95,
-    TEA_KEY_KP_8 = 96,
-    TEA_KEY_KP_9 = 97,
-    TEA_KEY_KP_0 = 98,
-    TEA_KEY_KP_PERIOD = 99,
+/* Texture 3D */
+#define TEA_TEXUTRE_3D     0x806F
+#define TEA_TEXTURE_DEPTH  0x8071
+#define TEA_TEXTURE_WRAP_R 0x8072
 
-    TEA_KEY_NONUSBACKSLASH = 100, /**< This is the additional key that ISO
-                                   *   keyboards have over ANSI ones,
-                                   *   located between left shift and Y.
-                                   *   Produces GRAVE ACCENT and TILDE in a
-                                   *   US or UK Mac layout, REVERSE SOLIDUS
-                                   *   (backslash) and VERTICAL LINE in a
-                                   *   US or UK Windows layout, and
-                                   *   LESS-THAN SIGN and GREATER-THAN SIGN
-                                   *   in a Swiss German, German, or French
-                                   *   layout. */
-    TEA_KEY_APPLICATION = 101, /**< windows contextual menu, compose */
-    TEA_KEY_POWER = 102, /**< The USB document says this is a status flag,
-                          *   not a physical key - but some Mac keyboards
-                          *   do have a power key. */
-    TEA_KEY_KP_EQUALS = 103,
-    TEA_KEY_F13 = 104,
-    TEA_KEY_F14 = 105,
-    TEA_KEY_F15 = 106,
-    TEA_KEY_F16 = 107,
-    TEA_KEY_F17 = 108,
-    TEA_KEY_F18 = 109,
-    TEA_KEY_F19 = 110,
-    TEA_KEY_F20 = 111,
-    TEA_KEY_F21 = 112,
-    TEA_KEY_F22 = 113,
-    TEA_KEY_F23 = 114,
-    TEA_KEY_F24 = 115,
-    TEA_KEY_EXECUTE = 116,
-    TEA_KEY_HELP = 117,
-    TEA_KEY_MENU = 118,
-    TEA_KEY_SELECT = 119,
-    TEA_KEY_STOP = 120,
-    TEA_KEY_AGAIN = 121,   /**< redo */
-    TEA_KEY_UNDO = 122,
-    TEA_KEY_CUT = 123,
-    TEA_KEY_COPY = 124,
-    TEA_KEY_PASTE = 125,
-    TEA_KEY_FIND = 126,
-    TEA_KEY_MUTE = 127,
-    TEA_KEY_VOLUMEUP = 128,
-    TEA_KEY_VOLUMEDOWN = 129,
-    /* not sure whether there's a reason to enable these */
-    /*     TEA_KEY_LOCKINGCAPSLOCK = 130,  */
-    /*     TEA_KEY_LOCKINGNUMLOCK = 131, */
-    /*     TEA_KEY_LOCKINGSCROLLLOCK = 132, */
-    TEA_KEY_KP_COMMA = 133,
-    TEA_KEY_KP_EQUALSAS400 = 134,
+/* Cube map texture */
+#define TEA_TEXTURE_CUBE_MAP            0x8513
+#define TEA_TEXTURE_CUBE_MAP_POSITIVE_X 0x8515
+#define TEA_TEXTURE_CUBE_MAP_NEGATIVE_X 0x8516
+#define TEA_TEXTURE_CUBE_MAP_POSITIVE_Y 0x8517
+#define TEA_TEXTURE_CUBE_MAP_NEGATIVE_Y 0x8518
+#define TEA_TEXTURE_CUBE_MAP_POSITIVE_Z 0x8519
+#define TEA_TEXTURE_CUBE_MAP_NEGATIVE_Z 0x851A
+#define TEA_MAX_CUBE_MAP_TEXTURE_SIZE   0x851C
 
-    TEA_KEY_INTERNATIONAL1 = 135, /**< used on Asian keyboards, see
-                                    footnotes in USB doc */
-    TEA_KEY_INTERNATIONAL2 = 136,
-    TEA_KEY_INTERNATIONAL3 = 137, /**< Yen */
-    TEA_KEY_INTERNATIONAL4 = 138,
-    TEA_KEY_INTERNATIONAL5 = 139,
-    TEA_KEY_INTERNATIONAL6 = 140,
-    TEA_KEY_INTERNATIONAL7 = 141,
-    TEA_KEY_INTERNATIONAL8 = 142,
-    TEA_KEY_INTERNATIONAL9 = 143,
-    TEA_KEY_LANG1 = 144, /**< Hangul/English toggle */
-    TEA_KEY_LANG2 = 145, /**< Hanja conversion */
-    TEA_KEY_LANG3 = 146, /**< Katakana */
-    TEA_KEY_LANG4 = 147, /**< Hiragana */
-    TEA_KEY_LANG5 = 148, /**< Zenkaku/Hankaku */
-    TEA_KEY_LANG6 = 149, /**< reserved */
-    TEA_KEY_LANG7 = 150, /**< reserved */
-    TEA_KEY_LANG8 = 151, /**< reserved */
-    TEA_KEY_LANG9 = 152, /**< reserved */
+/* Texture array */
+#define TEA_TEXTURE_1D_ARRAY 0x8C18
+#define TEA_TEXTURE_2D_ARRAY 0x8C1A
 
-    TEA_KEY_ALTERASE = 153, /**< Erase-Eaze */
-    TEA_KEY_SYSREQ = 154,
-    TEA_KEY_CANCEL = 155,
-    TEA_KEY_CLEAR = 156,
-    TEA_KEY_PRIOR = 157,
-    TEA_KEY_RETURN2 = 158,
-    TEA_KEY_SEPARATOR = 159,
-    TEA_KEY_OUT = 160,
-    TEA_KEY_OPER = 161,
-    TEA_KEY_CLEARAGAIN = 162,
-    TEA_KEY_CRSEL = 163,
-    TEA_KEY_EXSEL = 164,
+/* Multitexture */
+#define TEA_TEXTURE0              0x84C0 /* use "TEA_TEXTURE0 + i" for more */
+#define TEA_ACTIVE_TEXTURE        0x84E0
+#define TEA_MAX_TEXTURE_UNITS     0x84E1
 
-    TEA_KEY_KP_00 = 176,
-    TEA_KEY_KP_000 = 177,
-    TEA_KEY_THOUSANDSSEPARATOR = 178,
-    TEA_KEY_DECIMALSEPARATOR = 179,
-    TEA_KEY_CURRENCYUNIT = 180,
-    TEA_KEY_CURRENCYSUBUNIT = 181,
-    TEA_KEY_KP_LEFTPAREN = 182,
-    TEA_KEY_KP_RIGHTPAREN = 183,
-    TEA_KEY_KP_LEFTBRACE = 184,
-    TEA_KEY_KP_RIGHTBRACE = 185,
-    TEA_KEY_KP_TAB = 186,
-    TEA_KEY_KP_BACKSPACE = 187,
-    TEA_KEY_KP_A = 188,
-    TEA_KEY_KP_B = 189,
-    TEA_KEY_KP_C = 190,
-    TEA_KEY_KP_D = 191,
-    TEA_KEY_KP_E = 192,
-    TEA_KEY_KP_F = 193,
-    TEA_KEY_KP_XOR = 194,
-    TEA_KEY_KP_POWER = 195,
-    TEA_KEY_KP_PERCENT = 196,
-    TEA_KEY_KP_LESS = 197,
-    TEA_KEY_KP_GREATER = 198,
-    TEA_KEY_KP_AMPERSAND = 199,
-    TEA_KEY_KP_DBLAMPERSAND = 200,
-    TEA_KEY_KP_VERTICALBAR = 201,
-    TEA_KEY_KP_DBLVERTICALBAR = 202,
-    TEA_KEY_KP_COLON = 203,
-    TEA_KEY_KP_HASH = 204,
-    TEA_KEY_KP_SPACE = 205,
-    TEA_KEY_KP_AT = 206,
-    TEA_KEY_KP_EXCLAM = 207,
-    TEA_KEY_KP_MEMSTORE = 208,
-    TEA_KEY_KP_MEMRECALL = 209,
-    TEA_KEY_KP_MEMCLEAR = 210,
-    TEA_KEY_KP_MEMADD = 211,
-    TEA_KEY_KP_MEMSUBTRACT = 212,
-    TEA_KEY_KP_MEMMULTIPLY = 213,
-    TEA_KEY_KP_MEMDIVIDE = 214,
-    TEA_KEY_KP_PLUSMINUS = 215,
-    TEA_KEY_KP_CLEAR = 216,
-    TEA_KEY_KP_CLEARENTRY = 217,
-    TEA_KEY_KP_BINARY = 218,
-    TEA_KEY_KP_OCTAL = 219,
-    TEA_KEY_KP_DECIMAL = 220,
-    TEA_KEY_KP_HEXADECIMAL = 221,
+/* Vertex buffer */
+#define TEA_ARRAY_BUFFER                 0x8892
+#define TEA_ARRAY_BUFFER_BINDING         0x8894
+#define TEA_ELEMENT_ARRAY_BUFFER         0x8893
+#define TEA_ELEMENT_ARRAY_BUFFER_BINDING 0x8895
+#define TEA_VERTEX_ARRAY_BUFFER_BINDING  0x8896
+#define TEA_NORMAL_ARRAY_BUFFER_BINDING  0x8897
+#define TEA_COLOR_ARRAY_BUFFER_BINDING   0x8898
+#define TEA_TEXTURE_COORD_ARRAY_BUFFER_BINDING 0x889A
+#define TEA_STATIC_DRAW                  0x88E4
+#define TEA_DYNAMIC_DRAW                 0x88E8
+#define TEA_BUFFER_SIZE                  0x8764
+#define TEA_BUFFER_USAGE                 0x8765
+#define TEA_READ_ONLY                    0x88B8
+#define TEA_WRITE_ONLY                   0x88B9
+#define TEA_READ_WRITE                   0x88BA
 
-    TEA_KEY_LCTRL = 224,
-    TEA_KEY_LSHIFT = 225,
-    TEA_KEY_LALT = 226, /**< alt, option */
-    TEA_KEY_LGUI = 227, /**< windows, command(apple), meta */
-    TEA_KEY_RCTRL = 228,
-    TEA_KEY_RSHIFT = 229,
-    TEA_KEY_RALT = 230, /**< alt gr, option */
-    TEA_KEY_RGUI = 231, /**< windows, command (apple), meta */
+#define TEA_BUFFER_ACCESS               0x88BB
+#define TEA_BUFFER_MAPPED               0x88BC
+#define TEA_BUFFER_MAP_POINTER          0x88BD
+#define TEA_STREAM_DRAW                 0x88E0
+#define TEA_STREAM_READ                 0x88E1
+#define TEA_STREAM_COPY                 0x88E2
+#define TEA_STATIC_DRAW                 0x88E4
+#define TEA_STATIC_READ                 0x88E5
+#define TEA_STATIC_COPY                 0x88E6
+#define TEA_DYNAMIC_DRAW                0x88E8
+#define TEA_DYNAMIC_READ                0x88E9
+#define TEA_DYNAMIC_COPY                0x88EA
 
-    TEA_KEY_MODE = 257,    /**< I'm not sure if this is really not covered
-                            *   by any of the above, but since there's a
-                            *   special KMOD_MODE for it I'm adding it here
-                            */
+/* Shader */
+#define TEA_FRAGMENT_SHADER   0x8B30
+#define TEA_VERTEX_SHADER     0x8B31
 
-    /* @} *//* Usage page 0x07 */
+/* Vertex array */
+#define TEA_VERTEX_ARRAY 0x8074
+#define TEA_NORMAL_ARRAY 0x8075
+#define TEA_COLOR_ARRAY  0x8076
+#define TEA_INDEX_ARRAY  0x8077
+#define TEA_TEXTURE_COORD_ARRAY 0x8078
 
-    /**
-     *  \name Usage page 0x0C
-     *
-     *  These values are mapped from usage page 0x0C (USB consumer page).
-     */
-    /* @{ */
+typedef unsigned char te_bool;
 
-    TEA_KEY_AUDIONEXT = 258,
-    TEA_KEY_AUDIOPREV = 259,
-    TEA_KEY_AUDIOSTOP = 260,
-    TEA_KEY_AUDIOPLAY = 261,
-    TEA_KEY_AUDIOMUTE = 262,
-    TEA_KEY_MEDIASELECT = 263,
-    TEA_KEY_WWW = 264,
-    TEA_KEY_MAIL = 265,
-    TEA_KEY_CALCULATOR = 266,
-    TEA_KEY_COMPUTER = 267,
-    TEA_KEY_AC_SEARCH = 268,
-    TEA_KEY_AC_HOME = 269,
-    TEA_KEY_AC_BACK = 270,
-    TEA_KEY_AC_FORWARD = 271,
-    TEA_KEY_AC_STOP = 272,
-    TEA_KEY_AC_REFRESH = 273,
-    TEA_KEY_AC_BOOKMARKS = 274,
-
-    /* @} *//* Usage page 0x0C */
-
-    /**
-     *  \name Walther keys
-     *
-     *  These are values that Christian Walther added (for mac keyboard?).
-     */
-    /* @{ */
-
-    TEA_KEY_BRIGHTNESSDOWN = 275,
-    TEA_KEY_BRIGHTNESSUP = 276,
-    TEA_KEY_DISPLAYSWITCH = 277, /**< display mirroring/dual display
-                                   switch, video mode switch */
-    TEA_KEY_KBDILLUMTOGGLE = 278,
-    TEA_KEY_KBDILLUMDOWN = 279,
-    TEA_KEY_KBDILLUMUP = 280,
-    TEA_KEY_EJECT = 281,
-    TEA_KEY_SLEEP = 282,
-
-    TEA_KEY_APP1 = 283,
-    TEA_KEY_APP2 = 284,
-
-    /* @} *//* Walther keys */
-
-    /**
-     *  \name Usage page 0x0C (additional media keys)
-     *
-     *  These values are mapped from usage page 0x0C (USB consumer page).
-     */
-    /* @{ */
-
-    TEA_KEY_AUDIOREWIND = 285,
-    TEA_KEY_AUDIOFASTFORWARD = 286,
-
-
-
-    /* @} *//* Usage page 0x0C (additional media keys) */
-
-    /* Add any other keys here. */
-
-    TEA_KEY_COUNT = 512 /**< not a key, just marks the number of scancodes
-                          for array bounds */
-};
-
-enum {
-    TEA_HAT_CENTER = 0x0,
-    TEA_HAT_UP =     0x1,
-    TEA_HAT_RIGHT =  0x2,
-    TEA_HAT_DOWN =   0x4,
-    TEA_HAT_LEFT =   0x8
-};
-
-/* SDL Wrap */
-enum {
-    TEA_JOYSTICK_POWER_UNKNOWN = -1,
-    TEA_JOYSTICK_POWER_EMPTY,   /* <= 5% */
-    TEA_JOYSTICK_POWER_LOW,     /* <= 20% */
-    TEA_JOYSTICK_POWER_MEDIUM,  /* <= 70% */
-    TEA_JOYSTICK_POWER_FULL,    /* <= 100% */
-    TEA_JOYSTICK_POWER_WIRED,
-    TEA_JOYSTICK_POWER_MAX
-};
-
-enum {
-    /* !!! FIXME: change this to name = (1<<x). */
-    TEA_WINDOW_FULLSCREEN = 0x00000001,         /**< fullscreen window */
-    TEA_WINDOW_OPENGL = 0x00000002,             /**< window usable with OpenGL context */
-    TEA_WINDOW_SHOWN = 0x00000004,              /**< window is visible */
-    TEA_WINDOW_HIDDEN = 0x00000008,             /**< window is not visible */
-    TEA_WINDOW_BORDERLESS = 0x00000010,         /**< no window decoration */
-    TEA_WINDOW_RESIZABLE = 0x00000020,          /**< window can be resized */
-    TEA_WINDOW_MINIMIZED = 0x00000040,          /**< window is minimized */
-    TEA_WINDOW_MAXIMIZED = 0x00000080,          /**< window is maximized */
-    TEA_WINDOW_INPUT_GRABBED = 0x00000100,      /**< window has grabbed input focus */
-    TEA_WINDOW_INPUT_FOCUS = 0x00000200,        /**< window has input focus */
-    TEA_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
-    TEA_WINDOW_FULLSCREEN_DESKTOP = ( TEA_WINDOW_FULLSCREEN | 0x00001000 ),
-#if 0
-    TEA_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
-    TEA_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported.
-                                                  On macOS NSHighResolutionCapable must be set true in the
-                                                  application's Info.plist for this to have any effect. */
-    TEA_WINDOW_MOUSE_CAPTURE = 0x00004000,      /**< window has mouse captured (unrelated to INPUT_GRABBED) */
-    TEA_WINDOW_ALWAYS_ON_TOP = 0x00008000,      /**< window should always be above others */
-    TEA_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
-    TEA_WINDOW_UTILITY       = 0x00020000,      /**< window should be treated as a utility window */
-    TEA_WINDOW_TOOLTIP       = 0x00040000,      /**< window should be treated as a tooltip */
-    TEA_WINDOW_POPUP_MENU    = 0x00080000,      /**< window should be treated as a popup menu */
-    TEA_WINDOW_VULKAN        = 0x10000000       /**< window usable for Vulkan surface */
-#endif
-};
-
-enum {
-    TEA_TEXTURE_STATIC = 0,
-    TEA_TEXTURE_STREAM,
-    TEA_TEXTURE_TARGET
-};
-
-enum {
-    TEA_SHADER_NONE = (     0),
-    TEA_SHADER_FRAG = (1 << 0),
-    TEA_SHADER_VERT = (1 << 1)
-};
-
-enum {
-    TEA_UNIFORM_INT = 1,
-    TEA_UNIFORM_VEC2I,
-    TEA_UNIFORM_VEC3I,
-    TEA_UNIFORM_VEC4I,
-    TEA_UNIFORM_FLOAT,
-    TEA_UNIFORM_VEC2,
-    TEA_UNIFORM_VEC3,
-    TEA_UNIFORM_VEC4,
-    TEA_UNIFORM_MATRIX
-};
-
-enum {
-    TEA_PIXELFORMAT_UNKNOWN = 0,
-    TEA_GREY,
-    TEA_GREY_A,
-    TEA_RGB,
-    TEA_RGBA,
-
-    TEA_BGR,
-
-    TEA_ARGB,
-    TEA_BGRA,
-    TEA_ABGR,
-
-    TEA_PIXELFORMAT_COUNT
-};
-
-enum {
-    TEA_WRAP_S = 1,
-    TEA_WRAP_T
-};
-
-enum {
-    TEA_CLAMP = 0,
-    TEA_REPEAT,
-    TEA_MIRROR_REPEAT,
-
-    TEA_WRAP_COUNT
-};
-
-enum {
-    TEA_FILTER_MIN = 1,
-    TEA_FILTER_MAG,
-
-    TEA_FILTER_COUNT
-};
-
-enum {
-    TEA_FILTER_NEAREST = 0,
-    TEA_FILTER_LINEAR,
-    TEA_FILTER_BILINEAR
-};
-
-enum {
-    TEA_LINE = 0,
-    TEA_FILL,
-
-    TEA_DRAWMODE_COUNT
-};
-
-enum {
-    TEA_FLIP_NONE = 0,
-    TEA_FLIP_HORI = 1,
-    TEA_FLIP_VERT = 2
-};
+typedef char te_byte;
+typedef unsigned char te_ubyte;
+typedef short te_short;
+typedef unsigned short te_ushort;
+typedef int te_int;
+typedef unsigned int te_uint;
+typedef float te_float;
+typedef double te_double;
+typedef void te_void;
 
 typedef struct Tea Tea;
-typedef struct te_config_t te_config_t;
+typedef struct {
+    te_uint flags;
+    char glslVersion[32];
+    te_bool glES;
+    te_ubyte glMag, glMin;
+    te_uint vboMode, vboSize;
+    te_uint iboMode, iboSize;
+} te_config_t;
 
-typedef union SDL_Event te_event_t;
+typedef unsigned int te_texture_t;
 
-typedef struct te_texinfo_t te_texinfo_t;
-typedef struct te_texture_t te_texture_t;
-typedef struct te_shader_t te_shader_t;
-typedef struct te_font_t te_font_t;
+typedef struct te_vao_s te_vao_t;
+typedef struct te_vao_format_s te_vao_format_t;
+typedef struct {
+    te_ubyte tag;
+    te_ubyte offset;
+    te_ubyte stride, size;
+    te_uint type;
+} te_vao_attrib_t;
 
-typedef struct _SDL_Joystick te_joystick_t;
-typedef struct te_joyinfo_s te_joyinfo_t;
-typedef struct te_joyGUID_s te_joyGUID_t;
-typedef int te_joyID_t;
-typedef struct _SDL_GameController te_gamepad_t;
-
-typedef unsigned int te_color_t;
-typedef struct { TEA_TNUM x, y; } te_point_t;
-typedef struct { TEA_TNUM x, y, w, h; } te_rect_t;
-typedef struct {te_point_t translate; TEA_TNUM angle; te_point_t scale; te_point_t origin;} te_transform_t;
-
-struct te_texinfo_t {
-    struct { unsigned int w, h; } size;
-    int format, usage;
-    int filter[2];
-    int wrap[2];
+#define TEA_MAX_VERTEX_ATTRIBS 32
+struct te_vao_format_s {
+    te_ubyte count;
+    te_uint stride;
+    te_vao_attrib_t attribs[TEA_MAX_VERTEX_ATTRIBS];
 };
 
-struct te_joyinfo_s {
-    int vendor_id;
-    int product_id;
-    int product_ver;
-};
+typedef struct te_buffer_s te_buffer_t;
+typedef te_buffer_t te_vbo_t;
+typedef te_buffer_t te_ibo_t;
 
-struct te_joyGUID_s {
-    unsigned char data[16];
-};
+typedef unsigned int te_fbo_t;
+typedef unsigned int te_rbo_t;
 
-struct te_config_t {
-    unsigned char title[100];
-    int width, height;
+typedef unsigned int te_shader_t;
+typedef unsigned int te_program_t;
 
-    int flags;
-    int render_flags;
-    int window_flags;
-};
+TEAPI te_config_t teaConfig(const char *glslVersion);
+TEAPI te_int teaInit(te_config_t *config);
+TEAPI void teaQuit(void);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-TEA_API te_config_t tea_config_init(const char *title, int w, int h);
-TEA_API int tea_init(te_config_t *conf);
-TEA_API int tea_deinit();
+/* Immediate mode */
+TEAPI void teaBegin(te_uint mode);
+TEAPI void teaEnd(void);
 
-TEA_API int tea_quit();
+TEAPI void teaDraw(te_uint mode, te_uint count);
 
-TEA_API int tea_begin();
-TEA_API int tea_end();
+TEAPI void teaVertex2f(te_float x, te_float y);
+TEAPI void teaVertex3f(te_float x, te_float y, te_float z);
+TEAPI void teaVertex4f(te_float x, te_float y, te_float z, te_float w);
+TEAPI void teaVertex2fv(te_float *v);
+TEAPI void teaVertex3fv(te_float *v);
+TEAPI void teaVertex4fv(te_float *v);
 
-TEA_API int tea_should_close();
+TEAPI void teaTexCoord2f(te_float x, te_float y);
+TEAPI void teaTexCoord2fv(te_float *v);
 
-TEA_API float tea_delta();
-TEA_API int tea_fps();
+TEAPI void teaColor3f(te_float r, te_float g, te_float b);
+TEAPI void teaColor3ub(te_ubyte r, te_ubyte g, te_ubyte b);
+TEAPI void teaColor4f(te_float r, te_float g, te_float b, te_float a);
+TEAPI void teaColor4ub(te_ubyte r, te_ubyte g, te_ubyte b, te_ubyte a);
+TEAPI void teaColor3fv(te_float *v);
+TEAPI void teaColor3ubv(te_ubyte *v);
+TEAPI void teaColor4fv(te_float *v);
+TEAPI void teaColor4ubv(te_ubyte *v);
 
-/* Render */
-TEA_API int tea_clear(te_color_t col);
-TEA_API int tea_mode(int mode);
-TEA_API te_color_t tea_color(te_color_t col);
+TEAPI void teaNormal3f(te_float x, te_float y, te_float z);
+TEAPI void teaNormal3fv(te_float *v);
 
-TEA_API int tea_point(TEA_TNUM x, TEA_TNUM y);
-TEA_API int tea_line(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1);
-TEA_API int tea_rect(TEA_TNUM x, TEA_TNUM y, TEA_TNUM w, TEA_TNUM h);
-TEA_API int tea_circle(TEA_TNUM x, TEA_TNUM y, TEA_TNUM radius);
-TEA_API int tea_triangle(TEA_TNUM x0, TEA_TNUM y0, TEA_TNUM x1, TEA_TNUM y1, TEA_TNUM x2, TEA_TNUM y2);
+/* Transforming */
+#define teaLoadMatrix teaLoadMatrixf
+#define teaLoadTransposeMatrix teaLoadTransposeMatrixf
+#define teaMultMatrix teaMultMatrixf
+#define teaMultTransposeMatrix teaMultTransposeMatrixf
+#define teaTranslate teaTranslatef
+#define teaScale teaScalef
+#define teaRotate teaRotatef
 
-TEA_API int tea_print(const char *text, TEA_TNUM x, TEA_TNUM y);
+typedef void(*TeaPushMatrixProc)(void);
+typedef void(*TeaPopMatrixProc)(void);
+typedef void(*TeaMatrixModeProc)(te_uint mode);
+typedef void(*TeaLoadIdentityProc)(void);
 
-TEA_API int tea_set_target(te_texture_t *tex);
-TEA_API int tea_set_shader(te_shader_t *shader);
-TEA_API int tea_set_font(te_font_t *font);
-TEA_API int tea_set_transform(te_transform_t *t);
+TEAPI TeaPushMatrixProc teaPushMatrix;
+TEAPI TeaPopMatrixProc teaPopMatrix;
+TEAPI TeaMatrixModeProc teaMatrixMode;
+TEAPI TeaLoadIdentityProc teaLoadIdentity;
 
-TEA_API int tea_set_blendmode(int mode);
+#define TEA_MATRIX_X(X, T)\
+typedef void(*TeaLoadMatrix##X##Proc)(const T*);\
+typedef void(*TeaLoadTransposeMatrix##X##Proc)(const T*);\
+typedef void(*TeaMultMatrix##X##Proc)(const T*);\
+typedef void(*TeaMultTransposeMatrix##X##Proc)(const T*);\
+typedef void(*TeaTranslate##X##Proc)(T x, T y, T z);\
+typedef void(*TeaScale##X##Proc)(T x, T y, T z);\
+typedef void(*TeaRotate##X##Proc)(T angle, T x, T y, T z);\
+typedef void(*TeaOrtho##X##Proc)(T left, T right, T bottom, T top, T zNear, T zFar);\
+typedef void(*TeaFrustum##X##Proc)(T left, T right, T bottom, T top, T zNear, T zFar);\
+TEAPI TeaLoadMatrix##X##Proc teaLoadMatrix##X;\
+TEAPI TeaLoadTransposeMatrix##X##Proc teaLoadTransposeMatrix##X;\
+TEAPI TeaMultMatrix##X##Proc teaMultMatrix##X;\
+TEAPI TeaMultTransposeMatrix##X##Proc teaMultTransposeMatrix##X;\
+TEAPI TeaTranslate##X##Proc teaTranslate##X;\
+TEAPI TeaScale##X##Proc teaScale##X;\
+TEAPI TeaRotate##X##Proc teaRotate##X;\
+TEAPI TeaOrtho##X##Proc teaOrtho##X;\
+TEAPI TeaFrustum##X##Proc teaFrustum##X
 
-TEA_API int tea_clip(te_rect_t *clip);
-TEA_API int tea_translate(TEA_TNUM x, TEA_TNUM y);
-TEA_API int tea_rotate(TEA_TNUM angle);
-TEA_API int tea_scale(TEA_TNUM x, TEA_TNUM y);
-TEA_API int tea_origin(TEA_TNUM x, TEA_TNUM y);
+TEA_MATRIX_X(f, te_float);
+TEA_MATRIX_X(d, te_double);
 
-/* Texture */
-TEA_API int tea_texture_info(te_texture_t *tex, te_texinfo_t *info);
-TEA_API te_texture_t* tea_texture(void *data, int w, int h, int format, int usage);
-TEA_API te_texture_t* tea_texture_load(const char *path, int usage);
-TEA_API te_texture_t* tea_texture_from_memory(void *data, int data_size, int usage);
+#define teaOrtho teaOrthod
+#define teaFrustum teaFrustumd
+TEAPI void teaPerspective(te_double fovy, te_double aspect, te_double zNear, te_double zFar);
+typedef void(*TeaViewportProc)(te_int x, te_int y, te_int width, te_int height);
+TEAPI TeaViewportProc teaViewport;
 
-TEA_API int tea_texture_update(te_texture_t *tex, te_rect_t *rect, void *data);
+/* Clear */
+typedef void(*TeaClearColorProc)(te_float r, te_float g, te_float b, te_float a);
+typedef void(*TeaClearDepthProc)(te_float depth);
+TEAPI TeaClearColorProc teaClearColor;
+TEAPI TeaClearDepthProc teaClearDepth;
+TEAPI void teaClearMask(te_uint mask);
+TEAPI void teaClear(void);
 
-TEA_API int tea_texture_width(te_texture_t *tex);
-TEA_API int tea_texture_height(te_texture_t *tex);
-TEA_API int tea_texture_size(te_texture_t *tex, int *w_out, int *h_out);
+typedef void(*TeaScissorProc)(te_int x, te_int y, te_int width, te_int height);
+TEAPI TeaScissorProc teaScissor;
 
-TEA_API int tea_texture_draw(te_texture_t *tex, te_rect_t *dest, te_rect_t *src);
-TEA_API int tea_texture_draw_ex(te_texture_t *tex, te_rect_t *dest, te_rect_t *src, TEA_TNUM angle, te_point_t *origin, int flip);
+typedef void(*TeaEnableProc)(te_uint cap);
+TEAPI TeaEnableProc teaEnable;
+typedef void(*TeaDisableProc)(te_uint cap);
+TEAPI TeaDisableProc teaDisable;
 
-/* Font */
-TEA_API te_font_t* tea_default_font();
+/* Blend functions */
+typedef void(*TeaBlendFuncProc)(te_uint sfactor, te_uint dfactor);
+typedef void(*TeaBlendFuncSeparateProc)(te_uint sfactorRGB, te_uint dfactorRGB, te_uint sfactorAlpha, te_uint dfactorAlpha);
+typedef void(*TeaBlendEquationProc)(te_uint mode);
+typedef void(*TeaBlendEquationSeparateProc)(te_uint modeRGB, te_uint modeAlpha);
+typedef void(*TeaBlendColorProc)(te_float r, te_float g, te_float b, te_float a);
+TEAPI TeaBlendFuncProc teaBlendFunc;
+TEAPI TeaBlendFuncSeparateProc teaBlendFuncSeparate;
+TEAPI TeaBlendEquationProc teaBlendEquation;
+TEAPI TeaBlendEquationSeparateProc teaBlendEquationSeparate;
+TEAPI TeaBlendColorProc teaBlendColor;
+TEAPI TeaBlendEquationSeparateProc teaBlendEquationSeparate;
 
-TEA_API te_font_t* tea_font(void *data, int size, int font_size);
-TEA_API te_font_t* tea_font_ttf(void *data, int size, int font_size);
-TEA_API te_font_t* tea_font_load(const char *path, int usage);
-TEA_API te_font_t* tea_font_bitmap(te_texture_t *tex, int size, int top, int right);
-TEA_API int tea_font_print(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y);
-TEA_API int tea_font_printf(te_font_t *font, const char *text, TEA_TNUM x, TEA_TNUM y, TEA_TNUM angle, te_point_t *scale);
+/* Depth functions */
+typedef void(*TeaDepthFuncProc)(te_uint func);
+typedef void(*TeaDepthMaskProc)(te_bool mask);
+typedef void(*TeaDepthRangeProc)(te_double n, te_double f);
+TEAPI TeaDepthFuncProc teaDepthFunc;
+TEAPI TeaDepthMaskProc teaDepthMask;
+TEAPI TeaDepthRangeProc teaDepthRange;
 
-/*******************************
- * Event
- *******************************/
+/* Stencil functions */
+typedef void(*TeaStencilFuncProc)(te_uint func, te_uint ref, te_uint mask);
+typedef void(*TeaStencilMaskProc)(te_uint mask);
+typedef void(*TeaStencilOpProc)(te_uint fail, te_uint zfail, te_uint zpass);
+TEAPI TeaStencilFuncProc teaStencilFunc;
+TEAPI TeaStencilMaskProc teaStencilMask;
+TEAPI TeaStencilOpProc teaStencilOp;
 
-typedef union te_callback_s te_callback_t;
+/* Texture functions */
+#define teaTexture teaTexture2D
+TEAPI te_texture_t teaTexture1D(const char* data, te_uint width, te_uint format);
+TEAPI te_texture_t teaTexture2D(const char* data, te_uint width, te_uint height, te_uint format);
+TEAPI void teaFreeTexture(te_texture_t texture);
 
-struct te_keysym_t {
-    int scancode;
-    int keycode;
-    int mod;
-};
+typedef void(*TeaBindTextureProc)(te_uint target, te_texture_t texture);
+TEAPI TeaBindTextureProc teaBindTexture;
 
+TEAPI void teaTexImage1D(te_uint target, te_int level, te_uint width, const void* pixels);
+TEAPI void teaTexImage2D(te_uint target, te_int level, te_uint width, te_uint height, const void *pixels);
+TEAPI void teaTexImage3D(te_uint target, te_int level, te_uint width, te_uint height, te_uint depth, const void *pixels);
+
+TEAPI void teaTexSubImage1D(te_uint target, te_int level, te_int xoffset, te_int width, const void *pixels);
+TEAPI void teaTexSubImage2D(te_uint target, te_int level, te_int xoffset, te_int yoffset, te_int width, te_int height, const void *pixels);
+TEAPI void teaTexSubImage3D(te_uint target, te_int level, te_int xoffset, te_int yoffset, te_int zoffset, te_int width, te_int height, te_int depth, const void *pixels);
+
+TEAPI void teaTexParameteri(te_uint param, te_int value);
+TEAPI void teaTexParameteriv(te_uint param, te_int *value);
+TEAPI void teaTexParameterf(te_uint param, te_float value);
+TEAPI void teaTexParameterfv(te_uint param, te_float *value);
+
+/* Framebuffer functions */
+TEAPI te_fbo_t teaFBO(void);
+TEAPI void teaFreeFBO(te_fbo_t fbo);
+
+typedef void(*TeaBindFBOProc)(te_uint target, te_fbo_t fbo);
+TEAPI TeaBindFBOProc teaBindFBO;
+
+TEAPI void teaFBOTexture(te_fbo_t fbo, te_uint attachment, te_texture_t texture);
+TEAPI void teaFBORenderbuffer(te_fbo_t fbo, te_uint attachment, te_rbo_t rbo);
+
+/* Buffer functions */
+TEAPI te_buffer_t* teaBuffer(te_uint target, te_uint size, te_uint usage);
+TEAPI void teaFreeBuffer(te_buffer_t* buffer);
+
+/* Change memory localy */
+TEAPI void teaSeekBuffer(te_buffer_t* buffer, te_uint offset);
+TEAPI void teaWriteBuffer(te_buffer_t* buffer, const void* data, te_uint size);
+TEAPI void teaReadBuffer(te_buffer_t* buffer, void* data, te_uint size);
+
+TEAPI void teaBindBuffer(te_uint target, te_buffer_t* buffer);
+
+TEAPI void teaResizeBuffer(te_uint target, te_uint size, te_uint usage);
+TEAPI void teaGrowBuffer(te_uint target);
+/* Send data to GPU */
+TEAPI void teaFlushBuffer(te_uint target);
+TEAPI void teaSendBuffer(te_uint target, te_uint size);
+TEAPI void teaSendRangeBuffer(te_uint target, te_uint offset, te_uint size);
+
+/* VAO functions */
 enum {
-    TEA_TEXTINPUT_STOP = 0,
-    TEA_TEXTINPUT_START
+    TEA_ATTRIB_POSITION = 0,
+    TEA_ATTRIB_POSITION_3D,
+    TEA_ATTRIB_COLOR,
+    TEA_ATTRIB_TEXCOORD,
+    TEA_ATTRIB_NORMAL,
 };
 
+TEAPI void teaVAOFormat(te_vao_format_t *format);
+TEAPI void teaVAOFormatAdd(te_vao_format_t *format, te_uint attr);
+
+TEAPI void teaBindVAOFormat(te_vao_format_t *format);
+
+TEAPI te_vao_t* teaVAO(void);
+TEAPI void teaFreeVAO(te_vao_t* vao);
+
+typedef void(*TeaBindVAOProc)(te_vao_t*);
+TEAPI TeaBindVAOProc teaBindVAO;
+
+typedef void(*TeaEnableVertexAttribArrayProc)(te_uint index);
+typedef void(*TeaDisableVertexAttribArrayProc)(te_uint index);
+TEAPI TeaEnableVertexAttribArrayProc teaEnableVertexAttribArray;
+TEAPI TeaDisableVertexAttribArrayProc teaDisableVertexAttribArray;
+
+TEAPI void teaVAOSetVertexAttribPointer(te_uint index, te_uint size, te_uint type, te_uint normalized, te_uint stride, te_uint offset);
+
+/* Shader functions */
+TEAPI te_shader_t teaShader(const char *fragSrc, const char *vertSrc);
+TEAPI void teaFreeShader(te_shader_t shader);
+
+TEAPI void teaUseShader(te_shader_t shader);
+
+typedef te_int(*TeaGetUniformLocationProc)(te_shader_t shader, const char *name);
+TEAPI TeaGetUniformLocationProc teaGetUniformLocation;
+
+#define TEA_UNIFORM_X(X, T)\
+typedef void(*TeaUniform1##X##Proc)(te_int location, T v0);\
+typedef void(*TeaUniform2##X##Proc)(te_int location, T v0, T v1);\
+typedef void(*TeaUniform3##X##Proc)(te_int location, T v0, T v1, T v2);\
+typedef void(*TeaUniform4##X##Proc)(te_int location, T v0, T v1, T v2, T v3);\
+typedef void(*TeaUniform##X##vProc)(te_int location, te_int count, const T *value);\
+TEAPI TeaUniform1##X##Proc teaUniform1##X;\
+TEAPI TeaUniform2##X##Proc teaUniform2##X;\
+TEAPI TeaUniform3##X##Proc teaUniform3##X;\
+TEAPI TeaUniform4##X##Proc teaUniform4##X;\
+TEAPI TeaUniform##X##vProc teaUniform1##X##v;\
+TEAPI TeaUniform##X##vProc teaUniform2##X##v;\
+TEAPI TeaUniform##X##vProc teaUniform3##X##v;\
+TEAPI TeaUniform##X##vProc teaUniform4##X##v
+
+TEA_UNIFORM_X(f, te_float);
+TEA_UNIFORM_X(i, te_int);
+
+typedef void(*TeaUniformMatrixfvProc)(te_int location, te_int count, te_bool transpose, const te_float *value);
+TEAPI TeaUniformMatrixfvProc teaUniformMatrix2fv;
+TEAPI TeaUniformMatrixfvProc teaUniformMatrix3fv;
+TEAPI TeaUniformMatrixfvProc teaUniformMatrix4fv;
+
+/* Debug */
+TEAPI void teaAbort(const char *fmt, ...);
+
+/* Loader */
 enum {
-    TEA_EVENT_NONE = 0,
-    TEA_EVENT_KEYBOARD,
-    TEA_EVENT_WINDOW_MOVED,
-    TEA_EVENT_WINDOW_RESIZED,
-    TEA_EVENT_WINDOW_VISIBLE,
-    TEA_EVENT_WINDOW_FOCUSED,
-    TEA_EVENT_WINDOW_CLOSED,
-
-    TEA_EVENT_MAX
+    TEA_PROC_OVERRIDE = (1 << 0),
+    TEA_PROC_RET_ON_DUP = (1 << 1),
 };
 
-TEA_API int tea_poll_event(te_event_t *out);
+typedef struct te_proc_s te_proc_t;
+typedef struct te_extension_s te_extension_t;
 
-TEA_API int tea_textinput(int state);
+struct te_proc_s {
+    te_ubyte tag;
+    const te_byte* names[3];
+};
 
-/* Keyboard */
+TEAPI te_bool teaLoadProcs(te_proc_t *procs, te_uint flags);
+TEAPI void* teaGetProc(te_uint tag);
 
-typedef int(*teaKeyboardEv)(int window_id, int down, int repeat, struct te_keysym_t sym);
-
-TEA_API int tea_event_key(teaKeyboardEv fn);
-
-/* Controller */
-
-typedef int(*teaControllerEv)(int state, int id);
-
-TEA_API int tea_event_controller(teaControllerEv fn);
-
-/* Window */
-
-typedef int(*teaWindowMoveEv)(int window_id, int x, int y);
-typedef int(*teaWindowResizeEv)(int window_id, int w, int h);
-typedef int(*teaWindowVisibleEv)(int window_id, int visible);
-typedef int(*teaWindowFocusEv)(int window_id, int focused);
-typedef int(*teaWindowMouseEv)(int window_id, int enter);
-typedef int(*teaWindowCloseEv)(int window_id);
-
-TEA_API int tea_event_window_move(teaWindowMoveEv fn);
-TEA_API int tea_event_window_resize(teaWindowResizeEv fn);
-TEA_API int tea_event_window_visible(teaWindowVisibleEv fn);
-TEA_API int tea_event_window_focus(teaWindowFocusEv fn);
-TEA_API int tea_event_window_mouse(teaWindowMouseEv fn);
-TEA_API int tea_event_window_close(teaWindowCloseEv fn);
-
-/* Drop */
-
-typedef int(*teaDropFileEv)(int window_id, const char *filename);
-typedef int(*teaDropTextEv)(int window_id, const char *text);
-typedef int(*teaDropEv)(int window_id, int state);
-
-TEA_API int tea_event_drop(teaDropEv fn);
-TEA_API int tea_event_drop_file(teaDropFileEv fn);
-TEA_API int tea_event_drop_text(teaDropTextEv fn);
-
-/* Text Input */
-
-typedef int(*teaTextInputEv)(int window_id, char[32]);
-typedef int(*teaTextEditEv)(int window_id, char[32], int start, int len);
-
-TEA_API int tea_event_text_input(teaTextInputEv fn);
-TEA_API int tea_event_text_edit(teaTextEditEv fn);
-
-/*******************************
- * Window
- *******************************/
-
-TEA_API int tea_window_flags();
-
-TEA_API int tea_window_title(const char *title, char *out);
-
-TEA_API int tea_window_pos(te_point_t *out, int x, int y);
-TEA_API int tea_window_resizable(int resizable);
-
-TEA_API int tea_window_width(int *out, int width);
-TEA_API int tea_window_height(int *out, int height);
-TEA_API int tea_window_size(te_point_t *out, int width, int height);
-TEA_API int tea_window_minsize(te_point_t *out, int width, int height);
-TEA_API int tea_window_maxsize(te_point_t *out, int width, int height);
-
-TEA_API int tea_window_minimize();
-TEA_API int tea_window_maximize();
-TEA_API int tea_window_restore();
-TEA_API int tea_window_fullscreen(int mode);
-TEA_API int tea_window_bordered(int bordered);
-
-
-/*******************************
- * Input
- *******************************/
-
-TEA_API int tea_update_input();
-TEA_API int tea_key_from_name(const char *name);
-TEA_API const char* tea_key_name(int key);
-
-/* Keyboard */
-TEA_API int tea_key_down(int key);
-TEA_API int tea_key_up(int key);
-TEA_API int tea_key_pressed(int key);
-TEA_API int tea_key_released(int key);
-
-/* Mouse */
-TEA_API int tea_mouse_pos(int *x, int *y);
-TEA_API int tea_mouse_scroll(int *x, int *y);
-
-TEA_API int tea_mouse_down(int btn);
-TEA_API int tea_mouse_up(int btn);
-TEA_API int tea_mouse_pressed(int btn);
-TEA_API int tea_mouse_released(int btn);
-
-/* Joystick */
-TEA_API int tea_joystick_info(te_joystick_t *j, te_joyinfo_t *out);
-TEA_API te_joystick_t* tea_joystick(int index);
-TEA_API int tea_joystick_close(te_joystick_t *j);
-
-TEA_API int tea_joystick_count(void);
-TEA_API int tea_joystick_isopen(te_joystick_t *j);
-
-TEA_API int tea_joystick_powerlevel(te_joystick_t *j);
-TEA_API int tea_joystick_vibration(te_joystick_t *j, int lfreq, int hfreq, int ms);
-
-TEA_API const char* tea_joystick_name(te_joystick_t *j);
-TEA_API int tea_joystick_connected_index(te_joystick_t *j);
-TEA_API te_joyID_t tea_joystick_instance_id(te_joystick_t *j);
-TEA_API te_joyGUID_t tea_joystick_GUID(te_joystick_t *j);
-TEA_API int tea_joystick_is_gamepad(te_joystick_t *j);
-
-TEA_API void* tea_joystick_gamepad(te_joystick_t *j);
-
-TEA_API int tea_joystick_axis_count(te_joystick_t *j);
-TEA_API int tea_joystick_button_count(te_joystick_t *j);
-TEA_API int tea_joystick_hat_count(te_joystick_t *j);
-TEA_API int tea_joystick_ball_count(te_joystick_t *j);
-
-TEA_API int tea_joystick_axis(te_joystick_t *j, int axis);
-TEA_API int tea_joystick_button(te_joystick_t *j, int button);
-TEA_API int tea_joystick_hat(te_joystick_t *j, int hat);
-TEA_API int tea_joystick_ball(te_joystick_t *j, int ball, int *dx, int *dy);
-
-#if 0
-TEA_API int tea_joystick_virtua(int type, int axes, int buttons, int hats);
-TEA_API int tea_joystick_destroy_virtual(int index);
-TEA_API int tea_joystick_is_virtual(int index);
-
-TEA_API int tea_joystick_virtual_axis(te_joystick_t *j, int axis, short value);
-TEA_API int tea_joystick_virtual_button(te_joystick_t *j, int button, int state);
-TEA_API int tea_joystick_virtual_hat(te_joystick_t *j, int hat, int state);
-#endif
-
-/* Game Controller */
-TEA_API te_gamepad_t* tea_gamepad(int index);
-TEA_API te_gamepad_t* tea_gamepad_from_joystick(te_joystick_t *joy);
-TEA_API int tea_gamepad_close(te_gamepad_t *gp);
-
-TEA_API int tea_is_gamepad(int index);
-
-TEA_API int tea_gamepad_button_down(te_gamepad_t *gp, int button);
-TEA_API int tea_gamepad_axis(te_gamepad_t *gp, int axis);
-
-/********************************
- * GL Functions
- ********************************/
-
-TEA_API int tea_gl_begin(int mode);
-TEA_API int tea_vertex2f(float x, float y);
-TEA_API int tea_color4f(float r, float g, float b, float a);
-TEA_API int tea_tex2f(float s, float t);
-TEA_API int tea_gl_end();
-
-TEA_API te_shader_t* tea_shader(const char *vertex, const char *fragment);
-TEA_API te_shader_t* tea_shader_load(const char *path);
-TEA_API te_shader_t* tea_shader_single(const char *string);
-TEA_API te_shader_t* tea_shader_effect(const char *pixel, const char *position);
-TEA_API int tea_shader_destroy(te_shader_t *shader);
-
-TEA_API int tea_shader_send(te_shader_t *shader, int type, const char *name, void *data);
-TEA_API int tea_shader_send_count(te_shader_t *shader, int type, const char
-        *name, void *data, int count);
-
-TEA_API int tea_compile_shader(const char *source, int type);
-/********************************
- * Debug
- ********************************/
-
-TEA_API const char* tea_geterror();
-TEA_API int tea_error(const char *fmt, ...);
-TEA_API int tea_log(int line, const char *func, const char *fmt, ...);
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* TEA_H */
+#endif /* _TEA_H */

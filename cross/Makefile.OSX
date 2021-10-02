@@ -1,2 +1,0 @@
-CFLAGS = -Wall -std=c99 `sdl2-config --cflags` -D__thread=\  -mmacosx-version-min=10.6
-LFLAGS = -lm -lpthread `sdl2-config --libs`
