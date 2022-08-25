@@ -1,6 +1,6 @@
 # Tea
 
-OpenGL loader and simple immediate mode core versions
+OpenGL loader and some simplified functions. 
 
 ### using SDL2
 ```c
