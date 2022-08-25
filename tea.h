@@ -2,15 +2,32 @@
 #define _TEA_H
 
 #define TEAPI extern
-#define TEA_VER "0.1.0"
 
-#define TEA_OK 0
+#ifndef TEA_MALLOC
+    #define TEA_MALLOC malloc
+#endif
+
+#ifndef TEA_REALLOC
+    #define TEA_REALLOC realloc
+#endif
+
+#ifndef TEA_FREE
+    #define TEA_FREE free
+#endif
+
+#define TEA_TRUE  1
+#define TEA_FALSE 0
+
 #define TEA_ERR -1
+#define TEA_OK   0
+
+#define TEA_LOG(...)\
+    tea_log(__LINE__, __PRETTY_FUNCTION__, __FILE__, __VA_ARGS__)
 
 #define TEA_ASSERT(expr, ...)\
     if (!(expr)) {\
-	fprintf(stderr, "Assertion failed at '%s':%d in %s: ", __PRETTY_FUNCTION__, __LINE__, __FILE__);\
-	teaAbort(__VA_ARGS__);\
+        fprintf(stderr, "Assertion failed at '%s':%d in %s: ", __PRETTY_FUNCTION__, __LINE__, __FILE__);\
+        tea_abort(__VA_ARGS__);\
     }
 
 #define TEA_PI 3.14159265
@@ -19,532 +36,253 @@
 #define TEA_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define TEA_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-/* Boolean */
-#define TEA_TRUE 1
-#define TEA_FALSE 0
+#define TEA_RGB(r, g, b) ((te_color_t){(r), (g), (b), 255})
+#define TEA_RGBA(r, g, b, a) ((te_color_t){(r), (g), (b), (a)})
 
-/* Data types */
-#define TEA_BYTE           0x1400
-#define TEA_UNSIGNED_BYTE  0x1401
-#define TEA_SHORT          0x1402
-#define TEA_UNSIGNED_SHORT 0x1403
-#define TEA_INT            0x1404
-#define TEA_UNSIGNED_INT   0x1405
-#define TEA_FLOAT          0x1406
-#define TEA_2_BYTES        0x1407
-#define TEA_3_BYTES        0x1408
-#define TEA_4_BYTES        0x1409
-#define TEA_DOUBLE         0x140A
+#define TEA_BUFFER_POOL_SIZE 32
 
-/* Primitives */
-#define TEA_POINTS         0x0000
-#define TEA_LINES          0x0001
-#define TEA_LINE_LOOP      0x0002
-#define TEA_LINE_STRIP     0x0003
-#define TEA_TRIANGLES      0x0004
-#define TEA_TRIANGLE_STRIP 0x0005
-#define TEA_TRIANGLE_FAN   0x0006
-#define TEA_QUADS          0x0007
-#define TEA_QUAD_STRIP     0x0008
-#define TEA_POLYGON        0x0009
+enum {
+    TEA_TEXTURE_STATIC = 0,
+    TEA_TEXTURE_STREAM,
+    TEA_TEXTURE_TARGET
+};
 
-/* Matrix mode */
-#define TEA_MATRIX_MODE 0x0BA0
-#define TEA_MODELVIEW   0x1700
-#define TEA_PROJECTION  0x1701
-#define TEA_TEXTURE     0x1702
+enum {
+    TEA_ALPHA = 0,
+    TEA_RED,
+    TEA_RG,
+    TEA_RGB,
+    TEA_RGBA
+};
 
-/* Polygon */
-#define TEA_POINT 0x1B00
-#define TEA_LINE  0x1B01
-#define TEA_FILL  0x1B02
-#define TEA_CW    0x0900
-#define TEA_CCW   0x0901
-#define TEA_FRONT 0x0404
-#define TEA_BACK  0x0405
-#define TEA_EDGE_FLAG      0x0B43
-#define TEA_CULL_FACE      0x0B44
-#define TEA_CULL_FACE_MODE 0x0B45
-#define TEA_FRONT_FACE     0x0B46
+enum {
+    TEA_PERSPECTIVE = 0,
+    TEA_MODELVIEW
+};
 
-/* Depth buffer */
-#define TEA_NEVER         0x0200
-#define TEA_LESS          0x0201
-#define TEA_EQUAL         0x0202
-#define TEA_LEQUAL        0x0203
-#define TEA_GREATER       0x0204
-#define TEA_NOTEQUAL      0x0205
-#define TEA_GEQUAL        0x0206
-#define TEA_ALWAYS        0x0207
-#define TEA_DEPTH_TEST    0x0B71
+enum {
+    TEA_LINE = 0,
+    TEA_FILL,
+    TEA_FILL_QUAD,
+};
 
-/* Blending */
-#define TEA_BLEND         0x0BE2
-#define TEA_BLEND_SRC     0x0BE1
-#define TEA_BLEND_DST     0x0BE0
-#define TEA_ZERO          0x0
-#define TEA_ONE           0x1
-#define TEA_SRC_COLOR     0x0300
-#define TEA_ONE_MINUS_SRC_COLOR 0x0301
-#define TEA_SRC_ALPHA     0x0302
-#define TEA_ONE_MINUS_SRC_ALPHA 0x0303
-#define TEA_DST_ALPHA     0x0304
-#define TEA_ONE_MINUS_DST_ALPHA 0x0305
-#define TEA_DST_COLOR     0x0306
-#define TEA_ONE_MINUS_DST_COLOR 0x0307
-#define TEA_SRC_ALPHA_SATURATE 0x0308
-
-/* Buffers, Pixels Drawing/Reading */
-#define TEA_NONE          0x0
-#define TEA_LEFT          0x0406
-#define TEA_RIGHT         0x0407
-#define TEA_FRONT_LEFT    0x0400
-#define TEA_FRONT_RIGHT   0x0401
-#define TEA_BACK_LEFT     0x0402
-#define TEA_BACK_RIGHT    0x0403
-#define TEA_RED          0x1903
-#define TEA_GREEN        0x1904
-#define TEA_BLUE         0x1905
-#define TEA_ALPHA        0x1906
-#define TEA_LUMINANCE    0x1909
-#define TEA_LUMINANCE_ALPHA 0x190A
-
-#define TEA_READ_BUFFER  0x0C02
-#define TEA_DRAW_BUFFER  0x0C01
-#define TEA_DOUBLEBUFFER 0x0C32
-
-#define TEA_STEREO      0x0C33
-#define TEA_BITMAP      0x1A00
-#define TEA_COLOR       0x1800
-#define TEA_DEPTH       0x1801
-#define TEA_STENCIL     0x1802
-#define TEA_DITHER      0x0BD0
-#define TEA_RGB         0x1907
-#define TEA_RGBA        0x1908
-
-/* bgra */
-#define TEA_BGR  0x80E0
-#define TEA_BGRA 0x80E1
-
-/* Clear buffer bits */
-#define TEA_DEPTH_BUFFER_BIT   0x00000100
-#define TEA_ACCUM_BUFFER_BIT   0x00000200
-#define TEA_STENCIL_BUFFER_BIT 0x00000400
-#define TEA_COLOR_BUFFER_BIT   0x00004000
-
-/* Texture mapping */
-#define TEA_TEXTURE_1D				0x0DE0
-#define TEA_TEXTURE_2D				0x0DE1
-#define TEA_TEXTURE_WRAP_S			0x2802
-#define TEA_TEXTURE_WRAP_T			0x2803
-#define TEA_TEXTURE_MAG_FILTER			0x2800
-#define TEA_TEXTURE_MIN_FILTER			0x2801
-#define TEA_TEXTURE_ENV_COLOR			0x2201
-#define TEA_TEXTURE_GEN_S			0x0C60
-#define TEA_TEXTURE_GEN_T			0x0C61
-#define TEA_TEXTURE_GEN_R			0x0C62
-#define TEA_TEXTURE_GEN_Q			0x0C63
-#define TEA_TEXTURE_GEN_MODE			0x2500
-#define TEA_TEXTURE_BORDER_COLOR			0x1004
-#define TEA_TEXTURE_WIDTH			0x1000
-#define TEA_TEXTURE_HEIGHT			0x1001
-#define TEA_TEXTURE_BORDER			0x1005
-#define TEA_TEXTURE_COMPONENTS			0x1003
-#define TEA_TEXTURE_RED_SIZE			0x805C
-#define TEA_TEXTURE_GREEN_SIZE			0x805D
-#define TEA_TEXTURE_BLUE_SIZE			0x805E
-#define TEA_TEXTURE_ALPHA_SIZE			0x805F
-#define TEA_TEXTURE_LUMINANCE_SIZE		0x8060
-#define TEA_TEXTURE_INTENSITY_SIZE		0x8061
-#define TEA_NEAREST_MIPMAP_NEAREST		0x2700
-#define TEA_NEAREST_MIPMAP_LINEAR		0x2702
-#define TEA_LINEAR_MIPMAP_NEAREST		0x2701
-#define TEA_LINEAR_MIPMAP_LINEAR			0x2703
-#define TEA_OBJECT_LINEAR			0x2401
-#define TEA_OBJECT_PLANE				0x2501
-#define TEA_EYE_LINEAR				0x2400
-#define TEA_EYE_PLANE				0x2502
-#define TEA_SPHERE_MAP				0x2402
-#define TEA_DECAL				0x2101
-#define TEA_MODULATE				0x2100
-#define TEA_NEAREST				0x2600
-#define TEA_REPEAT				0x2901
-#define TEA_CLAMP				0x2900
-#define TEA_S					0x2000
-#define TEA_T					0x2001
-#define TEA_R					0x2002
-#define TEA_Q					0x2003
-
-#define TEA_CLAMP_TO_EDGE			0x812F /* 1.2 */
-#define TEA_CLAMP_TO_BORDER			0x812D /* 1.3 */
-
-/* Texture 3D */
-#define TEA_TEXUTRE_3D     0x806F
-#define TEA_TEXTURE_DEPTH  0x8071
-#define TEA_TEXTURE_WRAP_R 0x8072
-
-/* Cube map texture */
-#define TEA_TEXTURE_CUBE_MAP            0x8513
-#define TEA_TEXTURE_CUBE_MAP_POSITIVE_X 0x8515
-#define TEA_TEXTURE_CUBE_MAP_NEGATIVE_X 0x8516
-#define TEA_TEXTURE_CUBE_MAP_POSITIVE_Y 0x8517
-#define TEA_TEXTURE_CUBE_MAP_NEGATIVE_Y 0x8518
-#define TEA_TEXTURE_CUBE_MAP_POSITIVE_Z 0x8519
-#define TEA_TEXTURE_CUBE_MAP_NEGATIVE_Z 0x851A
-#define TEA_MAX_CUBE_MAP_TEXTURE_SIZE   0x851C
-
-/* Texture array */
-#define TEA_TEXTURE_1D_ARRAY 0x8C18
-#define TEA_TEXTURE_2D_ARRAY 0x8C1A
-
-/* Multitexture */
-#define TEA_TEXTURE0              0x84C0 /* use "TEA_TEXTURE0 + i" for more */
-#define TEA_ACTIVE_TEXTURE        0x84E0
-#define TEA_MAX_TEXTURE_UNITS     0x84E1
-
-/* Vertex buffer */
-#define TEA_ARRAY_BUFFER                 0x8892
-#define TEA_ARRAY_BUFFER_BINDING         0x8894
-#define TEA_ELEMENT_ARRAY_BUFFER         0x8893
-#define TEA_ELEMENT_ARRAY_BUFFER_BINDING 0x8895
-#define TEA_VERTEX_ARRAY_BUFFER_BINDING  0x8896
-#define TEA_NORMAL_ARRAY_BUFFER_BINDING  0x8897
-#define TEA_COLOR_ARRAY_BUFFER_BINDING   0x8898
-#define TEA_TEXTURE_COORD_ARRAY_BUFFER_BINDING 0x889A
-#define TEA_STATIC_DRAW                  0x88E4
-#define TEA_DYNAMIC_DRAW                 0x88E8
-#define TEA_BUFFER_SIZE                  0x8764
-#define TEA_BUFFER_USAGE                 0x8765
-#define TEA_READ_ONLY                    0x88B8
-#define TEA_WRITE_ONLY                   0x88B9
-#define TEA_READ_WRITE                   0x88BA
-
-#define TEA_BUFFER_ACCESS               0x88BB
-#define TEA_BUFFER_MAPPED               0x88BC
-#define TEA_BUFFER_MAP_POINTER          0x88BD
-#define TEA_STREAM_DRAW                 0x88E0
-#define TEA_STREAM_READ                 0x88E1
-#define TEA_STREAM_COPY                 0x88E2
-#define TEA_STATIC_DRAW                 0x88E4
-#define TEA_STATIC_READ                 0x88E5
-#define TEA_STATIC_COPY                 0x88E6
-#define TEA_DYNAMIC_DRAW                0x88E8
-#define TEA_DYNAMIC_READ                0x88E9
-#define TEA_DYNAMIC_COPY                0x88EA
-
-/* Shader */
-#define TEA_FRAGMENT_SHADER   0x8B30
-#define TEA_VERTEX_SHADER     0x8B31
-
-/* Vertex array */
-#define TEA_VERTEX_ARRAY 0x8074
-#define TEA_NORMAL_ARRAY 0x8075
-#define TEA_COLOR_ARRAY  0x8076
-#define TEA_INDEX_ARRAY  0x8077
-#define TEA_TEXTURE_COORD_ARRAY 0x8078
+enum {
+    TEA_VERTEX_BUFFER = 0,
+    TEA_INDEX_BUFFER
+};
 
 typedef unsigned char te_bool;
-
-typedef char te_byte;
-typedef unsigned char te_ubyte;
-typedef short te_short;
-typedef unsigned short te_ushort;
-typedef int te_int;
-typedef unsigned int te_uint;
-typedef float te_float;
-typedef double te_double;
-typedef void te_void;
+typedef char i8;
+typedef unsigned char u8;
+typedef short i16;
+typedef unsigned short u16;
+typedef int i32;
+typedef unsigned int u32;
+typedef long int i64;
+typedef unsigned long int u64;
+typedef float f32;
+typedef double f64;
 
 typedef struct Tea Tea;
 typedef struct {
-    te_uint flags;
-    char glslVersion[32];
-    te_bool glES;
-    te_ubyte glMag, glMin;
-    te_uint vboMode, vboSize;
-    te_uint iboMode, iboSize;
+    struct {
+        u16 glsl_ver;
+        u8 min, mag;
+        u8 is_es;
+    } gl;
 } te_config_t;
 
-typedef unsigned int te_texture_t;
+typedef f32 vec2[2];
+typedef f32 vec3[3];
+typedef f32 vec4[4];
+typedef f32 mat4[16];
 
-typedef struct te_vao_s te_vao_t;
-typedef struct te_vao_format_s te_vao_format_t;
-typedef struct {
-    te_ubyte tag;
-    te_ubyte offset;
-    te_ubyte stride, size;
-    te_uint type;
-} te_vao_attrib_t;
+typedef u32 te_buffer_t;
+typedef u32 te_texture_t;
+typedef u32 te_program_t;
+typedef u32 te_framebuffer_t;
 
-#define TEA_MAX_VERTEX_ATTRIBS 32
-struct te_vao_format_s {
-    te_ubyte count;
-    te_uint stride;
-    te_vao_attrib_t attribs[TEA_MAX_VERTEX_ATTRIBS];
-};
+typedef struct { f32 x, y, w, h; } te_rect_t;
 
-typedef struct te_buffer_s te_buffer_t;
-typedef te_buffer_t te_vbo_t;
-typedef te_buffer_t te_ibo_t;
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-typedef unsigned int te_fbo_t;
-typedef unsigned int te_rbo_t;
+TEAPI int tea_init(te_config_t *config);
+TEAPI void tea_quit(void);
 
-typedef unsigned int te_shader_t;
-typedef unsigned int te_program_t;
+TEAPI void tea_begin(void);
+TEAPI void tea_end(void);
 
-TEAPI te_config_t teaConfig(const char *glslVersion);
-TEAPI te_int teaInit(te_config_t *config);
-TEAPI void teaQuit(void);
+TEAPI void tea_clear(f32 r, f32 g, f32 b, f32 a);
 
-/* Immediate mode */
-TEAPI void teaBegin(te_uint mode);
-TEAPI void teaEnd(void);
+TEAPI void tea_viewport(f32 x, f32 y, f32 width, f32 height);
+TEAPI void tea_scissor(f32 x, f32 y, f32 width, f32 height);
 
-TEAPI void teaDraw(te_uint mode, te_uint count);
+TEAPI void tea_draw(i32 mode);
+TEAPI void tea_draw_interval(i32 mode, i32 start, i32 count);
 
-TEAPI void teaVertex2f(te_float x, te_float y);
-TEAPI void teaVertex3f(te_float x, te_float y, te_float z);
-TEAPI void teaVertex4f(te_float x, te_float y, te_float z, te_float w);
-TEAPI void teaVertex2fv(te_float *v);
-TEAPI void teaVertex3fv(te_float *v);
-TEAPI void teaVertex4fv(te_float *v);
+TEAPI void tea_setup_buffer(te_buffer_t buffer);
 
-TEAPI void teaTexCoord2f(te_float x, te_float y);
-TEAPI void teaTexCoord2fv(te_float *v);
+/*=================================*
+ *             Buffer              *
+ *=================================*/
 
-TEAPI void teaColor3f(te_float r, te_float g, te_float b);
-TEAPI void teaColor3ub(te_ubyte r, te_ubyte g, te_ubyte b);
-TEAPI void teaColor4f(te_float r, te_float g, te_float b, te_float a);
-TEAPI void teaColor4ub(te_ubyte r, te_ubyte g, te_ubyte b, te_ubyte a);
-TEAPI void teaColor3fv(te_float *v);
-TEAPI void teaColor3ubv(te_ubyte *v);
-TEAPI void teaColor4fv(te_float *v);
-TEAPI void teaColor4ubv(te_ubyte *v);
+TEAPI te_buffer_t tea_buffer(i32 target, u32 size);
+TEAPI void tea_buffer_free(te_buffer_t buffer);
 
-TEAPI void teaNormal3f(te_float x, te_float y, te_float z);
-TEAPI void teaNormal3fv(te_float *v);
+TEAPI void tea_bind_buffer(te_buffer_t buffer);
+TEAPI void tea_unbind_buffer(te_buffer_t buffer);
 
-/* Transforming */
-#define teaLoadMatrix teaLoadMatrixf
-#define teaLoadTransposeMatrix teaLoadTransposeMatrixf
-#define teaMultMatrix teaMultMatrixf
-#define teaMultTransposeMatrix teaMultTransposeMatrixf
-#define teaTranslate teaTranslatef
-#define teaScale teaScalef
-#define teaRotate teaRotatef
+TEAPI void tea_buffer_flush(te_buffer_t buffer);
+TEAPI void tea_buffer_grow(te_buffer_t buffer);
 
-typedef void(*TeaPushMatrixProc)(void);
-typedef void(*TeaPopMatrixProc)(void);
-typedef void(*TeaMatrixModeProc)(te_uint mode);
-typedef void(*TeaLoadIdentityProc)(void);
+TEAPI void tea_buffer_seek(te_buffer_t buffer, u32 offset);
+TEAPI u32 tea_buffer_tell(te_buffer_t buffer);
 
-TEAPI TeaPushMatrixProc teaPushMatrix;
-TEAPI TeaPopMatrixProc teaPopMatrix;
-TEAPI TeaMatrixModeProc teaMatrixMode;
-TEAPI TeaLoadIdentityProc teaLoadIdentity;
+TEAPI void tea_buffer_send_vertices(te_buffer_t buffer, u32 n, f32 *vertices);
 
-#define TEA_MATRIX_X(X, T)\
-typedef void(*TeaLoadMatrix##X##Proc)(const T*);\
-typedef void(*TeaLoadTransposeMatrix##X##Proc)(const T*);\
-typedef void(*TeaMultMatrix##X##Proc)(const T*);\
-typedef void(*TeaMultTransposeMatrix##X##Proc)(const T*);\
-typedef void(*TeaTranslate##X##Proc)(T x, T y, T z);\
-typedef void(*TeaScale##X##Proc)(T x, T y, T z);\
-typedef void(*TeaRotate##X##Proc)(T angle, T x, T y, T z);\
-typedef void(*TeaOrtho##X##Proc)(T left, T right, T bottom, T top, T zNear, T zFar);\
-typedef void(*TeaFrustum##X##Proc)(T left, T right, T bottom, T top, T zNear, T zFar);\
-TEAPI TeaLoadMatrix##X##Proc teaLoadMatrix##X;\
-TEAPI TeaLoadTransposeMatrix##X##Proc teaLoadTransposeMatrix##X;\
-TEAPI TeaMultMatrix##X##Proc teaMultMatrix##X;\
-TEAPI TeaMultTransposeMatrix##X##Proc teaMultTransposeMatrix##X;\
-TEAPI TeaTranslate##X##Proc teaTranslate##X;\
-TEAPI TeaScale##X##Proc teaScale##X;\
-TEAPI TeaRotate##X##Proc teaRotate##X;\
-TEAPI TeaOrtho##X##Proc teaOrtho##X;\
-TEAPI TeaFrustum##X##Proc teaFrustum##X
+TEAPI void tea_buffer_vertex2f(te_buffer_t buffer, f32 x, f32 y);
+TEAPI void tea_buffer_color3f(te_buffer_t buffer, f32 r, f32 g, f32 b);
+TEAPI void tea_buffer_color4f(te_buffer_t buffer, f32 r, f32 g, f32 b, f32 a);
+TEAPI void tea_buffer_texcoord(te_buffer_t buffer, f32 u, f32 v);
 
-TEA_MATRIX_X(f, te_float);
-TEA_MATRIX_X(d, te_double);
+TEAPI void tea_buffer_point(te_buffer_t buffer, f32 x, f32 y);
+TEAPI void tea_buffer_line(te_buffer_t buffer, vec2 p0, vec2 p1);
+TEAPI void tea_buffer_line_rectangle(te_buffer_t buffer, vec2 pos, vec2 size);
+TEAPI void tea_buffer_fill_rectangle(te_buffer_t buffer, vec2 pos, vec2 size);
+TEAPI void tea_buffer_line_circle(te_buffer_t buffer, vec2 pos, f32 radius, u32 segments);
+TEAPI void tea_buffer_fill_circle(te_buffer_t buffer, vec2 pos, f32 radius, u32 segments);
+TEAPI void tea_buffer_line_triangle(te_buffer_t buffer, vec2 p0, vec2 p1, vec2 p2);
+TEAPI void tea_buffer_fill_triangle(te_buffer_t buffer, vec2 p0, vec2 p1, vec2 p2);
+TEAPI void tea_buffer_line_quad(te_buffer_t buffer, vec2 p0, vec2 p1, vec2 p2, vec2 p3);
+TEAPI void tea_buffer_fill_quad(te_buffer_t buffer, vec2 p0, vec2 p1, vec2 p2, vec2 p3);
+TEAPI void tea_buffer_line_polygon(te_buffer_t b, i32 n, vec2 *points);
+// TEAPI void tea_buffer_fill_polygon(te_buffer_t *buffer, i32 n, vec2 *points);
 
-#define teaOrtho teaOrthod
-#define teaFrustum teaFrustumd
-TEAPI void teaPerspective(te_double fovy, te_double aspect, te_double zNear, te_double zFar);
-typedef void(*TeaViewportProc)(te_int x, te_int y, te_int width, te_int height);
-TEAPI TeaViewportProc teaViewport;
+#if 0
+/*=================================*
+ *             Batch               *
+ *=================================*/
 
-/* Clear */
-typedef void(*TeaClearColorProc)(te_float r, te_float g, te_float b, te_float a);
-typedef void(*TeaClearDepthProc)(te_float depth);
-TEAPI TeaClearColorProc teaClearColor;
-TEAPI TeaClearDepthProc teaClearDepth;
-TEAPI void teaClearMask(te_uint mask);
-TEAPI void teaClear(void);
+TEAPI te_batch_t tea_batch(u32 size);
+TEAPI void tea_batch_free(te_batch_t batch);
 
-typedef void(*TeaScissorProc)(te_int x, te_int y, te_int width, te_int height);
-TEAPI TeaScissorProc teaScissor;
+TEAPI void tea_batch_flush(te_batch_t batch);
+TEAPI void tea_batch_draw(te_batch_t batch, i32 mode);
+TEAPI void tea_batch_draw_interval(te_batch_t batch, i32 mode, i32 start, i32 count);
+TEAPI void tea_batch_grow(te_batch_t batch);
 
-typedef void(*TeaEnableProc)(te_uint cap);
-TEAPI TeaEnableProc teaEnable;
-typedef void(*TeaDisableProc)(te_uint cap);
-TEAPI TeaDisableProc teaDisable;
+TEAPI void tea_batch_seek(te_batch_t batch, u32 offset);
+TEAPI u32 tea_batch_tell(te_batch_t batch);
+TEAPI void tea_batch_send_vertices(te_batch_t batch, u32 n, f32 *vertices);
 
-/* Blend functions */
-typedef void(*TeaBlendFuncProc)(te_uint sfactor, te_uint dfactor);
-typedef void(*TeaBlendFuncSeparateProc)(te_uint sfactorRGB, te_uint dfactorRGB, te_uint sfactorAlpha, te_uint dfactorAlpha);
-typedef void(*TeaBlendEquationProc)(te_uint mode);
-typedef void(*TeaBlendEquationSeparateProc)(te_uint modeRGB, te_uint modeAlpha);
-typedef void(*TeaBlendColorProc)(te_float r, te_float g, te_float b, te_float a);
-TEAPI TeaBlendFuncProc teaBlendFunc;
-TEAPI TeaBlendFuncSeparateProc teaBlendFuncSeparate;
-TEAPI TeaBlendEquationProc teaBlendEquation;
-TEAPI TeaBlendEquationSeparateProc teaBlendEquationSeparate;
-TEAPI TeaBlendColorProc teaBlendColor;
-TEAPI TeaBlendEquationSeparateProc teaBlendEquationSeparate;
+TEAPI void tea_batch_vertex2f(te_batch_t batch, f32 x, f32 y);
+TEAPI void tea_batch_color3f(te_batch_t batch, f32 r, f32 g, f32 b);
+TEAPI void tea_batch_color4f(te_batch_t batch, f32 r, f32 g, f32 b, f32 a);
+TEAPI void tea_batch_texcoord(te_batch_t batch, f32 u, f32 v);
 
-/* Depth functions */
-typedef void(*TeaDepthFuncProc)(te_uint func);
-typedef void(*TeaDepthMaskProc)(te_bool mask);
-typedef void(*TeaDepthRangeProc)(te_double n, te_double f);
-TEAPI TeaDepthFuncProc teaDepthFunc;
-TEAPI TeaDepthMaskProc teaDepthMask;
-TEAPI TeaDepthRangeProc teaDepthRange;
+TEAPI void tea_batch_point(te_batch_t batch, f32 x, f32 y);
+TEAPI void tea_batch_line(te_batch_t batch, vec2 p0, vec2 p1);
+TEAPI void tea_batch_line_rectangle(te_batch_t batch, vec2 pos, vec2 size);
+TEAPI void tea_batch_fill_rectangle(te_batch_t batch, vec2 pos, vec2 size);
+TEAPI void tea_batch_line_circle(te_batch_t batch, vec2 pos, f32 radius, u32 segments);
+TEAPI void tea_batch_fill_circle(te_batch_t batch, vec2 pos, f32 radius, u32 segments);
+TEAPI void tea_batch_line_triangle(te_batch_t batch, vec2 p0, vec2 p1, vec2 p2);
+TEAPI void tea_batch_fill_triangle(te_batch_t batch, vec2 p0, vec2 p1, vec2 p2);
+TEAPI void tea_batch_line_quad(te_batch_t batch, vec2 p0, vec2 p1, vec2 p2, vec2 p3);
+TEAPI void tea_batch_fill_quad(te_batch_t batch, vec2 p0, vec2 p1, vec2 p2, vec2 p3);
+TEAPI void tea_batch_line_polygon(te_batch_t b, i32 n, vec2 *points);
+// TEAPI void tea_batch_fill_polygon(te_batch_t *batch, i32 n, vec2 *points);
+#endif
+/*=================================*
+ *             Texture             *
+ *=================================*/
 
-/* Stencil functions */
-typedef void(*TeaStencilFuncProc)(te_uint func, te_uint ref, te_uint mask);
-typedef void(*TeaStencilMaskProc)(te_uint mask);
-typedef void(*TeaStencilOpProc)(te_uint fail, te_uint zfail, te_uint zpass);
-TEAPI TeaStencilFuncProc teaStencilFunc;
-TEAPI TeaStencilMaskProc teaStencilMask;
-TEAPI TeaStencilOpProc teaStencilOp;
+TEAPI te_texture_t tea_texture(u8 format, i32 width, i32 height, const void *data, u8 type);
+TEAPI void tea_texture_free(te_texture_t tex);
 
-/* Texture functions */
-#define teaTexture teaTexture2D
-TEAPI te_texture_t teaTexture1D(const char* data, te_uint width, te_uint format);
-TEAPI te_texture_t teaTexture2D(const char* data, te_uint width, te_uint height, te_uint format);
-TEAPI void teaFreeTexture(te_texture_t texture);
+TEAPI void tea_bind_texture(te_texture_t tex);
 
-typedef void(*TeaBindTextureProc)(te_uint target, te_texture_t texture);
-TEAPI TeaBindTextureProc teaBindTexture;
+TEAPI void tea_texture_get_size(te_texture_t tex, vec2 out);
 
-TEAPI void teaTexImage1D(te_uint target, te_int level, te_uint width, const void* pixels);
-TEAPI void teaTexImage2D(te_uint target, te_int level, te_uint width, te_uint height, const void *pixels);
-TEAPI void teaTexImage3D(te_uint target, te_int level, te_uint width, te_uint height, te_uint depth, const void *pixels);
+TEAPI void tea_texture_set_filter(te_texture_t tex, i8 filter_min, i8 filter_mag);
+TEAPI void tea_texture_set_wrap(te_texture_t tex, i8 wrap_s, i8 wrap_t);
+TEAPI void tea_texture_get_filter(te_texture_t tex, vec2 out);
+TEAPI void tea_texture_get_wrap(te_texture_t tex, vec2 out);
 
-TEAPI void teaTexSubImage1D(te_uint target, te_int level, te_int xoffset, te_int width, const void *pixels);
-TEAPI void teaTexSubImage2D(te_uint target, te_int level, te_int xoffset, te_int yoffset, te_int width, te_int height, const void *pixels);
-TEAPI void teaTexSubImage3D(te_uint target, te_int level, te_int xoffset, te_int yoffset, te_int zoffset, te_int width, te_int height, te_int depth, const void *pixels);
+/*=================================*
+ *           Framebuffer           *
+ *=================================*/
 
-TEAPI void teaTexParameteri(te_uint param, te_int value);
-TEAPI void teaTexParameteriv(te_uint param, te_int *value);
-TEAPI void teaTexParameterf(te_uint param, te_float value);
-TEAPI void teaTexParameterfv(te_uint param, te_float *value);
+TEAPI te_framebuffer_t tea_framebuffer(te_texture_t tex);
+TEAPI void tea_framebuffer_free(te_framebuffer_t fbo);
 
-/* Framebuffer functions */
-TEAPI te_fbo_t teaFBO(void);
-TEAPI void teaFreeFBO(te_fbo_t fbo);
+TEAPI void tea_bind_framebuffer(te_framebuffer_t fbo);
 
-typedef void(*TeaBindFBOProc)(te_uint target, te_fbo_t fbo);
-TEAPI TeaBindFBOProc teaBindFBO;
+/*=================================*
+ *             Matrix              *
+ *=================================*/
 
-TEAPI void teaFBOTexture(te_fbo_t fbo, te_uint attachment, te_texture_t texture);
-TEAPI void teaFBORenderbuffer(te_fbo_t fbo, te_uint attachment, te_rbo_t rbo);
+TEAPI void tea_matrix_mode(u8 mode);
+TEAPI const f32* tea_get_matrix(u8 mode);
+TEAPI void tea_load_identity(void);
+TEAPI void tea_push_matrix(void);
+TEAPI void tea_push_matrix(void);
+TEAPI void tea_pop_matrix(void);
 
-/* Buffer functions */
-TEAPI te_buffer_t* teaBuffer(te_uint target, te_uint size, te_uint usage);
-TEAPI void teaFreeBuffer(te_buffer_t* buffer);
+TEAPI void tea_load_matrix(const mat4 matrix);
+TEAPI void tea_load_transpose_matrix(mat4 matrix);
+TEAPI void tea_mult_matrix(mat4 matrix);
+TEAPI void tea_mult_transpose_matrix(mat4 matrix);
+TEAPI void tea_ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
+TEAPI void tea_frustum(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
+TEAPI void tea_perspective(f32 fovy, f32 aspect, f32 near, f32 far);
 
-/* Change memory localy */
-TEAPI void teaSeekBuffer(te_buffer_t* buffer, te_uint offset);
-TEAPI void teaWriteBuffer(te_buffer_t* buffer, const void* data, te_uint size);
-TEAPI void teaReadBuffer(te_buffer_t* buffer, void* data, te_uint size);
+TEAPI void tea_translatef(f32 x, f32 y, f32 z);
+TEAPI void tea_scalef(f32 x, f32 y, f32 z);
+TEAPI void tea_rotatef(f32 angle, f32 x, f32 y, f32 z);
+TEAPI void tea_rotatef_z(f32 angle);
 
-TEAPI void teaBindBuffer(te_uint target, te_buffer_t* buffer);
+/*=================================*
+ *             Program             *
+ *=================================*/
 
-TEAPI void teaResizeBuffer(te_uint target, te_uint size, te_uint usage);
-TEAPI void teaGrowBuffer(te_uint target);
-/* Send data to GPU */
-TEAPI void teaFlushBuffer(te_uint target);
-TEAPI void teaSendBuffer(te_uint target, te_uint size);
-TEAPI void teaSendRangeBuffer(te_uint target, te_uint offset, te_uint size);
+TEAPI te_program_t tea_program(const i8 *vert, const i8 *frag);
+TEAPI te_program_t tea_simple_program(const i8 *position, const i8 *pixel);
+TEAPI te_program_t tea_program_from_gl(i32 count, u32 *programs);
+TEAPI void tea_program_free(te_program_t program);
 
-/* VAO functions */
-enum {
-    TEA_ATTRIB_POSITION = 0,
-    TEA_ATTRIB_POSITION_3D,
-    TEA_ATTRIB_COLOR,
-    TEA_ATTRIB_TEXCOORD,
-    TEA_ATTRIB_NORMAL,
-};
+TEAPI void tea_use_program(te_program_t program);
 
-TEAPI void teaVAOFormat(te_vao_format_t *format);
-TEAPI void teaVAOFormatAdd(te_vao_format_t *format, te_uint attr);
-
-TEAPI void teaBindVAOFormat(te_vao_format_t *format);
-
-TEAPI te_vao_t* teaVAO(void);
-TEAPI void teaFreeVAO(te_vao_t* vao);
-
-typedef void(*TeaBindVAOProc)(te_vao_t*);
-TEAPI TeaBindVAOProc teaBindVAO;
-
-typedef void(*TeaEnableVertexAttribArrayProc)(te_uint index);
-typedef void(*TeaDisableVertexAttribArrayProc)(te_uint index);
-TEAPI TeaEnableVertexAttribArrayProc teaEnableVertexAttribArray;
-TEAPI TeaDisableVertexAttribArrayProc teaDisableVertexAttribArray;
-
-TEAPI void teaVAOSetVertexAttribPointer(te_uint index, te_uint size, te_uint type, te_uint normalized, te_uint stride, te_uint offset);
-
-/* Shader functions */
-TEAPI te_shader_t teaShader(const char *fragSrc, const char *vertSrc);
-TEAPI void teaFreeShader(te_shader_t shader);
-
-TEAPI void teaUseShader(te_shader_t shader);
-
-typedef te_int(*TeaGetUniformLocationProc)(te_shader_t shader, const char *name);
-TEAPI TeaGetUniformLocationProc teaGetUniformLocation;
+TEAPI i32 tea_program_uniform_location(te_program_t program, const i8 *name);
 
 #define TEA_UNIFORM_X(X, T)\
-typedef void(*TeaUniform1##X##Proc)(te_int location, T v0);\
-typedef void(*TeaUniform2##X##Proc)(te_int location, T v0, T v1);\
-typedef void(*TeaUniform3##X##Proc)(te_int location, T v0, T v1, T v2);\
-typedef void(*TeaUniform4##X##Proc)(te_int location, T v0, T v1, T v2, T v3);\
-typedef void(*TeaUniform##X##vProc)(te_int location, te_int count, const T *value);\
-TEAPI TeaUniform1##X##Proc teaUniform1##X;\
-TEAPI TeaUniform2##X##Proc teaUniform2##X;\
-TEAPI TeaUniform3##X##Proc teaUniform3##X;\
-TEAPI TeaUniform4##X##Proc teaUniform4##X;\
-TEAPI TeaUniform##X##vProc teaUniform1##X##v;\
-TEAPI TeaUniform##X##vProc teaUniform2##X##v;\
-TEAPI TeaUniform##X##vProc teaUniform3##X##v;\
-TEAPI TeaUniform##X##vProc teaUniform4##X##v
+TEAPI void tea_program_set_uniform1##X(i32 location, T value);\
+TEAPI void tea_program_set_uniform2##X(i32 location, T v0, T v1);\
+TEAPI void tea_program_set_uniform3##X(i32 location, T v0, T v1, T v2);\
+TEAPI void tea_program_set_uniform4##X(i32 location, T v0, T v1, T v2, T v3);\
+TEAPI void tea_program_set_uniform1##X##v(i32 location, i32 val, const T *v);\
+TEAPI void tea_program_set_uniform2##X##v(i32 location, i32 val, const T *v);\
+TEAPI void tea_program_set_uniform3##X##v(i32 location, i32 val, const T *v);\
+TEAPI void tea_program_set_uniform4##X##v(i32 location, i32 val, const T *v)
 
-TEA_UNIFORM_X(f, te_float);
-TEA_UNIFORM_X(i, te_int);
+TEA_UNIFORM_X(f, f32);
+TEA_UNIFORM_X(i, i32);
 
-typedef void(*TeaUniformMatrixfvProc)(te_int location, te_int count, te_bool transpose, const te_float *value);
-TEAPI TeaUniformMatrixfvProc teaUniformMatrix2fv;
-TEAPI TeaUniformMatrixfvProc teaUniformMatrix3fv;
-TEAPI TeaUniformMatrixfvProc teaUniformMatrix4fv;
+TEAPI void tea_program_set_uniform_matrix2fv(i32 location, i32 count, te_bool transpose, const mat4 m);
+TEAPI void tea_program_set_uniform_matrix3fv(i32 location, i32 count, te_bool transpose, const mat4 m);
+TEAPI void tea_program_set_uniform_matrix4fv(i32 location, i32 count, te_bool transpose, const mat4 m);
 
-/* Debug */
-TEAPI void teaAbort(const char *fmt, ...);
+/*=================================*
+ *              Debug              *
+ *=================================*/
 
-/* Loader */
-enum {
-    TEA_PROC_OVERRIDE = (1 << 0),
-    TEA_PROC_RET_ON_DUP = (1 << 1),
-};
+TEAPI void tea_log(i32 line, const i8* func, const i8* file, const i8 *fmt, ...);
+TEAPI void tea_abort(const i8 *fmt, ...);
 
-typedef struct te_proc_s te_proc_t;
-typedef struct te_extension_s te_extension_t;
-
-struct te_proc_s {
-    te_ubyte tag;
-    const te_byte* names[3];
-};
-
-TEAPI te_bool teaLoadProcs(te_proc_t *procs, te_uint flags);
-TEAPI void* teaGetProc(te_uint tag);
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _TEA_H */
