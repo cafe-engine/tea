@@ -71,6 +71,16 @@ enum {
     TEA_INDEX_BUFFER
 };
 
+enum {
+	TEA_ATTRIB_BOOL = 0,
+	TEA_ATTRIB_FLOAT,
+	TEA_ATTRIB_FLOAT2,
+	TEA_ATTRIB_FLOAT3,
+	TEA_ATTRIB_FLOAT4,
+
+	TEA_ATTRIB_MAX
+};
+
 typedef unsigned char te_bool;
 typedef char i8;
 typedef unsigned char u8;
@@ -102,6 +112,8 @@ typedef u32 te_texture_t;
 typedef u32 te_program_t;
 typedef u32 te_framebuffer_t;
 
+typedef struct te_vertex_format_t te_vertex_format_t;
+
 typedef struct { f32 x, y, w, h; } te_rect_t;
 
 #if defined(__cplusplus)
@@ -122,7 +134,16 @@ TEAPI void tea_scissor(f32 x, f32 y, f32 width, f32 height);
 TEAPI void tea_draw(i32 mode);
 TEAPI void tea_draw_interval(i32 mode, i32 start, i32 count);
 
-TEAPI void tea_setup_buffer(te_buffer_t buffer);
+TEAPI void tea_setup_buffer(te_vertex_format_t* format, te_buffer_t buffer);
+
+/*=================================*
+ *          Vertex Format          *
+ *=================================*/
+
+TEAPI te_vertex_format_t* tea_vertex_format(void);
+TEAPI void tea_free_vertex_format(te_vertex_format_t* format);
+
+TEAPI void tea_vertex_format_add(te_vertex_format_t* format, int attrib);
 
 /*=================================*
  *             Buffer              *

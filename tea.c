@@ -527,12 +527,26 @@ typedef struct {
     u8 used;
 } buffer_t;
 
+struct attrib_t {
+	i8 size;
+	i8 type;
+	i8 location;
+	u8 stride;
+};
+
+struct te_vertex_format_t {
+	u16 stride;
+	i8 top;
+	struct attrib_t attribs[16];
+};
+
 struct te_state_s {
     te_program_t program;
     te_texture_t texture;
     te_framebuffer_t fbo;
     te_rect_t clip, scissor;
     te_buffer_t vbo, ibo;
+	te_vertex_format_t *format;
     u32 vao;
     // f32 *projection, *modelview;
     f32* matrix;
@@ -643,27 +657,6 @@ static te_bool s_load_gl(void);
 static void s_setup_gl(void);
 static void s_close_gl(void);
 
-#if 0
-static int batch_init(batch_t *batch, u32 size);
-static int batch_deinit(batch_t *batch);
-static int batch_destroy(batch_t *batch);
-
-static int batch_add_vertices(batch_t *batch, u32 n, f32 *vertices);
-static int batch_add_indices(batch_t *batch, u32 n, u32 *indices);
-static int batch_add_batch(batch_t *b, batch_t *other);
-static batch_t *get_free_batch(u32 *index);
-
-static buffer_t *create_buffer(u32 target, u32 size);
-static void destroy_buffer(buffer_t *buffer);
-static void flush_buffer(buffer_t *buffer);
-static void resize_buffer(buffer_t *b, u32 size);
-static void draw_buffer(buffer_t *buffer, u8 mode, u32 start, u32 count);
-static void buffer_add_data(buffer_t *b, u32 size, const void *data);
-static void buffer_add_vertices(buffer_t *b, u32 n, const f32 *vertices);
-static void buffer_add_indices(buffer_t *b, u32 n, const u32 *indices);
-static void buffer_add_batch(buffer_t *b, batch_t *batch);
-#endif
-
 static int buffer_init(buffer_t *buffer, i32 target, u32 size);
 static int buffer_deinit(buffer_t *buffer);
 static int buffer_destroy(buffer_t *buffer);
@@ -685,20 +678,11 @@ int tea_init(te_config_t *config) {
         TEA_ASSERT(0, "failed to initialize OpenGL");
 
     CALL_GL(GenVertexArrays)(1, &STATE()->vao);
-    // TEA()->vertex_buffer = create_buffer(TEA_GL_ARRAY_BUFFER, DEFAULT_BUFFER_SIZE * 9 * sizeof(f32));
-    // TEA()->index_buffer = create_buffer(TEA_GL_ELEMENT_ARRAY_BUFFER, DEFAULT_BUFFER_SIZE * sizeof(u32));
-    // setup_commands();
-    // batch_init(&TEA()->buffers.vertex.batch, DEFAULT_BATCH_SIZE * 9 * sizeof(f32));
-    // batch_init(&TEA()->buffers.index.batch, DEFAULT_BATCH_SIZE * 6 * sizeof(u32));
-    // command_t *command = COMMAND(0);
 
     return 1;
 }
 
 void tea_quit(void) {
-    // destroy_buffer(TEA()->vertex_buffer);
-    // destroy_buffer(TEA()->index_buffer);
-    // batch_destroy(&default_batch);
     for (i32 i = 0; i < TEA()->buffer.top; i++) {
         buffer_t *b = BUFFER(i);
         buffer_destroy(b);
@@ -708,9 +692,6 @@ void tea_quit(void) {
 void tea_clear(f32 r, f32 g, f32 b, f32 a) {
     CALL_GL(ClearColor)(r, g, b, a);
     CALL_GL(Clear)(TEA_GL_COLOR_BUFFER_BIT);
-    // command_t *c = &TEA()->command.pool[TEA()->command.top++];
-    // c->type = CLEAR_COMMAND;
-    // memcpy(&c->color, &color, sizeof(te_color_t));
 }
 
 void tea_draw(i32 mode) {
@@ -729,11 +710,43 @@ void tea_draw_interval(i32 mode, i32 start, i32 count) {
     CALL_GL(BindVertexArray)(0);
 }
 
-void tea_setup_buffer(te_buffer_t b) {
+static int gl_type[] = {
+	[TEA_ATTRIB_BOOL] = TEA_GL_BYTE,
+	[TEA_ATTRIB_FLOAT] = TEA_GL_FLOAT,
+	[TEA_ATTRIB_FLOAT2] = TEA_GL_FLOAT,
+	[TEA_ATTRIB_FLOAT3] = TEA_GL_FLOAT,
+	[TEA_ATTRIB_FLOAT4] = TEA_GL_FLOAT
+};
+
+static void s_enable_format(te_vertex_format_t* format) {
+	u64 offset = 0;
+	for (i32 i = 0; i < format->top; i++) {
+		struct attrib_t *attr = &format->attribs[i];
+		CALL_GL(EnableVertexAttribArray)(attr->location);
+		CALL_GL(VertexAttribPointer)(attr->location, attr->size, gl_type[attr->type], TEA_FALSE, format->stride, (void*)offset);
+		offset += attr->stride;
+	}
+}
+
+static void s_disable_format(te_vertex_format_t* format) {
+	if (!format) return;
+	for (i32 i = 0; i < format->top; i++) {
+		struct attrib_t *attr = &format->attribs[i];
+		CALL_GL(DisableVertexAttribArray)(attr->location);
+	}
+}
+
+void tea_setup_buffer(te_vertex_format_t* format, te_buffer_t b) {
+	TEA_ASSERT(format != NULL, "Invalid vertex format");
     TEA_ASSERT(b > 0 && b <= TEA_BUFFER_POOL_SIZE, "Invalid buffer");
     CALL_GL(BindVertexArray)(STATE()->vao);
     tea_bind_buffer(b);
     STATE()->vbo = b;
+
+	s_disable_format(STATE()->format);
+	STATE()->format = format;
+	s_enable_format(STATE()->format);
+#if 0
     CALL_GL(EnableVertexAttribArray)(0);
     CALL_GL(EnableVertexAttribArray)(1);
     CALL_GL(EnableVertexAttribArray)(2);
@@ -741,8 +754,46 @@ void tea_setup_buffer(te_buffer_t b) {
     CALL_GL(VertexAttribPointer)(0, 2, TEA_GL_FLOAT, TEA_FALSE, sizeof(vertex_t), (void*)0);
     CALL_GL(VertexAttribPointer)(1, 4, TEA_GL_FLOAT, TEA_FALSE, sizeof(vertex_t), (void*)(2 * sizeof(f32)));
     CALL_GL(VertexAttribPointer)(2, 2, TEA_GL_FLOAT, TEA_FALSE, sizeof(vertex_t), (void*)(6 * sizeof(f32)));
+#endif
     CALL_GL(BindVertexArray)(0);
     tea_unbind_buffer(b);
+}
+
+/*=================================*
+ *          Vertex Format          *
+ *=================================*/
+
+te_vertex_format_t* tea_vertex_format(void) {
+	te_vertex_format_t *format;
+	format = (te_vertex_format_t*)TEA_MALLOC(sizeof(*format));
+	memset(format, 0, sizeof(*format));
+	return format;
+}
+
+void tea_free_vertex_format(te_vertex_format_t* format) {
+	if (!format) return;
+	TEA_FREE(format);
+}
+
+static int attrib_stride[] = {
+	[TEA_ATTRIB_BOOL] = 1,
+	[TEA_ATTRIB_FLOAT] = 4,
+	[TEA_ATTRIB_FLOAT2] = 8,
+	[TEA_ATTRIB_FLOAT3] = 12,
+	[TEA_ATTRIB_FLOAT4] = 16
+};
+
+void tea_vertex_format_add(te_vertex_format_t* format, int attrib) {
+	TEA_ASSERT(format != NULL, "Invalid vertex format");
+	TEA_ASSERT(attrib >= TEA_ATTRIB_BOOL && attrib < TEA_ATTRIB_MAX, "Invalid attrib");
+	struct attrib_t *attr = &format->attribs[format->top];
+	attr->size = attrib > 0 ? attrib : 1; 
+	attr->type = attrib;
+	attr->location = format->top;
+	attr->stride = attrib_stride[attrib];
+	
+	format->stride += attr->stride;
+	format->top++;
 }
 
 
@@ -864,13 +915,13 @@ u32 tea_buffer_tell(te_buffer_t b) {
 void tea_buffer_send_vertices(te_buffer_t b, u32 n, f32 *verts) {
     TEA_ASSERT(b > 0 && b <= TEA_BUFFER_POOL_SIZE, "Invalid buffer");
     buffer_t *buf = BUFFER(b-1);
-    i32 size = n * sizeof(vertex_t);
+    i32 size = n * STATE()->format->stride;
     while (buf->index + size > buf->size) tea_buffer_grow(b);
-    vertex_t *cdata = (vertex_t*)(((u8*)buf->data) + buf->index);
+	u8* cdata = ((u8*)buf->data) + buf->index;
     memcpy(cdata, verts, size);
     buf->index += size;
-    vertex_t *data = (vertex_t*)(((u8*)buf->data) + buf->index);
-    memcpy(data, cdata, sizeof(vertex_t));
+	u8* data = ((u8*)buf->data) + buf->index;
+    memcpy(data, cdata, STATE()->format->stride);
 }
 
 void tea_buffer_vertex2f(te_buffer_t b, f32 x, f32 y) {
@@ -1263,7 +1314,7 @@ te_texture_t tea_texture(u8 format, i32 width, i32 height, const void *data, u8 
 }
 
 void tea_texture_free(te_texture_t tex) {
-    CALL_GL(DeleteTextures)(TEA_GL_TEXTURE_2D, &tex);
+    CALL_GL(DeleteTextures)(1, &tex);
 }
 
 void tea_bind_texture(te_texture_t tex) {
@@ -1320,7 +1371,22 @@ int s_program_init_from_gl(te_program_t *prog, u32 n, u32 *shaders) {
     return 1;
 }
 
-static int s_program_init(te_program_t *prog, const i8 *vert, const i8 *frag) {
+te_program_t tea_program(const i8 *vert, const i8 *frag) {
+	te_program_t prog;
+	u32 shaders[2];
+	shaders[0] = compile_gl_shader(TEA_GL_VERTEX_SHADER, vert);
+	shaders[1] = compile_gl_shader(TEA_GL_FRAGMENT_SHADER, frag);
+	s_program_init_from_gl(&prog, 2, shaders);
+    CALL_GL(DeleteShader)(shaders[0]);
+    CALL_GL(DeleteShader)(shaders[1]);
+	return prog;
+}
+
+te_program_t tea_simple_program(const i8 *vert, const i8 *frag) {
+    // shader_t *shader = &TEA()->shader.pool[TEA()->shader.top++];
+    // u32 index = TEA()->shader.top;
+    // shader_init(shader, vert, frag);
+    te_program_t prog;
     vert = vert ? vert : s_default_vert_function;
     frag = frag ? frag : s_default_frag_function;
     const i8* vert_shader_strs[] = { s_130_vert_header, vert, s_vert_main };
@@ -1345,19 +1411,9 @@ static int s_program_init(te_program_t *prog, const i8 *vert, const i8 *frag) {
     u32 shaders[2];
     shaders[0] = compile_gl_shader(TEA_GL_VERTEX_SHADER, vert_source);
     shaders[1] = compile_gl_shader(TEA_GL_FRAGMENT_SHADER, frag_source);
-    s_program_init_from_gl(prog, 2, shaders);
+    s_program_init_from_gl(&prog, 2, shaders);
     CALL_GL(DeleteShader)(shaders[0]);
     CALL_GL(DeleteShader)(shaders[1]);
-
-    return 1;
-}
-
-te_program_t tea_program(const i8 *vert, const i8 *frag) {
-    // shader_t *shader = &TEA()->shader.pool[TEA()->shader.top++];
-    // u32 index = TEA()->shader.top;
-    // shader_init(shader, vert, frag);
-    te_program_t prog;
-    s_program_init(&prog, vert, frag);
     return prog;
 }
 

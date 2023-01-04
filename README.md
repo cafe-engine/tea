@@ -1,6 +1,6 @@
 # Tea
 
-OpenGL loader and some simplified functions. 
+OpenGL loader and simple immediate mode core versions
 
 ### using SDL2
 ```c
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     tea_init(NULL);
 
     te_buffer_t buffer = tea_buffer(TEA_VERTEX_BUFFER, 1000);
-    te_program_t prog = tea_program(NULL, NULL);
+    te_program_t prog = tea_simple_program(NULL, NULL);
     i32 world, modelview;
     world = tea_program_uniform_location(prog, "u_World");
     modelview = tea_program_uniform_location(prog, "u_ModelView");
@@ -44,7 +44,12 @@ int main(int argc, char **argv) {
     tea_matrix_mode(TEA_MODELVIEW);
     tea_load_identity();
 
-    tea_setup_buffer(buffer);
+    te_vertex_format_t *format = tea_vertex_format();
+	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
+	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT4);
+	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
+
+    tea_setup_buffer(format, buffer);
     tea_bind_texture(tex);
 
     while(event.type != SDL_QUIT) {
@@ -65,6 +70,9 @@ int main(int argc, char **argv) {
     }
 
     tea_quit();
+    SDL_GL_DeleteContext(context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
 ```
@@ -111,9 +119,13 @@ int main(int argc, char **argv) {
     tea_matrix_mode(TEA_MODELVIEW);
     tea_load_identity();
 
-    tea_setup_buffer(buffer);
-    tea_bind_texture(tex);
+    te_vertex_format_t *format = tea_vertex_format();
+	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
+	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT4);
+	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
 
+    tea_setup_buffer(format, buffer);
+    tea_bind_texture(tex);
 
     while (!glfwWindowShouldClose(window)) {
         tea_viewport(0, 0, 640, 380);
