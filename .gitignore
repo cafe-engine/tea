@@ -1,4 +1,2 @@
-*.a
-*.o
-tea
-.vscode
+target/
+Cargo.lock

@@ -1,0 +1,18 @@
+[lib]
+name = "tea"
+path = "src/lib.rs"
+
+[package]
+name = "tea_render"
+description = "A lib for easier use of OpenGL functions"
+categories = ["rendering", "opengl", "graphics"]
+keywords = ["opengl", "cafe", "rendering", "framework", "engine"]
+authors = ["Canoi Gomes <canoiaguiar@gmail.com>"]
+repository = "https://codeberg.org/cafe/tea"
+version = "0.1.1"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gl = "0.14.0"

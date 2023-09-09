@@ -1,151 +1,104 @@
 # Tea
 
-OpenGL loader and simple immediate mode core versions
+Tea is a lib wrapper for some OpenGL functions with some abstractions.
 
-### using SDL2
-```c
-#include "tea.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-#include <stdio.h>
+### using with SDL2
 
-int main(int argc, char **argv) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        return 1;
-    }
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+``` rust
+extern crate sdl2;
+extern crate tea;
 
-    SDL_Window *window = SDL_CreateWindow("Tea", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 380, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
-        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
-        return 1;
-    }
-    SDL_GLContext context = SDL_GL_CreateContext(window);
-    SDL_GL_MakeCurrent(window, context);
-    SDL_Event event;
-    tea_init(NULL);
+use sdl2::event::Event;
+use sdl2::keyboard::Scancode;
+use tea::buffer::{ArrayBuffer, GlBuffer};
+use tea::glsl::{Program, Shader};
+use tea::vec::{Vec2, Vec4};
+use tea::vertex::VertexArray;
+use tea::{ClearFlags, GlBind, GlUse, glsl::ShaderType};
 
-    te_buffer_t buffer = tea_buffer(TEA_VERTEX_BUFFER, 1000);
-    te_program_t prog = tea_simple_program(NULL, NULL);
-    i32 world, modelview;
-    world = tea_program_uniform_location(prog, "u_World");
-    modelview = tea_program_uniform_location(prog, "u_ModelView");
+fn main() {
+    let sdl = sdl2::init().unwrap();
+    let video = sdl.video().unwrap();
 
-    u8 pixels[] = {
-        255, 255, 255, 255
-    };
-    te_texture_t tex = tea_texture(TEA_RGBA, 1, 1, pixels, 0);
+    let window = video.window("Hello Window", 640, 480)
+        .position_centered()
+        .opengl()
+        .build()
+        .unwrap();
 
-    tea_matrix_mode(TEA_PERSPECTIVE);
-    tea_load_identity();
-    tea_ortho(0, 640, 380, 0, 0, 1);p
-    tea_matrix_mode(TEA_MODELVIEW);
-    tea_load_identity();
+    let _ctx = window.gl_create_context().unwrap();
+    tea::load_with(|name| video.gl_get_proc_address(name) as *const _);
 
-    te_vertex_format_t *format = tea_vertex_format();
-	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
-	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT4);
-	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
+    let mut event = sdl.event_pump().unwrap();
 
-    tea_setup_buffer(format, buffer);
-    tea_bind_texture(tex);
-
-    while(event.type != SDL_QUIT) {
-        SDL_PollEvent(&event);
-        tea_viewport(0, 0, 640, 380);
-        tea_clear(0.3f, 0.4f, 0.4f, 1.f);
-        tea_buffer_seek(buffer, 0);
-        tea_buffer_color4f(buffer, 1, 1, 1, 1);
-
-        tea_use_program(prog);
-        tea_program_set_uniform_matrix4fv(world, 1, TEA_FALSE, tea_get_matrix(TEA_PERSPECTIVE));
-        tea_program_set_uniform_matrix4fv(modelview, 1, TEA_FALSE, tea_get_matrix(TEA_MODELVIEW));
-
-        tea_buffer_fill_rectangle(buffer, (vec2){32, 32}, (vec2){32, 128});
-        tea_buffer_flush(buffer);
-        tea_draw(TEA_FILL);
-        SDL_GL_SwapWindow(window);
-    }
-
-    tea_quit();
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    return 0;
+    let vert = Shader::new(ShaderType::VertexShader).unwrap();
+    vert.source(vec!["
+#version 140
+in vec2 a_Position;
+in vec4 a_Color;
+out vec4 v_Color;
+void main() {
+    gl_Position = vec4(a_Position, 0.0, 1.0);
+    v_Color = a_Color;
 }
-```
+".to_string()]);
+    vert.compile().expect("Failed to compile vertex shader");
 
-### using GLFW
-```c
-#include <stdio.h>
-#include "tea.h"
-#include <GLFW/glfw3.h>
+    let frag = Shader::new(ShaderType::FragmentShader).unwrap();
+    frag.source(vec!["
+#version 140
+in vec4 v_Color;
+void main() {
+    gl_FragColor = v_Color;
+}
+".to_string()]);
+    frag.compile().expect("Failed to compile fragment shader");
+
+    let program = Program::new().unwrap();
+    program.attach_shader(&vert);
+    program.attach_shader(&frag);
+    program.link().expect("Failed to link program");
+
+    let vao = VertexArray::new().unwrap();
+    let vbo = ArrayBuffer::new();
+
+    let data: Vec<f32> = vec![
+        0.0, 0.5, 1.0, 0.0, 1.0, 1.0,
+        0.5, -0.5, 1.0, 1.0, 0.0, 1.0,
+        -0.5, -0.5, 0.0, 1.0, 1.0, 1.0,
+    ];
+
+    vao.bind();
+    vbo.bind();
+    vbo.data(&data, tea::buffer::BufferUsage::StaticDraw);
+    vao.enable_attrib(0);
+    vao.enable_attrib(1);
+    let stride = (6 * std::mem::size_of::<f32>()) as i32;
+    vao.attrib_pointer::<Vec2>(0, stride, 0);
+    vao.attrib_pointer::<Vec4>(1, stride, (std::mem::size_of::<f32>() * 2) as i32);
+
+    vao.unbind();
+    vbo.unbind();
 
 
-int main(int argc, char **argv) {
-    if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
-        return -1;
+    'running: loop {
+        tea::clear_color(0.3, 0.4, 0.4, 1.0);
+        tea::clear(&[ClearFlags::ColorBufferBit]);
+
+        program.set_used();
+        vao.bind();
+        tea::draw_arrays(tea::DrawMode::Triangles, 0, 3);
+        vao.unbind();
+        program.set_unused();
+        window.gl_swap_window();
+        for ev in event.poll_iter() {
+            match ev {
+                Event::Quit {..} | Event::KeyDown {scancode: Some(Scancode::Escape), ..} => {
+                    break 'running
+                },
+                _ => {}
+            }
+        }
     }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    GLFWwindow *window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!window) {
-        fprintf(stderr, "Failed to open GLFW window.\n");
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-
-    tea_init(NULL);
-
-    te_buffer_t buffer = tea_buffer(TEA_VERTEX_BUFFER, 1000);
-    te_program_t prog = tea_program(NULL, NULL);
-    i32 world, modelview;
-    world = tea_program_uniform_location(prog, "u_World");
-    modelview = tea_program_uniform_location(prog, "u_ModelView");
-
-    u8 pixels[] = {
-        255, 255, 255, 255
-    };
-    te_texture_t tex = tea_texture(TEA_RGBA, 1, 1, pixels, 0);
-
-    tea_matrix_mode(TEA_PERSPECTIVE);
-    tea_load_identity();
-    tea_ortho(0, 640, 380, 0, 0, 1);p
-    tea_matrix_mode(TEA_MODELVIEW);
-    tea_load_identity();
-
-    te_vertex_format_t *format = tea_vertex_format();
-	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
-	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT4);
-	tea_vertex_format_add(format, TEA_ATTRIB_FLOAT2);
-
-    tea_setup_buffer(format, buffer);
-    tea_bind_texture(tex);
-
-    while (!glfwWindowShouldClose(window)) {
-        tea_viewport(0, 0, 640, 380);
-        tea_clear(0.3f, 0.4f, 0.4f, 1.f);
-        tea_buffer_seek(buffer, 0);
-        tea_buffer_color4f(buffer, 1, 1, 1, 1);
-
-        tea_use_program(prog);
-        tea_program_set_uniform_matrix4fv(world, 1, TEA_FALSE, tea_get_matrix(TEA_PERSPECTIVE));
-        tea_program_set_uniform_matrix4fv(modelview, 1, TEA_FALSE, tea_get_matrix(TEA_MODELVIEW));
-
-        tea_buffer_fill_rectangle(buffer, (vec2){32, 32}, (vec2){32, 128});
-        tea_buffer_flush(buffer);
-        tea_draw(TEA_FILL);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-    tea_quit();
-    glfwTerminate();
-    return 0;
 }
 ```
