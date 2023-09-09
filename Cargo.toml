@@ -8,8 +8,8 @@ description = "A lib for easier use of OpenGL functions"
 categories = ["rendering", "opengl", "graphics"]
 keywords = ["opengl", "cafe", "rendering", "framework", "engine"]
 authors = ["Canoi Gomes <canoiaguiar@gmail.com>"]
-repository = "https://codeberg.org/cafe/tea"
-version = "0.1.1"
+repository = "https://github.com/cafe-engine/tea"
+version = "0.1.2"
 license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
